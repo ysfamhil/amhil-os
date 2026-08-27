@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AMHIL OS
 
-## Getting Started
+A personal operating system — tasks, projects, goals, learning, habits, time tracking, a lightweight CRM, finance, notes, a unified timeline, global search, reports, and optional AI features — built on Next.js (App Router) and Supabase (Postgres + Auth + Row Level Security).
 
-First, run the development server:
+Every record is scoped to its owner via RLS at the database level. Derived values (project progress, net income, learning hours, habit streaks, report totals) are always computed live from source records — never stored and never allowed to drift.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Stack
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Next.js 16 (App Router, Server Actions, Turbopack) + TypeScript + Tailwind v4
+- Supabase — Postgres, Auth, Row Level Security
+- Recharts for charts
+- `@anthropic-ai/sdk` for the optional AI features (Claude)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Getting started
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Copy `.env.local.example` to `.env.local` and fill in your Supabase project's URL and anon key:
+   ```bash
+   cp .env.local.example .env.local
+   ```
+3. Apply the database migrations to your linked Supabase project:
+   ```bash
+   npx supabase link --project-ref <your-project-ref>
+   npx supabase db push --linked
+   ```
+4. Start the dev server:
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000).
 
-## Learn More
+## Environment variables
 
-To learn more about Next.js, take a look at the following resources:
+| Variable | Required | Notes |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Your Supabase project URL. Safe to expose to the browser — access is enforced by RLS, not by keeping this secret. |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anon/public key. Same as above — RLS is the actual security boundary. |
+| `ANTHROPIC_API_KEY` | No | Server-only. Enables the AI Assistant, "Explain this report", and AI-generated Weekly/Monthly Review summaries. Every AI feature degrades gracefully with a clear "AI unavailable" message when this is unset — the app is fully functional without it. Never prefix this with `NEXT_PUBLIC_`. |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Never commit `.env.local` — it's already git-ignored.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Scripts
 
-## Deploy on Vercel
+- `npm run dev` — start the dev server
+- `npm run build` — production build
+- `npm run start` — run the production build
+- `npm run lint` — ESLint
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deploying
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This app deploys cleanly to Vercel (or any Next.js host). Set the environment variables above in your hosting provider's dashboard — the build does not require `ANTHROPIC_API_KEY` at all, and requires no database credentials beyond the two public Supabase variables (all data access happens client-and-server-side through the RLS-scoped Supabase client, never a service-role key).
+
+Database changes ship as SQL migrations in `supabase/migrations/`, applied with `supabase db push --linked` against your linked project — there is no build-time database dependency.
+
+## Backup strategy
+
+Supabase provides automatic infrastructure-level backups (and Point-in-Time Recovery on paid plans). For a portable copy of your own data independent of any one provider, use Settings → Data & Backup in the app to export a full JSON backup (all tables, relationships preserved by id) or per-entity CSVs.

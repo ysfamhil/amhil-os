@@ -29,7 +29,7 @@ export function GoalsBoard({ goals }: { goals: GoalWithProgress[] }) {
         <EmptyState
           icon={Target}
           title="No goals yet"
-          description="Set a goal and connect it to the tasks or projects that move it forward."
+          description="Set a goal and connect it to the tasks that move it forward."
           action={
             <button
               type="button"

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Loader2, Sparkles } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import { searchAll, type SearchResultGroup, type SearchResultItem } from "@/lib/actions/search";
 
 function flattenResults(groups: SearchResultGroup[]): { group: string; item: SearchResultItem }[] {
@@ -77,23 +77,15 @@ export function CommandPalette() {
   }, [query]);
 
   const flat = flattenResults(groups);
-  const showAskAI = query.trim().length >= 2;
-  const totalCount = flat.length + (showAskAI ? 1 : 0);
+  const totalCount = flat.length;
 
   function navigateTo(item: SearchResultItem) {
     setOpen(false);
     router.push(item.href);
   }
 
-  function askAI() {
-    setOpen(false);
-    router.push(`/ai?q=${encodeURIComponent(query.trim())}`);
-  }
-
   function activateIndex(index: number) {
-    if (index === flat.length && showAskAI) {
-      askAI();
-    } else if (flat[index]) {
+    if (flat[index]) {
       navigateTo(flat[index].item);
     }
   }
@@ -140,7 +132,7 @@ export function CommandPalette() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Search tasks, projects, clients, notes…"
+            placeholder="Search tasks, goals, habits, notes…"
             className="w-full bg-transparent text-sm outline-none placeholder:text-muted"
           />
           {loading && <Loader2 size={16} className="shrink-0 animate-spin text-muted" />}
@@ -181,23 +173,6 @@ export function CommandPalette() {
                 })}
               </div>
             ))
-          )}
-          {showAskAI && (
-            <div className="mt-1 border-t border-border pt-1">
-              <button
-                type="button"
-                onMouseEnter={() => setActiveIndex(flat.length)}
-                onClick={askAI}
-                className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${
-                  activeIndex === flat.length ? "bg-accent/15 text-accent" : "hover:bg-border/40"
-                }`}
-              >
-                <Sparkles size={14} className="shrink-0" />
-                <span>
-                  Ask AI: <span className="font-medium">&quot;{query}&quot;</span>
-                </span>
-              </button>
-            </div>
           )}
         </div>
       </div>

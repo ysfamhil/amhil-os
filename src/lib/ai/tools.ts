@@ -169,7 +169,6 @@ export async function runAITool(
               date: e.date,
               duration_minutes: e.duration_minutes,
               category: e.category,
-              project: e.projects?.name ?? null,
               task: e.tasks?.title ?? null,
               description: e.description,
             }))

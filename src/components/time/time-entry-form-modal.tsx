@@ -9,11 +9,6 @@ import type { TimeEntry } from "@/types/database";
 
 const CATEGORIES = ["Work", "Learning", "Personal", "Other"];
 
-export interface ProjectOption {
-  id: string;
-  name: string;
-}
-
 export interface TaskOption {
   id: string;
   title: string;
@@ -23,13 +18,11 @@ export function TimeEntryFormModal({
   open,
   onClose,
   entry,
-  projects,
   tasks,
 }: {
   open: boolean;
   onClose: () => void;
   entry?: TimeEntry | null;
-  projects: ProjectOption[];
   tasks: TaskOption[];
 }) {
   const router = useRouter();
@@ -38,7 +31,6 @@ export function TimeEntryFormModal({
   const [date, setDate] = useState(entry?.date ?? new Date().toISOString().slice(0, 10));
   const [duration, setDuration] = useState(entry?.duration_minutes != null ? String(entry.duration_minutes) : "30");
   const [category, setCategory] = useState(entry?.category ?? "Work");
-  const [projectId, setProjectId] = useState(entry?.project_id ?? "");
   const [taskId, setTaskId] = useState(entry?.task_id ?? "");
   const [description, setDescription] = useState(entry?.description ?? "");
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +52,6 @@ export function TimeEntryFormModal({
         date,
         duration_minutes: durationValue,
         category: category || null,
-        project_id: projectId || null,
         task_id: taskId || null,
         description: description || null,
       };
@@ -98,23 +89,12 @@ export function TimeEntryFormModal({
           </Field>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Category" htmlFor="time-category">
             <Select id="time-category" value={category ?? ""} onChange={(e) => setCategory(e.target.value)}>
               {CATEGORIES.map((c) => (
                 <option key={c} value={c}>
                   {c}
-                </option>
-              ))}
-            </Select>
-          </Field>
-
-          <Field label="Project" htmlFor="time-project">
-            <Select id="time-project" value={projectId ?? ""} onChange={(e) => setProjectId(e.target.value)}>
-              <option value="">No project</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
                 </option>
               ))}
             </Select>

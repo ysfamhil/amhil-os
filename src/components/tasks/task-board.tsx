@@ -1,103 +1,112 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
-import { ListTodo } from "lucide-react";
 import { TaskFilterBar } from "@/components/tasks/task-filter-bar";
-import { TaskRow } from "@/components/tasks/task-row";
+import { TaskQuickAdd } from "@/components/tasks/task-quick-add";
+import { TaskList } from "@/components/tasks/task-list";
+import { TaskEmptyState, type GoalSuggestion } from "@/components/tasks/task-empty-state";
 import { TaskKanban } from "@/components/tasks/task-kanban";
-import { TaskFormModal, type GoalOption, type ProjectOption } from "@/components/tasks/task-form-modal";
+import { TaskFormModal } from "@/components/tasks/task-form-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { EmptyState } from "@/components/ui/empty-state";
 import { deleteTask, setTaskStatus } from "@/lib/actions/tasks";
-import type { SubtaskProgress, TaskTabCounts, TaskWithProject } from "@/lib/queries/tasks";
+import { useCompletedTasks } from "@/lib/hooks/use-completed-tasks";
+import type { SubtaskProgress, TaskTab, TaskTabCounts } from "@/lib/queries/tasks";
 import type { Task, TaskStatus } from "@/types/database";
+
+const TAB_ORDER: TaskTab[] = ["all", "today", "upcoming", "overdue", "completed"];
 
 export function TaskBoard({
   tasks,
   counts,
   subtaskProgress,
-  projects,
-  goals = [],
+  timeLogged,
+  tags,
+  goalSuggestions,
 }: {
-  tasks: TaskWithProject[];
+  tasks: Task[];
   counts: TaskTabCounts;
   subtaskProgress: Record<string, SubtaskProgress>;
-  projects: ProjectOption[];
-  goals?: GoalOption[];
+  timeLogged: Record<string, number>;
+  tags: string[];
+  goalSuggestions: GoalSuggestion[];
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const view = searchParams.get("view") ?? "list";
+  const tab = (searchParams.get("tab") ?? "all") as TaskTab;
 
   const [modalOpen, setModalOpen] = useState(() => searchParams.get("new") === "1");
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [deletingTask, setDeletingTask] = useState<TaskWithProject | null>(null);
+  const [deletingTask, setDeletingTask] = useState<Task | null>(null);
+  const quickAddRef = useRef<HTMLDivElement>(null);
 
-  function openNewTask() {
-    setEditingTask(null);
-    setModalOpen(true);
-  }
+  const { merge, markDone, clearDone, isDone } = useCompletedTasks<Task>();
+  const mergedTasks = merge(tasks);
 
-  function openEditTask(task: TaskWithProject) {
+  function openEditTask(task: Task) {
     setEditingTask(task);
     setModalOpen(true);
   }
 
-  async function handleStatusChange(task: TaskWithProject, status: TaskStatus) {
+  async function handleStatusChange(task: Task, status: TaskStatus) {
+    if (status === "Done") markDone(task);
+    else clearDone(task.id);
     await setTaskStatus(task.id, status);
     router.refresh();
   }
 
-  return (
-    <div className="flex flex-col gap-4">
-      <TaskFilterBar counts={counts} projects={projects} onNewTask={openNewTask} />
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      const target = e.target as HTMLElement;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) return;
+      if (e.key === "n" || e.key === "N") {
+        e.preventDefault();
+        quickAddRef.current?.querySelector("input")?.focus();
+      } else if (/^[1-5]$/.test(e.key)) {
+        const params = new URLSearchParams(window.location.search);
+        params.set("tab", TAB_ORDER[Number(e.key) - 1]);
+        router.push(`?${params.toString()}`);
+      }
+    }
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [router]);
 
-      {tasks.length === 0 ? (
-        <EmptyState
-          icon={ListTodo}
-          title="No tasks here"
-          description="Nothing matches this view yet. Create a task to get started."
-          action={
-            <button
-              type="button"
-              onClick={openNewTask}
-              className="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-accent-foreground hover:opacity-90"
-            >
-              New Task
-            </button>
-          }
-        />
+  const grouped = tab === "upcoming" || tab === "all";
+
+  return (
+    <div className="flex flex-col gap-3">
+      <TaskFilterBar counts={counts} tags={tags} />
+
+      <div ref={quickAddRef}>
+        <TaskQuickAdd />
+      </div>
+
+      {mergedTasks.length === 0 ? (
+        <TaskEmptyState tab={tab} counts={counts} suggestions={goalSuggestions} />
       ) : view === "kanban" ? (
         <TaskKanban
-          tasks={tasks}
+          tasks={mergedTasks}
           onEdit={openEditTask}
           onDelete={setDeletingTask}
           onStatusChange={handleStatusChange}
         />
       ) : (
-        <div className="flex flex-col gap-2">
-          {tasks.map((task) => (
-            <TaskRow
-              key={task.id}
-              task={task}
-              subtaskProgress={subtaskProgress[task.id]}
-              onEdit={() => openEditTask(task)}
-              onDelete={() => setDeletingTask(task)}
-              onStatusChange={(status) => handleStatusChange(task, status)}
-            />
-          ))}
-        </div>
+        <TaskList
+          tasks={mergedTasks}
+          grouped={grouped}
+          subtaskProgress={subtaskProgress}
+          timeLogged={timeLogged}
+          isDone={isDone}
+          onToggleComplete={markDone}
+          onEdit={openEditTask}
+          onRequestDelete={setDeletingTask}
+          onStatusChanged={handleStatusChange}
+        />
       )}
 
-      <TaskFormModal
-        key={editingTask?.id ?? "new"}
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        task={editingTask}
-        projects={projects}
-        goals={goals}
-      />
+      <TaskFormModal key={editingTask?.id ?? "new"} open={modalOpen} onClose={() => setModalOpen(false)} task={editingTask} />
 
       <ConfirmDialog
         open={Boolean(deletingTask)}

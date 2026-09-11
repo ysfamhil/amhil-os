@@ -28,11 +28,7 @@ export function GoalCard({ goal }: { goal: GoalWithProgress }) {
         <div className="mt-auto">
           <div className="mb-1 flex items-center justify-between text-xs text-muted">
             <span>{goal.progress}% complete</span>
-            <span>
-              {goal.source === "tasks" && `${goal.linkedTasks} tasks`}
-              {goal.source === "projects" && `${goal.linkedProjects} projects`}
-              {goal.source === "manual" && "manual"}
-            </span>
+            <span>{goal.source === "tasks" ? `${goal.linkedTasks} tasks` : "manual"}</span>
           </div>
           <ProgressBar value={goal.progress} />
         </div>

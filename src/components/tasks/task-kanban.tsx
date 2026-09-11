@@ -3,8 +3,7 @@
 import { Calendar, Trash2 } from "lucide-react";
 import clsx from "clsx";
 import { Badge, priorityTone } from "@/components/ui/badge";
-import type { TaskWithProject } from "@/lib/queries/tasks";
-import type { TaskStatus } from "@/types/database";
+import type { Task, TaskStatus } from "@/types/database";
 
 const COLUMNS: TaskStatus[] = ["Backlog", "Todo", "In Progress", "Waiting", "Done", "Cancelled"];
 
@@ -14,10 +13,10 @@ export function TaskKanban({
   onDelete,
   onStatusChange,
 }: {
-  tasks: TaskWithProject[];
-  onEdit: (task: TaskWithProject) => void;
-  onDelete: (task: TaskWithProject) => void;
-  onStatusChange: (task: TaskWithProject, status: TaskStatus) => void;
+  tasks: Task[];
+  onEdit: (task: Task) => void;
+  onDelete: (task: Task) => void;
+  onStatusChange: (task: Task, status: TaskStatus) => void;
 }) {
   return (
     <div className="flex gap-4 overflow-x-auto pb-2">
@@ -44,7 +43,7 @@ export function TaskKanban({
                     >
                       {task.title}
                     </p>
-                    {task.projects && <p className="mt-1 text-xs text-muted">{task.projects.name}</p>}
+                    {task.category && <p className="mt-1 text-xs text-muted">{task.category}</p>}
                     {task.due_date && (
                       <p className="mt-1 flex items-center gap-1 text-xs text-muted">
                         <Calendar size={11} />

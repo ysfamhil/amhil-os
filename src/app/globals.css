@@ -2,48 +2,319 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Mission-control design tokens. Dark is the primary, fully-realized
+ * experience (near-black canvas, elevated panel steps, saturated domain
+ * color) — light is a proportional adaptation of the same structure so the
+ * existing theme toggle keeps working, not a parallel design.
+ *
+ * Domain colors are theme-invariant by design ("one hue per domain, used
+ * consistently everywhere that domain appears") — Tasks/Habits/Goals/
+ * Timesheet/Finance are live in the product; Learning's token is defined
+ * for completeness/parity with the spec even though the Learning module
+ * isn't currently exposed in the UI.
+ *
+ * The legacy semantic aliases (background/surface/foreground/muted/border/
+ * accent/success/warning/danger) are kept mapped to the new scale so every
+ * existing screen inherits the richer palette without code changes; the
+ * fine-grained tokens below (panel steps, text ramp, domain hues) are for
+ * screens being restyled directly against this pass.
+ */
+
 :root {
-  --background: #fafafa;
+  /* domain colors — identical across themes */
+  --domain-tasks: #5b8def;
+  --domain-habits: #a7f432;
+  --domain-goals: #ff5fa2;
+  --domain-time: #ffb443;
+  --domain-finance: #2fe3b0;
+  --domain-learning: #8b7cff;
+  --domain-notes: #8b7cff;
+  --domain-savings: #22d3ee;
+  --domain-danger: #ff5a5f;
+
+  /* legacy/base aliases, still used app-wide */
+  --background: #eceef0;
   --surface: #ffffff;
-  --foreground: #18181b;
-  --muted: #71717a;
-  --border: #e4e4e7;
-  --accent: #4f46e5;
+  --foreground: #10201e;
+  --muted: #63716f;
+  --border: #e5e8ea;
+  --accent: #0d9488;
   --accent-foreground: #ffffff;
   --success: #16a34a;
-  --warning: #d97706;
+  --warning: #b45309;
   --danger: #dc2626;
+
+  /* spec tokens */
+  --surface2: #f6f7f8;
+  --surface3: #f2f5f4;
+  --modal: #ffffff;
+  --topbar: #ffffff;
+  --card-shadow: 0 1px 2px rgba(16, 40, 36, 0.06);
+  --modal-shadow: 0 24px 70px rgba(16, 40, 36, 0.22);
+
+  --line: #e5e8ea;
+  --line2: #eef0f1;
+  --line3: #dcdfe2;
+  --line4: #c8cdd0;
+  --line5: #aab2b5;
+
+  --chip: #eef0f1;
+  --track: #e5e8ea;
+  --bar-dim: #dfe3e5;
+  --bar-mid: #a7d8d1;
+
+  --t2: #3d4a48;
+  --t3: #566462;
+  --t4: #63716f;
+  --t5: #74827f;
+  --t6: #808e8c;
+  --t7: #93a09e;
+  --t8: #aab5b3;
+  --t9: #d3d9d8;
+
+  --accent-hi: #0f766e;
+  --on-accent: #ffffff;
+  --green: #16a34a;
+  --amber: #b45309;
+  --red: #dc2626;
+  --blue: #2563eb;
+  --pink: #a21caf;
+
+  --a05: rgba(13, 148, 136, 0.05);
+  --a08: rgba(13, 148, 136, 0.08);
+  --a09: rgba(13, 148, 136, 0.09);
+  --a11: rgba(13, 148, 136, 0.1);
+  --a13: rgba(13, 148, 136, 0.12);
+  --a16: rgba(13, 148, 136, 0.14);
+  --a40: rgba(13, 148, 136, 0.4);
+  --g08: rgba(22, 163, 74, 0.08);
+  --g10: rgba(22, 163, 74, 0.1);
+  --g12: rgba(22, 163, 74, 0.12);
+  --g35: rgba(22, 163, 74, 0.32);
+  --am11: rgba(180, 83, 9, 0.1);
+  --am13: rgba(180, 83, 9, 0.12);
+  --r10: rgba(220, 38, 38, 0.09);
+  --r13: rgba(220, 38, 38, 0.11);
+  --b11: rgba(37, 99, 235, 0.1);
+  --b13: rgba(37, 99, 235, 0.12);
+  --overlay: rgba(16, 32, 30, 0.38);
+
+  /* the app shell sidebar/header keeps its own dark-teal identity in both themes */
+  --sidebar-bg: #0a2521;
+  --sidebar-text: #e6f2f0;
+  --sidebar-line: rgba(255, 255, 255, 0.07);
+  --sidebar-hover: rgba(255, 255, 255, 0.06);
+  --sidebar-active-bg: rgba(45, 212, 191, 0.16);
+  --sidebar-label: #9fbdb8;
+  --sidebar-count: #5c7a76;
+  --sidebar-avatar-bg: #22403c;
+  --sidebar-avatar-text: #9fbdb8;
+  --sidebar-subline: #7fa39e;
+  --sidebar-brand: #2dd4bf;
+  --sidebar-brand-text: #04211f;
 }
 
 .dark {
-  --background: #09090b;
-  --surface: #18181b;
-  --foreground: #fafafa;
-  --muted: #a1a1aa;
-  --border: #27272a;
-  --accent: #818cf8;
-  --accent-foreground: #09090b;
-  --success: #4ade80;
-  --warning: #fbbf24;
-  --danger: #f87171;
+  /* mission-control surfaces */
+  --background: #07090e;
+  --surface: #0f131b;
+  --surface2: #141a24;
+  --surface3: #1a212d;
+  --foreground: #f3f6fa;
+  --muted: #78849a;
+  --border: rgba(255, 255, 255, 0.07);
+
+  --accent: #2fe3b0;
+  --accent-foreground: #04211f;
+  --success: #22c55e;
+  --warning: #ffb443;
+  --danger: #ff5a5f;
+
+  --modal: #141a24;
+  --topbar: #0a0d13;
+  --card-shadow: none;
+  --modal-shadow: 0 24px 70px rgba(0, 0, 0, 0.6);
+
+  --line: rgba(255, 255, 255, 0.07);
+  --line2: rgba(255, 255, 255, 0.055);
+  --line3: rgba(255, 255, 255, 0.11);
+  --line4: rgba(255, 255, 255, 0.15);
+  --line5: rgba(255, 255, 255, 0.22);
+
+  --chip: #1a212d;
+  --track: #1a212d;
+  --bar-dim: #232b39;
+  --bar-mid: #1c4a45;
+
+  /* text ramp: primary, secondary, tertiary, quaternary */
+  --t2: #a3aec0;
+  --t3: #a3aec0;
+  --t4: #78849a;
+  --t5: #78849a;
+  --t6: #78849a;
+  --t7: #5a6478;
+  --t8: #5a6478;
+  --t9: #3a4256;
+
+  --accent-hi: #6ff0ce;
+  --on-accent: #04211f;
+  --green: #22c55e;
+  --amber: #ffb443;
+  --red: #ff5a5f;
+  --blue: #5b8def;
+  --pink: #ff5fa2;
+
+  --a05: rgba(47, 227, 176, 0.05);
+  --a08: rgba(47, 227, 176, 0.08);
+  --a09: rgba(47, 227, 176, 0.09);
+  --a11: rgba(47, 227, 176, 0.11);
+  --a13: rgba(47, 227, 176, 0.14);
+  --a16: rgba(47, 227, 176, 0.18);
+  --a40: rgba(47, 227, 176, 0.4);
+  --g08: rgba(34, 197, 94, 0.08);
+  --g10: rgba(34, 197, 94, 0.1);
+  --g12: rgba(34, 197, 94, 0.14);
+  --g35: rgba(34, 197, 94, 0.35);
+  --am11: rgba(255, 180, 67, 0.14);
+  --am13: rgba(255, 180, 67, 0.16);
+  --r10: rgba(255, 90, 95, 0.12);
+  --r13: rgba(255, 90, 95, 0.16);
+  --b11: rgba(91, 141, 239, 0.14);
+  --b13: rgba(91, 141, 239, 0.16);
+  --overlay: rgba(3, 4, 7, 0.78);
+
+  --sidebar-bg: #0a2521;
+  --sidebar-text: #e6f2f0;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);
+  --color-surface2: var(--surface2);
+  --color-surface3: var(--surface3);
+  --color-modal: var(--modal);
+  --color-topbar: var(--topbar);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-border: var(--border);
   --color-accent: var(--accent);
+  --color-accent-hi: var(--accent-hi);
   --color-accent-foreground: var(--accent-foreground);
+  --color-on-accent: var(--on-accent);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --color-line: var(--line);
+  --color-line2: var(--line2);
+  --color-line3: var(--line3);
+  --color-line4: var(--line4);
+  --color-line5: var(--line5);
+  --color-chip: var(--chip);
+  --color-track: var(--track);
+  --color-bar-dim: var(--bar-dim);
+  --color-bar-mid: var(--bar-mid);
+
+  --color-t2: var(--t2);
+  --color-t3: var(--t3);
+  --color-t4: var(--t4);
+  --color-t5: var(--t5);
+  --color-t6: var(--t6);
+  --color-t7: var(--t7);
+  --color-t8: var(--t8);
+  --color-t9: var(--t9);
+
+  --color-green: var(--green);
+  --color-amber: var(--amber);
+  --color-red: var(--red);
+  --color-blue: var(--blue);
+  --color-pink: var(--pink);
+
+  --color-a05: var(--a05);
+  --color-a08: var(--a08);
+  --color-a09: var(--a09);
+  --color-a11: var(--a11);
+  --color-a13: var(--a13);
+  --color-a16: var(--a16);
+  --color-a40: var(--a40);
+  --color-g08: var(--g08);
+  --color-g10: var(--g10);
+  --color-g12: var(--g12);
+  --color-g35: var(--g35);
+  --color-am11: var(--am11);
+  --color-am13: var(--am13);
+  --color-r10: var(--r10);
+  --color-r13: var(--r13);
+  --color-b11: var(--b11);
+  --color-b13: var(--b13);
+  --color-overlay: var(--overlay);
+
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-sidebar-text: var(--sidebar-text);
+  --color-sidebar-line: var(--sidebar-line);
+  --color-sidebar-hover: var(--sidebar-hover);
+  --color-sidebar-active-bg: var(--sidebar-active-bg);
+  --color-sidebar-label: var(--sidebar-label);
+  --color-sidebar-count: var(--sidebar-count);
+  --color-sidebar-avatar-bg: var(--sidebar-avatar-bg);
+  --color-sidebar-avatar-text: var(--sidebar-avatar-text);
+  --color-sidebar-subline: var(--sidebar-subline);
+  --color-sidebar-brand: var(--sidebar-brand);
+  --color-sidebar-brand-text: var(--sidebar-brand-text);
+
+  --color-domain-tasks: var(--domain-tasks);
+  --color-domain-habits: var(--domain-habits);
+  --color-domain-goals: var(--domain-goals);
+  --color-domain-time: var(--domain-time);
+  --color-domain-finance: var(--domain-finance);
+  --color-domain-learning: var(--domain-learning);
+  --color-domain-notes: var(--domain-notes);
+  --color-domain-savings: var(--domain-savings);
+  --color-domain-danger: var(--domain-danger);
+
+  --shadow-card: var(--card-shadow);
+  --shadow-modal: var(--modal-shadow);
+
+  --font-sans: var(--font-sans), "Helvetica Neue", Helvetica, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, monospace;
 }
 
 body {
   background: var(--color-background);
   color: var(--color-foreground);
+}
+
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Subtle internal scrollbars for planner widgets — visible but unobtrusive. */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line4) transparent;
+}
+.scroll-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scroll-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background-color: var(--line4);
+  border-radius: 6px;
 }

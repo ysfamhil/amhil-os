@@ -7,24 +7,23 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { EXPENSE_CATEGORIES, ExpenseFormModal, type ProjectOption } from "@/components/finance/expense-form-modal";
+import { ExpenseFormModal } from "@/components/finance/expense-form-modal";
+import { EXPENSE_TAGS } from "@/lib/tags";
 import { deleteExpense } from "@/lib/actions/expenses";
 import type { Expense } from "@/types/database";
-
-export type ExpenseWithRelations = Expense & { projects: { id: string; name: string } | null };
 
 function money(amount: number) {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(amount);
 }
 
-export function ExpenseBoard({ entries, projects }: { entries: ExpenseWithRelations[]; projects: ProjectOption[] }) {
+export function ExpenseBoard({ entries }: { entries: Expense[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const [modalOpen, setModalOpen] = useState(() => searchParams.get("new") === "1");
   const [editingEntry, setEditingEntry] = useState<Expense | null>(null);
-  const [deletingEntry, setDeletingEntry] = useState<ExpenseWithRelations | null>(null);
+  const [deletingEntry, setDeletingEntry] = useState<Expense | null>(null);
 
   const category = searchParams.get("category") ?? "";
 
@@ -47,8 +46,8 @@ export function ExpenseBoard({ entries, projects }: { entries: ExpenseWithRelati
           onChange={(e) => updateParams({ category: e.target.value || null })}
           className="rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
         >
-          <option value="">All categories</option>
-          {EXPENSE_CATEGORIES.map((c) => (
+          <option value="">All tags</option>
+          {EXPENSE_TAGS.map((c) => (
             <option key={c} value={c}>
               {c}
             </option>
@@ -69,7 +68,7 @@ export function ExpenseBoard({ entries, projects }: { entries: ExpenseWithRelati
       </div>
 
       {entries.length === 0 ? (
-        <EmptyState icon={Receipt} title="No expenses" description="Track your costs by category and project." />
+        <EmptyState icon={Receipt} title="No expenses" description="Track your costs by tag." />
       ) : (
         <>
           <p className="text-xs text-muted">
@@ -83,7 +82,6 @@ export function ExpenseBoard({ entries, projects }: { entries: ExpenseWithRelati
                     <span className="font-medium">{money(entry.amount)} MAD</span>
                     {entry.category && <Badge tone="neutral">{entry.category}</Badge>}
                     <span className="text-muted">{entry.date}</span>
-                    {entry.projects && <span className="text-muted">{entry.projects.name}</span>}
                   </div>
                   {entry.description && <p className="mt-1 text-sm text-muted">{entry.description}</p>}
                 </div>
@@ -117,7 +115,6 @@ export function ExpenseBoard({ entries, projects }: { entries: ExpenseWithRelati
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         expense={editingEntry}
-        projects={projects}
       />
 
       <ConfirmDialog

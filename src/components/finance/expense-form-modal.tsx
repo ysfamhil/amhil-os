@@ -5,35 +5,17 @@ import { useState, type FormEvent } from "react";
 import { Modal } from "@/components/ui/modal";
 import { Field, Select, TextInput, Textarea } from "@/components/ui/field";
 import { createExpense, updateExpense } from "@/lib/actions/expenses";
+import { EXPENSE_TAGS } from "@/lib/tags";
 import type { Expense } from "@/types/database";
-
-export const EXPENSE_CATEGORIES = [
-  "Software",
-  "Hardware",
-  "Marketing",
-  "Transportation",
-  "Workspace",
-  "Education",
-  "Services",
-  "Personal",
-  "Other",
-];
-
-export interface ProjectOption {
-  id: string;
-  name: string;
-}
 
 export function ExpenseFormModal({
   open,
   onClose,
   expense,
-  projects,
 }: {
   open: boolean;
   onClose: () => void;
   expense?: Expense | null;
-  projects: ProjectOption[];
 }) {
   const router = useRouter();
   const isEditing = Boolean(expense);
@@ -41,7 +23,6 @@ export function ExpenseFormModal({
   const [amount, setAmount] = useState(expense?.amount != null ? String(expense.amount) : "");
   const [date, setDate] = useState(expense?.date ?? new Date().toISOString().slice(0, 10));
   const [category, setCategory] = useState(expense?.category ?? "Other");
-  const [projectId, setProjectId] = useState(expense?.project_id ?? "");
   const [description, setDescription] = useState(expense?.description ?? "");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -62,7 +43,6 @@ export function ExpenseFormModal({
         amount: amountValue,
         date,
         category: category || null,
-        project_id: projectId || null,
         description: description || null,
       };
       if (isEditing && expense) {
@@ -100,27 +80,15 @@ export function ExpenseFormModal({
           </Field>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Category" htmlFor="expense-category">
-            <Select id="expense-category" value={category ?? ""} onChange={(e) => setCategory(e.target.value)}>
-              {EXPENSE_CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Project" htmlFor="expense-project">
-            <Select id="expense-project" value={projectId ?? ""} onChange={(e) => setProjectId(e.target.value)}>
-              <option value="">No project</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-        </div>
+        <Field label="Tag" htmlFor="expense-category">
+          <Select id="expense-category" value={category ?? ""} onChange={(e) => setCategory(e.target.value)}>
+            {EXPENSE_TAGS.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </Select>
+        </Field>
 
         <Field label="Description" htmlFor="expense-description">
           <Textarea

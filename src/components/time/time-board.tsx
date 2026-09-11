@@ -9,7 +9,6 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   TimeEntryFormModal,
-  type ProjectOption,
   type TaskOption,
 } from "@/components/time/time-entry-form-modal";
 import { deleteTimeEntry } from "@/lib/actions/time-entries";
@@ -25,12 +24,10 @@ function hours(h: number) {
 export function TimeBoard({
   entries,
   stats,
-  projects,
   tasks,
 }: {
   entries: TimeEntryWithRelations[];
   stats: TimeStats;
-  projects: ProjectOption[];
   tasks: TaskOption[];
 }) {
   const router = useRouter();
@@ -42,7 +39,6 @@ export function TimeBoard({
   const [deletingEntry, setDeletingEntry] = useState<TimeEntryWithRelations | null>(null);
 
   const date = searchParams.get("date") ?? "";
-  const projectId = searchParams.get("project") ?? "";
   const category = searchParams.get("category") ?? "";
 
   function updateParams(patch: Record<string, string | null>) {
@@ -102,18 +98,6 @@ export function TimeBoard({
             className="rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
           />
           <select
-            value={projectId}
-            onChange={(e) => updateParams({ project: e.target.value || null })}
-            className="rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
-          >
-            <option value="">All projects</option>
-            {projects.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-          <select
             value={category}
             onChange={(e) => updateParams({ category: e.target.value || null })}
             className="rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
@@ -125,10 +109,10 @@ export function TimeBoard({
               </option>
             ))}
           </select>
-          {(date || projectId || category) && (
+          {(date || category) && (
             <button
               type="button"
-              onClick={() => updateParams({ date: null, project: null, category: null })}
+              onClick={() => updateParams({ date: null, category: null })}
               className="text-xs text-muted hover:text-foreground"
             >
               Clear filters
@@ -147,7 +131,7 @@ export function TimeBoard({
       </div>
 
       {entries.length === 0 ? (
-        <EmptyState icon={Clock} title="No time entries" description="Log time against a project, task, or category." />
+        <EmptyState icon={Clock} title="No time entries" description="Log time against a task or category." />
       ) : (
         <div className="flex flex-col gap-2">
           {entries.map((entry) => (
@@ -156,8 +140,7 @@ export function TimeBoard({
                 <div className="flex flex-wrap items-center gap-2 text-sm">
                   <span className="font-medium">{entry.date}</span>
                   {entry.category && <Badge tone="neutral">{entry.category}</Badge>}
-                  {entry.projects && <span className="text-muted">{entry.projects.name}</span>}
-                  {entry.tasks && <span className="text-muted">· {entry.tasks.title}</span>}
+                  {entry.tasks && <span className="text-muted">{entry.tasks.title}</span>}
                 </div>
                 {entry.description && <p className="mt-1 text-sm text-muted">{entry.description}</p>}
               </div>
@@ -191,7 +174,6 @@ export function TimeBoard({
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         entry={editingEntry}
-        projects={projects}
         tasks={tasks}
       />
 

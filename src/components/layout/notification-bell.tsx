@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bell } from "lucide-react";
 import { markAllNotificationsRead, markNotificationRead } from "@/lib/actions/notifications";
@@ -77,11 +76,6 @@ export function NotificationBell({ notifications, unreadCount }: { notifications
                   </button>
                 ))
               )}
-            </div>
-            <div className="border-t border-border pt-1">
-              <Link href="/notifications" onClick={() => setOpen(false)} className="block px-2 py-1.5 text-center text-xs font-medium text-accent hover:underline">
-                View all
-              </Link>
             </div>
           </div>
         </>

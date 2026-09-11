@@ -15,7 +15,7 @@ export function NoteCard({
   onDelete: () => void;
 }) {
   return (
-    <Card className="flex flex-col gap-2">
+    <Card domain="notes" className="flex flex-col gap-2">
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-medium">{note.title}</h3>
         <div className="flex shrink-0 items-center gap-1">
@@ -38,7 +38,12 @@ export function NoteCard({
         </div>
       </div>
 
-      {note.content && <p className="line-clamp-3 whitespace-pre-wrap text-sm text-muted">{note.content}</p>}
+      {note.content && (
+        <div
+          className="line-clamp-3 text-sm text-muted [&_ol]:list-decimal [&_ol]:pl-4 [&_ul]:list-disc [&_ul]:pl-4"
+          dangerouslySetInnerHTML={{ __html: note.content }}
+        />
+      )}
 
       <div className="mt-1 flex flex-wrap items-center gap-1.5">
         {note.projects && <Badge tone="accent">{note.projects.name}</Badge>}
@@ -47,7 +52,7 @@ export function NoteCard({
         {note.learning_topics && <Badge tone="neutral">{note.learning_topics.name}</Badge>}
         {note.goals && <Badge tone="neutral">{note.goals.title}</Badge>}
         {note.tags.map((tag) => (
-          <Badge key={tag} tone="neutral">
+          <Badge key={tag} tone="notes">
             #{tag}
           </Badge>
         ))}

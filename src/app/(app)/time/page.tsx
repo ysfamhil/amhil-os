@@ -19,30 +19,23 @@ export default async function TimePage({
 
   const sp = await searchParams;
 
-  const [entries, stats, projectsRes, tasksRes] = await Promise.all([
+  const [entries, stats, tasksRes] = await Promise.all([
     getTimeEntries(supabase, user.id, {
       date: typeof sp.date === "string" ? sp.date : undefined,
-      projectId: typeof sp.project === "string" ? sp.project : undefined,
       category: typeof sp.category === "string" ? sp.category : undefined,
     }),
     getTimeStats(supabase, user.id),
-    supabase.from("projects").select("id,name").eq("user_id", user.id).order("name"),
     supabase.from("tasks").select("id,title").eq("user_id", user.id).order("title"),
   ]);
 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Time</h1>
-        <p className="text-sm text-muted">Manual time entries across projects, tasks, and categories.</p>
+        <h1 className="text-xl font-semibold tracking-tight">Timesheet</h1>
+        <p className="text-sm text-muted">Where did your time go?</p>
       </div>
 
-      <TimeBoard
-        entries={entries}
-        stats={stats}
-        projects={projectsRes.data ?? []}
-        tasks={tasksRes.data ?? []}
-      />
+      <TimeBoard entries={entries} stats={stats} tasks={tasksRes.data ?? []} />
     </div>
   );
 }

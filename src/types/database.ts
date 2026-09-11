@@ -73,6 +73,7 @@ export interface Goal extends Timestamped {
   target_date: string | null;
   status: GoalStatus;
   progress: number;
+  position: number;
 }
 
 export interface Project extends Timestamped {
@@ -117,6 +118,7 @@ export interface Task extends Timestamped {
   goal_id: string | null;
   category: string | null;
   notes: string | null;
+  position: number;
 }
 
 export interface Subtask extends Timestamped {
@@ -233,6 +235,19 @@ export interface Expense extends Timestamped {
   description: string | null;
 }
 
+export interface EmergencyFund extends Timestamped {
+  id: string;
+  user_id: string;
+  target_amount: number;
+}
+
+export interface EmergencyFundTransaction extends Timestamped {
+  id: string;
+  user_id: string;
+  amount: number;
+  note: string | null;
+}
+
 export interface Note extends Timestamped {
   id: string;
   user_id: string;
@@ -314,6 +329,8 @@ type HabitCompletionInsert = InsertOf<HabitCompletion, "habit_id" | "date">;
 type TimeEntryInsert = InsertOf<TimeEntry, "duration_minutes">;
 type IncomeInsert = InsertOf<Income, "amount">;
 type ExpenseInsert = InsertOf<Expense, "amount">;
+type EmergencyFundInsert = InsertOf<EmergencyFund, "user_id">;
+type EmergencyFundTransactionInsert = InsertOf<EmergencyFundTransaction, "amount">;
 type NoteInsert = InsertOf<Note, "title">;
 type TimelineEventInsert = InsertOf<TimelineEvent, "event_type" | "title">;
 type NotificationInsert = InsertOf<Notification, "type" | "title" | "message">;
@@ -346,6 +363,8 @@ export interface Database {
       time_entries: TableDef<TimeEntry, TimeEntryInsert>;
       income: TableDef<Income, IncomeInsert>;
       expenses: TableDef<Expense, ExpenseInsert>;
+      emergency_fund: TableDef<EmergencyFund, EmergencyFundInsert>;
+      emergency_fund_transactions: TableDef<EmergencyFundTransaction, EmergencyFundTransactionInsert>;
       notes: TableDef<Note, NoteInsert>;
       timeline_events: TableDef<TimelineEvent, TimelineEventInsert>;
       notifications: TableDef<Notification, NotificationInsert>;

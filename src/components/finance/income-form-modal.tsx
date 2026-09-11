@@ -5,40 +5,25 @@ import { useState, type FormEvent } from "react";
 import { Modal } from "@/components/ui/modal";
 import { Field, Select, TextInput, Textarea } from "@/components/ui/field";
 import { createIncome, updateIncome } from "@/lib/actions/income";
+import { INCOME_TAGS } from "@/lib/tags";
 import type { Income, IncomeStatus } from "@/types/database";
 
 const STATUSES: IncomeStatus[] = ["Expected", "Invoiced", "Paid", "Cancelled"];
-
-export interface ClientOption {
-  id: string;
-  name: string;
-}
-
-export interface ProjectOption {
-  id: string;
-  name: string;
-}
 
 export function IncomeFormModal({
   open,
   onClose,
   income,
-  clients,
-  projects,
 }: {
   open: boolean;
   onClose: () => void;
   income?: Income | null;
-  clients: ClientOption[];
-  projects: ProjectOption[];
 }) {
   const router = useRouter();
   const isEditing = Boolean(income);
 
   const [amount, setAmount] = useState(income?.amount != null ? String(income.amount) : "");
   const [date, setDate] = useState(income?.date ?? new Date().toISOString().slice(0, 10));
-  const [clientId, setClientId] = useState(income?.client_id ?? "");
-  const [projectId, setProjectId] = useState(income?.project_id ?? "");
   const [source, setSource] = useState(income?.source ?? "");
   const [status, setStatus] = useState<IncomeStatus>(income?.status ?? "Expected");
   const [paymentDate, setPaymentDate] = useState(income?.payment_date ?? "");
@@ -61,8 +46,6 @@ export function IncomeFormModal({
       const payload = {
         amount: amountValue,
         date,
-        client_id: clientId || null,
-        project_id: projectId || null,
         source: source || null,
         status,
         payment_date: paymentDate || null,
@@ -83,7 +66,7 @@ export function IncomeFormModal({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={isEditing ? "Edit income" : "New income"} size="lg">
+    <Modal open={open} onClose={onClose} title={isEditing ? "Edit income" : "New income"} size="md">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-4">
           <Field label="Amount (MAD)" htmlFor="income-amount">
@@ -104,36 +87,19 @@ export function IncomeFormModal({
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Client" htmlFor="income-client">
-            <Select id="income-client" value={clientId ?? ""} onChange={(e) => setClientId(e.target.value)}>
-              <option value="">No client</option>
-              {clients.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Project" htmlFor="income-project">
-            <Select id="income-project" value={projectId ?? ""} onChange={(e) => setProjectId(e.target.value)}>
-              <option value="">No project</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Field label="Source" htmlFor="income-source">
+          <Field label="Tag" htmlFor="income-source">
             <TextInput
               id="income-source"
+              list="income-tag-suggestions"
               value={source ?? ""}
               onChange={(e) => setSource(e.target.value)}
-              placeholder="e.g. Consulting"
+              placeholder="e.g. Freelance"
             />
+            <datalist id="income-tag-suggestions">
+              {INCOME_TAGS.map((t) => (
+                <option key={t} value={t} />
+              ))}
+            </datalist>
           </Field>
           <Field label="Status" htmlFor="income-status">
             <Select id="income-status" value={status} onChange={(e) => setStatus(e.target.value as IncomeStatus)}>
@@ -144,6 +110,9 @@ export function IncomeFormModal({
               ))}
             </Select>
           </Field>
+        </div>
+
+        {status === "Paid" && (
           <Field label="Payment date" htmlFor="income-payment-date">
             <TextInput
               id="income-payment-date"
@@ -152,7 +121,7 @@ export function IncomeFormModal({
               onChange={(e) => setPaymentDate(e.target.value)}
             />
           </Field>
-        </div>
+        )}
 
         <Field label="Description" htmlFor="income-description">
           <Textarea

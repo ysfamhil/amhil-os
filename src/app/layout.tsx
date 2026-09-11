@@ -1,21 +1,23 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Mona_Sans, IBM_Plex_Mono } from "next/font/google";
 import { ThemeScript } from "@/components/layout/theme-script";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const monaSans = Mona_Sans({
+  variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const ibmPlexMono = IBM_Plex_Mono({
+  variable: "--font-mono",
   subsets: ["latin"],
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
   title: "AMHIL OS",
-  description: "Personal operating system for tasks, projects, learning, and finance.",
+  description: "Personal command center for tasks, habits, goals, time, and finance.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -23,12 +25,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${monaSans.variable} ${ibmPlexMono.variable} h-full antialiased`}
     >
-      <head>
+      <body className="min-h-full flex flex-col bg-background text-foreground">
         <ThemeScript />
-      </head>
-      <body className="min-h-full flex flex-col bg-background text-foreground">{children}</body>
+        {children}
+      </body>
     </html>
   );
 }

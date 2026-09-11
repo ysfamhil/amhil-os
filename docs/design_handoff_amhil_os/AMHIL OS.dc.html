@@ -1,0 +1,1741 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Mona+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #09090b; --surface: #101013; --surface2: #0d0d10; --surface3: #131317; --modal: #111114;
+    --topbar: #0c0c0f; --cardShadow: none; --modalShadow: 0 24px 70px rgba(0,0,0,0.6);
+    --line: #1c1c21; --line2: #16161b; --line3: #232329; --line4: #2a2a31; --line5: #34343c;
+    --chip: #1c1c22; --track: #1e1e24; --barDim: #2b2b33; --barMid: #1c4a45;
+    --text: #ededf0; --t2: #b6b6bf; --t3: #9b9ba4; --t4: #8b8b95; --t5: #7a7a84; --t6: #6c6c76; --t7: #5f5f68; --t8: #4f4f57; --t9: #2e2e35;
+    --accent: #2dd4bf; --accentHi: #7ff0e3; --onAccent: #04211f;
+    --green: #4ade80; --amber: #e2a03f; --red: #f87171; --blue: #60a5fa; --pink: #f0abfc;
+    --a05: rgba(45,212,191,0.05); --a08: rgba(45,212,191,0.08); --a09: rgba(45,212,191,0.09);
+    --a11: rgba(45,212,191,0.11); --a13: rgba(45,212,191,0.13); --a16: rgba(45,212,191,0.16); --a40: rgba(45,212,191,0.4);
+    --g08: rgba(74,222,128,0.08); --g10: rgba(74,222,128,0.1); --g12: rgba(74,222,128,0.12); --g35: rgba(74,222,128,0.35);
+    --am11: rgba(226,160,63,0.11); --am13: rgba(226,160,63,0.13);
+    --r10: rgba(248,113,113,0.1); --r13: rgba(248,113,113,0.13);
+    --b11: rgba(96,165,250,0.11); --b13: rgba(96,165,250,0.13);
+    --overlay: rgba(5,5,7,0.72);
+  }
+  [data-theme="light"] {
+    --bg: #eceef0; --surface: #ffffff; --surface2: #f6f7f8; --surface3: #f2f5f4; --modal: #ffffff;
+    --topbar: #ffffff; --cardShadow: 0 1px 2px rgba(16,40,36,0.06); --modalShadow: 0 24px 70px rgba(16,40,36,0.22);
+    --line: #e5e8ea; --line2: #eef0f1; --line3: #dcdfe2; --line4: #c8cdd0; --line5: #aab2b5;
+    --chip: #eef0f1; --track: #e5e8ea; --barDim: #dfe3e5; --barMid: #a7d8d1;
+    --text: #10201e; --t2: #3d4a48; --t3: #566462; --t4: #63716f; --t5: #74827f; --t6: #808e8c; --t7: #93a09e; --t8: #aab5b3; --t9: #d3d9d8;
+    --accent: #0d9488; --accentHi: #0f766e; --onAccent: #ffffff;
+    --green: #16a34a; --amber: #b45309; --red: #dc2626; --blue: #2563eb; --pink: #a21caf;
+    --a05: rgba(13,148,136,0.05); --a08: rgba(13,148,136,0.08); --a09: rgba(13,148,136,0.09);
+    --a11: rgba(13,148,136,0.10); --a13: rgba(13,148,136,0.12); --a16: rgba(13,148,136,0.14); --a40: rgba(13,148,136,0.4);
+    --g08: rgba(22,163,74,0.08); --g10: rgba(22,163,74,0.10); --g12: rgba(22,163,74,0.12); --g35: rgba(22,163,74,0.32);
+    --am11: rgba(180,83,9,0.10); --am13: rgba(180,83,9,0.12);
+    --r10: rgba(220,38,38,0.09); --r13: rgba(220,38,38,0.11);
+    --b11: rgba(37,99,235,0.10); --b13: rgba(37,99,235,0.12);
+    --overlay: rgba(16,32,30,0.38);
+  }
+  html, body { margin: 0; padding: 0; background: var(--bg); }
+  * { box-sizing: border-box; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--accentHi); }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: var(--line4); border-radius: 6px; border: 3px solid transparent; background-clip: padding-box; }
+  ::-webkit-scrollbar-track { background: transparent; }
+</style>
+</helmet>
+
+<div data-theme="{{ theme }}" style="display: flex; height: 100vh; width: 100%; background: var(--bg); color: var(--text); font-family: 'Mona Sans', 'Helvetica Neue', Helvetica, sans-serif; font-size: 13px; overflow: hidden">
+
+  <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+  <div style="width: 214px; flex: 0 0 214px; border-right: 1px solid rgba(255,255,255,0.07); background: #0A2521; color: #E6F2F0; display: flex; flex-direction: column; padding: 18px 12px 12px">
+    <div style="display: flex; align-items: center; gap: 9px; padding: 0 8px 20px">
+      <div style="width: 22px; height: 22px; border-radius: 6px; background: #2DD4BF; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; color: #04211F">A</div>
+      <div style="font-size: 13px; font-weight: 600; letter-spacing: 0.02em">AMHIL OS</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 1px; overflow-y: auto">
+      <sc-for list="{{ nav }}" as="n" hint-placeholder-count="12">
+        <div onClick="{{ n.go }}" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 9px; border-radius: 7px; cursor: pointer; color: {{ n.fg }}; background: {{ n.bg }}; font-weight: {{ n.weight }}" style-hover="background: rgba(255,255,255,0.06); color: #FFFFFF">
+          <span>{{ n.label }}</span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: {{ n.countFg }}">{{ n.count }}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="flex: 1"></div>
+
+    <div style="border-top: 1px solid rgba(255,255,255,0.08); margin-top: 12px; padding: 12px 8px 4px; display: flex; align-items: center; gap: 9px">
+      <div style="width: 24px; height: 24px; border-radius: 50%; background: #22403C; display: flex; align-items: center; justify-content: center; font-size: 10px; font-family: 'IBM Plex Mono', monospace; color: #9FBDB8">AM</div>
+      <div style="line-height: 1.3">
+        <div style="font-size: 12px">Amhil</div>
+        <div style="font-size: 10px; color: #7FA39E; font-family: 'IBM Plex Mono', monospace">single-user · RLS on</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+
+    <div style="height: 54px; flex: 0 0 54px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 10px; padding: 0 16px; background: var(--topbar); min-width: 0; overflow: hidden">
+      <div style="font-size: 14px; font-weight: 600; white-space: nowrap">{{ screenTitle }}</div>
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--t7); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0">{{ screenMeta }}</div>
+      <div style="flex: 1"></div>
+      <div onClick="{{ openSearch }}" style="display: flex; align-items: center; gap: 10px; border: 1px solid var(--line3); border-radius: 8px; padding: 6px 10px; color: var(--t6); cursor: pointer; flex: 1 1 210px; min-width: 96px; white-space: nowrap; overflow: hidden" style-hover="border-color: var(--line5); color: var(--t3)">
+        <span style="font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Search everything</span>
+        <div style="flex: 1"></div>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; border: 1px solid var(--line4); border-radius: 4px; padding: 1px 5px">⌘K</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 6px; border: 1px solid var(--line3); border-radius: 8px; padding: 6px 10px; font-size: 12px; color: var(--t2); cursor: pointer; flex: 0 0 auto; white-space: nowrap" style-hover="border-color: var(--line5)">
+        <span>This Month</span><span style="color: var(--t7); font-size: 9px">▾</span>
+      </div>
+      <div style="display: flex; border: 1px solid var(--line3); border-radius: 8px; overflow: hidden; flex: 0 0 auto">
+        <sc-for list="{{ themeToggle }}" as="th" hint-placeholder-count="2">
+          <div onClick="{{ th.go }}" style="padding: 6px 10px; font-size: 12px; cursor: pointer; white-space: nowrap; color: {{ th.fg }}; background: {{ th.bg }}">{{ th.label }}</div>
+        </sc-for>
+      </div>
+      <div style="display: flex; border: 1px solid var(--line3); border-radius: 8px; overflow: hidden; flex: 0 0 auto">
+        <sc-for list="{{ deviceToggle }}" as="dv" hint-placeholder-count="2">
+          <div onClick="{{ dv.go }}" style="padding: 6px 10px; font-size: 12px; cursor: pointer; white-space: nowrap; color: {{ dv.fg }}; background: {{ dv.bg }}">{{ dv.label }}</div>
+        </sc-for>
+      </div>
+      <div style="background: var(--accent); color: var(--onAccent); font-weight: 600; font-size: 12px; padding: 7px 13px; border-radius: 8px; cursor: pointer; flex: 0 0 auto; white-space: nowrap" style-hover="background: var(--accentHi)">+ New</div>
+    </div>
+
+    <div style="flex: 1; overflow-y: auto; padding: 20px">
+
+      <!-- ══ DASHBOARD ══ -->
+      <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 16px; max-width: 1560px">
+
+          <sc-if value="{{ showQuickActions }}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-wrap: wrap; gap: 6px">
+              <sc-for list="{{ quickActions }}" as="q" hint-placeholder-count="6">
+                <div style="border: 1px solid var(--line3); background: var(--surface); border-radius: 999px; padding: 5px 12px; font-size: 12px; color: var(--t2); cursor: pointer" style-hover="border-color: var(--barMid); color: var(--text); background: var(--a09)">+ {{ q }}</div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px">
+            <sc-for list="{{ weekStats }}" as="s" hint-placeholder-count="5">
+              <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 14px; box-shadow: var(--cardShadow); padding: 14px">
+                <div style="font-size: 11px; color: var(--t5); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 500">{{ s.label }}</div>
+                <div style="display: flex; align-items: baseline; gap: 7px; margin-top: 9px">
+                  <div style="font-size: 26px; font-weight: 600; letter-spacing: -0.02em">{{ s.value }}</div>
+                  <div style="font-size: 11px; color: var(--t6)">{{ s.unit }}</div>
+                </div>
+                <div style="margin-top: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: {{ s.deltaFg }}">{{ s.delta }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1.15fr 1fr; gap: 12px; align-items: start">
+
+            <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 14px; box-shadow: var(--cardShadow); overflow: hidden">
+              <div style="display: flex; align-items: center; gap: 10px; padding: 13px 15px; border-bottom: 1px solid var(--line)">
+                <div style="font-size: 13px; font-weight: 600">Today</div>
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t7)">{{ todayLabel }}</div>
+                <div style="flex: 1"></div>
+                <div style="font-size: 11px; color: var(--red); font-family: 'IBM Plex Mono', monospace">{{ overdueLabel }}</div>
+              </div>
+              <div style="display: flex; flex-direction: column">
+                <sc-for list="{{ todayTasks }}" as="t" hint-placeholder-count="5">
+                  <div style="display: flex; align-items: center; gap: 11px; padding: 10px 15px; border-bottom: 1px solid var(--line2)" style-hover="background: var(--surface3)">
+                    <div onClick="{{ t.toggle }}" style="width: 15px; height: 15px; flex: 0 0 15px; border-radius: 4px; border: 1px solid {{ t.boxBorder }}; background: {{ t.boxBg }}; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 9px; color: var(--onAccent)">{{ t.check }}</div>
+                    <div style="min-width: 0; flex: 1">
+                      <div style="font-size: 12.5px; color: {{ t.titleFg }}; text-decoration: {{ t.strike }}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ t.title }}</div>
+                      <div style="font-size: 10.5px; color: var(--t7); font-family: 'IBM Plex Mono', monospace; margin-top: 2px">{{ t.sub }}</div>
+                    </div>
+                    <div style="font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 999px; color: {{ t.prioFg }}; background: {{ t.prioBg }}">{{ t.priority }}</div>
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: {{ t.dueFg }}; width: 52px; text-align: right">{{ t.due }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="padding: 12px 15px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--line); background: var(--surface2)">
+                <div style="font-size: 11px; color: var(--t5); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 500">Habits</div>
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t7)">{{ habitSummary }}</div>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: 7px; padding: 13px 15px">
+                <sc-for list="{{ habits }}" as="h" hint-placeholder-count="5">
+                  <div onClick="{{ h.toggle }}" style="display: flex; align-items: center; gap: 7px; border: 1px solid {{ h.border }}; background: {{ h.bg }}; border-radius: 999px; padding: 5px 11px 5px 8px; cursor: pointer">
+                    <div style="width: 13px; height: 13px; border-radius: 50%; border: 1px solid {{ h.dot }}; background: {{ h.dotBg }}"></div>
+                    <span style="font-size: 12px; color: {{ h.fg }}">{{ h.name }}</span>
+                    <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t6)">{{ h.streak }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 14px; box-shadow: var(--cardShadow); overflow: hidden">
+              <div style="display: flex; align-items: center; padding: 13px 15px; border-bottom: 1px solid var(--line)">
+                <div style="font-size: 13px; font-weight: 600">Active projects</div>
+                <div style="flex: 1"></div>
+                <a href="#">All projects</a>
+              </div>
+              <sc-for list="{{ projects }}" as="p" hint-placeholder-count="4">
+                <div style="padding: 12px 15px; border-bottom: 1px solid var(--line2)" style-hover="background: var(--surface3)">
+                  <div style="display: flex; align-items: center; gap: 9px">
+                    <div style="width: 6px; height: 6px; border-radius: 50%; background: {{ p.statusFg }}"></div>
+                    <div style="font-size: 12.5px; font-weight: 500">{{ p.name }}</div>
+                    <div style="flex: 1"></div>
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--t2)">{{ p.pct }}%</div>
+                  </div>
+                  <div style="height: 3px; background: var(--track); border-radius: 2px; margin: 9px 0 8px; overflow: hidden">
+                    <div style="height: 100%; background: {{ p.statusFg }}; width: {{ p.pct }}%"></div>
+                  </div>
+                  <div style="display: flex; gap: 14px; font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--t6)">
+                    <span>{{ p.client }}</span>
+                    <span>{{ p.due }}</span>
+                    <span>{{ p.hours }}</span>
+                    <span style="color: var(--amber)">{{ p.revenue }}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; align-items: start">
+
+            <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 14px; box-shadow: var(--cardShadow); padding: 14px 15px">
+              <div style="display: flex; align-items: center; margin-bottom: 13px">
+                <div style="font-size: 13px; font-weight: 600">Learning</div>
+                <div style="flex: 1"></div>
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t7)">{{ learningWeek }}</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 12px">
+                <sc-for list="{{ learningTop }}" as="l" hint-placeholder-count="4">
+                  <div>
+                    <div style="display: flex; align-items: baseline; gap: 8px">
+                      <div style="font-size: 12px">{{ l.name }}</div>
+                      <div style="flex: 1"></div>
+                      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--t6)">{{ l.time }}</div>
+                      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--t2); width: 30px; text-align: right">{{ l.pct }}%</div>
+                    </div>
+                    <div style="height: 3px; background: var(--track); border-radius: 2px; margin-top: 7px; overflow: hidden">
+                      <div style="height: 100%; background: var(--accent); width: {{ l.pct }}%"></div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 14px; box-shadow: var(--cardShadow); padding: 14px 15px">
+              <div style="display: flex; align-items: center; margin-bottom: 14px">
+                <div style="font-size: 13px; font-weight: 600">Finance · August</div>
+                <div style="flex: 1"></div>
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t7)">MAD</div>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px 10px">
+                <sc-for list="{{ financeMini }}" as="f" hint-placeholder-count="4">
+                  <div>
+                    <div style="font-size: 10.5px; color: var(--t5); text-transform: uppercase; letter-spacing: 0.06em">{{ f.label }}</div>
+                    <div style="font-size: 18px; font-weight: 600; margin-top: 4px; color: {{ f.fg }}; font-variant-numeric: tabular-nums">{{ f.value }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display: flex; align-items: flex-end; gap: 6px; height: 62px; margin-top: 16px">
+                <sc-for list="{{ revBars }}" as="b" hint-placeholder-count="6">
+                  <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px">
+                    <div style="width: 100%; border-radius: 3px 3px 0 0; background: {{ b.fill }}; height: {{ b.h }}px"></div>
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; color: var(--t7)">{{ b.m }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 14px; box-shadow: var(--cardShadow); padding: 14px 15px">
+              <div style="display: flex; align-items: center; margin-bottom: 13px">
+                <div style="font-size: 13px; font-weight: 600">Goals</div>
+                <div style="flex: 1"></div>
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t7)">2026</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 13px">
+                <sc-for list="{{ goals }}" as="g" hint-placeholder-count="4">
+                  <div>
+                    <div style="display: flex; align-items: baseline; gap: 8px">
+                      <div style="font-size: 12px">{{ g.title }}</div>
+                      <div style="flex: 1"></div>
+                      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--t6)">{{ g.detail }}</div>
+                    </div>
+                    <div style="height: 3px; background: var(--track); border-radius: 2px; margin-top: 7px; overflow: hidden">
+                      <div style="height: 100%; background: var(--amber); width: {{ g.pct }}%"></div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ══ TASKS ══ -->
+      <sc-if value="{{ isTasks }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 14px; max-width: 1560px">
+          <div style="display: flex; align-items: center; gap: 10px">
+            <div style="display: flex; border: 1px solid var(--line3); border-radius: 8px; overflow: hidden">
+              <sc-for list="{{ taskViews }}" as="v" hint-placeholder-count="3">
+                <div onClick="{{ v.go }}" style="padding: 6px 14px; font-size: 12px; cursor: pointer; color: {{ v.fg }}; background: {{ v.bg }}; border-right: 1px solid var(--line3)">{{ v.label }}</div>
+              </sc-for>
+            </div>
+            <div style="flex: 1"></div>
+            <sc-for list="{{ taskFilters }}" as="f" hint-placeholder-count="4">
+              <div style="display: flex; align-items: center; gap: 6px; border: 1px solid var(--line3); border-radius: 8px; padding: 5px 10px; font-size: 12px; color: var(--t3); cursor: pointer" style-hover="border-color: var(--line5); color: var(--text)">{{ f }}<span style="color: var(--t7); font-size: 9px">▾</span></div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+            <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 14px; box-shadow: var(--cardShadow); overflow: hidden">
+              <div style="display: grid; grid-template-columns: 26px 2.4fr 1.1fr 0.9fr 0.7fr 0.8fr 0.8fr; gap: 12px; padding: 9px 15px; border-bottom: 1px solid var(--line); background: var(--surface2); font-size: 10.5px; color: var(--t5); text-transform: uppercase; letter-spacing: 0.07em">
+                <div></div><div>Task</div><div>Project</div><div>Status</div><div>Priority</div><div>Due</div><div>Time</div>
+              </div>
+              <sc-for list="{{ allTasks }}" as="t" hint-placeholder-count="9">
+                <div style="display: grid; grid-template-columns: 26px 2.4fr 1.1fr 0.9fr 0.7fr 0.8fr 0.8fr; gap: 12px; padding: 11px 15px; border-bottom: 1px solid var(--line2); align-items: center" style-hover="background: var(--surface3)">
+                  <div onClick="{{ t.toggle }}" style="width: 15px; height: 15px; border-radius: 4px; border: 1px solid {{ t.boxBorder }}; background: {{ t.boxBg }}; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 9px; color: var(--onAccent)">{{ t.check }}</div>
+                  <div style="min-width: 0">
+                    <div style="font-size: 12.5px; color: {{ t.titleFg }}; text-decoration: {{ t.strike }}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ t.title }}</div>
+                    <div style="font-size: 10px; color: var(--t7); font-family: 'IBM Plex Mono', monospace; margin-top: 2px">{{ t.subtasks }}</div>
+                  </div>
+                  <div style="font-size: 12px; color: var(--t3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ t.project }}</div>
+                  <div><span style="font-size: 10.5px; padding: 2px 8px; border-radius: 999px; color: {{ t.statusFg }}; background: {{ t.statusBg }}">{{ t.status }}</span></div>
+                  <div><span style="font-size: 10.5px; color: {{ t.prioFg }}">{{ t.priority }}</span></div>
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: {{ t.dueFg }}">{{ t.dueFull }}</div>
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--t6)">{{ t.time }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isKanban }}" hint-placeholder-val="{{ false }}">
+            <div style="display: grid; grid-template-columns: repeat(5, minmax(210px, 1fr)); gap: 12px; align-items: start">
+              <sc-for list="{{ columns }}" as="c" hint-placeholder-count="5">
+                <div style="border: 1px solid var(--line); background: var(--surface2); border-radius: 14px; padding: 11px">
+                  <div style="display: flex; align-items: center; gap: 8px; padding: 0 3px 11px">
+                    <div style="width: 6px; height: 6px; border-radius: 50%; background: {{ c.color }}"></div>
+                    <div style="font-size: 12px; font-weight: 600">{{ c.name }}</div>
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t7)">{{ c.count }}</div>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 8px">
+                    <sc-for list="{{ c.cards }}" as="k" hint-placeholder-count="3">
+                      <div style="border: 1px solid var(--line3); background: var(--surface3); border-radius: 11px; padding: 10px 11px; cursor: grab" style-hover="border-color: var(--barMid)">
+                        <div style="font-size: 12.5px; line-height: 1.4">{{ k.title }}</div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 9px">
+                          <span style="font-size: 10px; padding: 2px 7px; border-radius: 999px; background: var(--chip); color: var(--t3); font-family: 'IBM Plex Mono', monospace">{{ k.project }}</span>
+                          <div style="flex: 1"></div>
+                          <span style="font-size: 10px; color: {{ k.prioFg }}">{{ k.priority }}</span>
+                          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t6)">{{ k.due }}</span>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isCalendar }}" hint-placeholder-val="{{ false }}">
+            <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 14px; box-shadow: var(--cardShadow); overflow: hidden">
+              <div style="display: grid; grid-template-columns: repeat(7, 1fr); border-bottom: 1px solid var(--line); background: var(--surface2)">
+                <sc-for list="{{ weekdays }}" as="w" hint-placeholder-count="7">
+                  <div style="padding: 9px 12px; font-size: 10.5px; color: var(--t5); text-transform: uppercase; letter-spacing: 0.07em">{{ w }}</div>
+                </sc-for>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(7, 1fr)">
+                <sc-for list="{{ calDays }}" as="d" hint-placeholder-count="42">
+                  <div style="min-height: 96px; border-right: 1px solid var(--line2); border-bottom: 1px solid var(--line2); padding: 8px; background: {{ d.bg }}">
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: {{ d.numFg }}">{{ d.num }}</div>
+                    <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 6px">
+                      <sc-for list="{{ d.items }}" as="i" hint-placeholder-count="1">
+                        <div style="font-size: 10.5px; padding: 3px 6px; border-radius: 5px; background: {{ i.bg }}; color: {{ i.fg }}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ i.label }}</div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- ══ LEARNING ══ -->
+      <sc-if value="{{ isLearning }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 14px; max-width: 1560px">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px">
+            <sc-for list="{{ areas }}" as="a" hint-placeholder-count="5">
+              <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 14px; box-shadow: var(--cardShadow); padding: 14px">
+                <div style="display: flex; align-items: center; gap: 8px">
+                  <div style="width: 7px; height: 7px; border-radius: 2px; background: {{ a.color }}"></div>
+                  <div style="font-size: 12.5px; font-weight: 500">{{ a.name }}</div>
+                </div>
+                <div style="display: flex; align-items: baseline; gap: 7px; margin-top: 10px">
+                  <div style="font-size: 21px; font-weight: 600">{{ a.hours }}</div>
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--t6)">{{ a.topics }}</div>
+                </div>
+                <div style="height: 3px; background: var(--track); border-radius: 2px; margin-top: 10px; overflow: hidden">
+                  <div style="height: 100%; background: {{ a.color }}; width: {{ a.pct }}%"></div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 12px; align-items: start">
+            <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 14px; box-shadow: var(--cardShadow); overflow: hidden">
+              <div style="display: flex; align-items: center; padding: 13px 15px; border-bottom: 1px solid var(--line)">
+                <div style="font-size: 13px; font-weight: 600">Topics · Odoo</div>
+                <div style="flex: 1"></div>
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t7)">progress from sessions</div>
+              </div>
+              <div style="display: grid; grid-template-columns: 1.5fr 0.9fr 1fr 0.8fr 0.9fr; gap: 12px; padding: 9px 15px; border-bottom: 1px solid var(--line); background: var(--surface2); font-size: 10.5px; color: var(--t5); text-transform: uppercase; letter-spacing: 0.07em">
+                <div>Topic</div><div>Status</div><div>Progress</div><div>Time</div><div>Confidence</div>
+              </div>
+              <sc-for list="{{ topics }}" as="t" hint-placeholder-count="6">
+                <div style="display: grid; grid-template-columns: 1.5fr 0.9fr 1fr 0.8fr 0.9fr; gap: 12px; padding: 11px 15px; border-bottom: 1px solid var(--line2); align-items: center" style-hover="background: var(--surface3)">
+                  <div style="font-size: 12.5px">{{ t.name }}</div>
+                  <div><span style="font-size: 10.5px; padding: 2px 8px; border-radius: 999px; color: {{ t.statusFg }}; background: {{ t.statusBg }}">{{ t.status }}</span></div>
+                  <div style="display: flex; align-items: center; gap: 9px">
+                    <div style="flex: 1; height: 3px; background: var(--track); border-radius: 2px; overflow: hidden">
+                      <div style="height: 100%; background: var(--accent); width: {{ t.pct }}%"></div>
+                    </div>
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--t2); width: 30px; text-align: right">{{ t.pct }}%</div>
+                  </div>
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--t3)">{{ t.time }}</div>
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--t6); letter-spacing: 0.06em">{{ t.conf }}</div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 14px; box-shadow: var(--cardShadow); overflow: hidden">
+              <div style="display: flex; align-items: center; padding: 13px 15px; border-bottom: 1px solid var(--line)">
+                <div style="font-size: 13px; font-weight: 600">Recent sessions</div>
+                <div style="flex: 1"></div>
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t7)">{{ sessionsTotal }}</div>
+              </div>
+              <sc-for list="{{ sessions }}" as="s" hint-placeholder-count="5">
+                <div style="padding: 11px 15px; border-bottom: 1px solid var(--line2)" style-hover="background: var(--surface3)">
+                  <div style="display: flex; align-items: baseline; gap: 9px">
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--t7); width: 44px">{{ s.date }}</div>
+                    <div style="font-size: 12.5px; flex: 1">{{ s.topic }}</div>
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--t2)">{{ s.dur }}</div>
+                  </div>
+                  <div style="font-size: 11.5px; color: var(--t5); margin-top: 5px; padding-left: 53px; line-height: 1.45">{{ s.note }}</div>
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--green); margin-top: 5px; padding-left: 53px">{{ s.conf }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ══ FINANCE ══ -->
+      <sc-if value="{{ isFinance }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 14px; max-width: 1560px">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px">
+            <sc-for list="{{ finKpis }}" as="k" hint-placeholder-count="4">
+              <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 14px; box-shadow: var(--cardShadow); padding: 15px">
+                <div style="font-size: 11px; color: var(--t5); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 500">{{ k.label }}</div>
+                <div style="display: flex; align-items: baseline; gap: 6px; margin-top: 9px">
+                  <div style="font-size: 27px; font-weight: 600; letter-spacing: -0.02em; color: {{ k.fg }}; font-variant-numeric: tabular-nums">{{ k.value }}</div>
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--t6)">MAD</div>
+                </div>
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t6); margin-top: 8px">{{ k.sub }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 12px; align-items: start">
+            <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 14px; box-shadow: var(--cardShadow); padding: 15px">
+              <div style="display: flex; align-items: center">
+                <div style="font-size: 13px; font-weight: 600">Revenue by month</div>
+                <div style="flex: 1"></div>
+                <div style="display: flex; gap: 14px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t6)">
+                  <span><span style="color: var(--accent)">■</span> paid</span>
+                  <span><span style="color: var(--barMid)">■</span> invoiced</span>
+                </div>
+              </div>
+              <div style="display: flex; align-items: flex-end; gap: 10px; height: 168px; margin-top: 20px">
+                <sc-for list="{{ revChart }}" as="b" hint-placeholder-count="8">
+                  <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 7px">
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t6)">{{ b.label }}</div>
+                    <div style="width: 100%; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px">
+                      <div style="width: 100%; border-radius: 3px 3px 0 0; background: var(--barMid); height: {{ b.h2 }}px"></div>
+                      <div style="width: 100%; border-radius: {{ b.radius }}; background: var(--accent); height: {{ b.h }}px"></div>
+                    </div>
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t7)">{{ b.m }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 14px; box-shadow: var(--cardShadow); padding: 15px">
+              <div style="font-size: 13px; font-weight: 600; margin-bottom: 15px">Revenue by client</div>
+              <div style="display: flex; flex-direction: column; gap: 14px">
+                <sc-for list="{{ byClient }}" as="c" hint-placeholder-count="4">
+                  <div>
+                    <div style="display: flex; align-items: baseline; gap: 8px">
+                      <div style="font-size: 12px">{{ c.name }}</div>
+                      <div style="flex: 1"></div>
+                      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--t2)">{{ c.amount }}</div>
+                      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--t7); width: 34px; text-align: right">{{ c.share }}</div>
+                    </div>
+                    <div style="height: 3px; background: var(--track); border-radius: 2px; margin-top: 7px; overflow: hidden">
+                      <div style="height: 100%; background: var(--amber); width: {{ c.pct }}%"></div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; align-items: start">
+            <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 14px; box-shadow: var(--cardShadow); overflow: hidden">
+              <div style="display: flex; align-items: center; padding: 13px 15px; border-bottom: 1px solid var(--line)">
+                <div style="font-size: 13px; font-weight: 600">Income</div>
+                <div style="flex: 1"></div>
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t7)">{{ incomeMeta }}</div>
+              </div>
+              <div style="display: grid; grid-template-columns: 60px 1.4fr 1.2fr 0.8fr 0.9fr; gap: 12px; padding: 9px 15px; border-bottom: 1px solid var(--line); background: var(--surface2); font-size: 10.5px; color: var(--t5); text-transform: uppercase; letter-spacing: 0.07em">
+                <div>Date</div><div>Client</div><div>Project</div><div>Status</div><div style="text-align: right">Amount</div>
+              </div>
+              <sc-for list="{{ income }}" as="i" hint-placeholder-count="6">
+                <div style="display: grid; grid-template-columns: 60px 1.4fr 1.2fr 0.8fr 0.9fr; gap: 12px; padding: 11px 15px; border-bottom: 1px solid var(--line2); align-items: center" style-hover="background: var(--surface3)">
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--t7)">{{ i.date }}</div>
+                  <div style="font-size: 12.5px">{{ i.client }}</div>
+                  <div style="font-size: 12px; color: var(--t3)">{{ i.project }}</div>
+                  <div><span style="font-size: 10.5px; padding: 2px 8px; border-radius: 999px; color: {{ i.statusFg }}; background: {{ i.statusBg }}">{{ i.status }}</span></div>
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; text-align: right; font-variant-numeric: tabular-nums">{{ i.amount }}</div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 14px; box-shadow: var(--cardShadow); overflow: hidden">
+              <div style="display: flex; align-items: center; padding: 13px 15px; border-bottom: 1px solid var(--line)">
+                <div style="font-size: 13px; font-weight: 600">Expenses</div>
+                <div style="flex: 1"></div>
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t7)">{{ expenseMeta }}</div>
+              </div>
+              <sc-for list="{{ expenses }}" as="e" hint-placeholder-count="5">
+                <div style="display: flex; align-items: center; gap: 12px; padding: 11px 15px; border-bottom: 1px solid var(--line2)" style-hover="background: var(--surface3)">
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--t7); width: 42px">{{ e.date }}</div>
+                  <div style="flex: 1; min-width: 0">
+                    <div style="font-size: 12.5px">{{ e.name }}</div>
+                    <div style="font-size: 10px; color: var(--t7); font-family: 'IBM Plex Mono', monospace; margin-top: 2px">{{ e.category }}</div>
+                  </div>
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--red); font-variant-numeric: tabular-nums">{{ e.amount }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ══ TIMELINE ══ -->
+      <sc-if value="{{ isTimeline }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width: 900px; display: flex; flex-direction: column; gap: 14px">
+          <div style="display: flex; gap: 6px; flex-wrap: wrap">
+            <sc-for list="{{ timelineFilters }}" as="f" hint-placeholder-count="7">
+              <div style="border: 1px solid {{ f.border }}; background: {{ f.bg }}; border-radius: 999px; padding: 4px 12px; font-size: 11.5px; color: {{ f.fg }}; cursor: pointer">{{ f.label }}</div>
+            </sc-for>
+          </div>
+          <sc-for list="{{ timeline }}" as="day" hint-placeholder-count="4">
+            <div style="display: grid; grid-template-columns: 92px 1fr; gap: 18px">
+              <div style="text-align: right; padding-top: 11px">
+                <div style="font-size: 12.5px; font-weight: 600">{{ day.label }}</div>
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t7); margin-top: 3px">{{ day.date }}</div>
+              </div>
+              <div style="border-left: 1px solid var(--line); padding-left: 20px; padding-bottom: 10px">
+                <sc-for list="{{ day.events }}" as="e" hint-placeholder-count="4">
+                  <div style="display: flex; align-items: flex-start; gap: 11px; padding: 9px 0; position: relative">
+                    <div style="position: absolute; left: -25px; top: 15px; width: 7px; height: 7px; border-radius: 50%; background: {{ e.color }}; border: 2px solid var(--bg)"></div>
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--t7); width: 38px; padding-top: 1px">{{ e.time }}</div>
+                    <div style="flex: 1; min-width: 0">
+                      <div style="font-size: 12.5px; line-height: 1.45">{{ e.title }}</div>
+                      <div style="display: flex; align-items: center; gap: 8px; margin-top: 5px">
+                        <span style="font-size: 10px; padding: 2px 7px; border-radius: 999px; background: {{ e.tagBg }}; color: {{ e.color }}; font-family: 'IBM Plex Mono', monospace">{{ e.kind }}</span>
+                        <span style="font-size: 11px; color: var(--t6)">{{ e.entity }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- ══ SHARED VIEW BAR ══ -->
+      <sc-if value="{{ showViewBar }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px">
+          <div style="display: flex; border: 1px solid var(--line3); border-radius: 8px; overflow: hidden">
+            <sc-for list="{{ viewToggle }}" as="v" hint-placeholder-count="2">
+              <div onClick="{{ v.go }}" style="padding: 6px 14px; font-size: 12px; cursor: pointer; white-space: nowrap; color: {{ v.fg }}; background: {{ v.bg }}">{{ v.label }}</div>
+            </sc-for>
+          </div>
+          <sc-for list="{{ entityStats }}" as="s" hint-placeholder-count="3">
+            <div style="display: flex; align-items: baseline; gap: 7px; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 13px; box-shadow: var(--cardShadow)">
+              <span style="font-size: 11px; color: var(--t5)">{{ s.label }}</span>
+              <span style="font-size: 12.5px; font-weight: 600; color: {{ s.fg }}; font-variant-numeric: tabular-nums">{{ s.value }}</span>
+            </div>
+          </sc-for>
+          <div style="flex: 1"></div>
+          <sc-for list="{{ entityFilters }}" as="f" hint-placeholder-count="3">
+            <div style="display: flex; align-items: center; gap: 6px; border: 1px solid var(--line3); border-radius: 8px; padding: 5px 10px; font-size: 12px; color: var(--t3); cursor: pointer; white-space: nowrap" style-hover="border-color: var(--line5); color: var(--text)">{{ f }}<span style="color: var(--t7); font-size: 9px">▾</span></div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- ══ GENERIC ENTITY LIST ══ -->
+      <sc-if value="{{ showEntityList }}" hint-placeholder-val="{{ false }}">
+        <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 14px; box-shadow: var(--cardShadow); overflow: hidden; max-width: 1560px">
+          <div style="display: grid; grid-template-columns: {{ entityGrid }}; gap: 12px; padding: 9px 15px; border-bottom: 1px solid var(--line); background: var(--surface2); font-size: 10.5px; color: var(--t5); text-transform: uppercase; letter-spacing: 0.07em">
+            <sc-for list="{{ entityColumns }}" as="h" hint-placeholder-count="6">
+              <div style="text-align: {{ h.align }}; white-space: nowrap; overflow: hidden">{{ h.label }}</div>
+            </sc-for>
+          </div>
+          <sc-for list="{{ entityRows }}" as="r" hint-placeholder-count="8">
+            <div style="display: grid; grid-template-columns: {{ entityGrid }}; gap: 12px; padding: 11px 15px; border-bottom: 1px solid var(--line2); align-items: center" style-hover="background: var(--surface3)">
+              <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="6">
+                <div style="min-width: 0; text-align: {{ c.align }}">
+                  <sc-if value="{{ c.isBar }}" hint-placeholder-val="{{ false }}">
+                    <div style="display: flex; align-items: center; gap: 9px">
+                      <div style="flex: 1; height: 3px; background: var(--track); border-radius: 2px; overflow: hidden">
+                        <div style="height: 100%; background: {{ c.color }}; width: {{ c.pct }}%"></div>
+                      </div>
+                      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--t2); width: 30px; text-align: right">{{ c.pct }}%</div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ c.isText }}" hint-placeholder-val="{{ true }}">
+                    <div style="min-width: 0">
+                      <span style="display: inline-block; max-width: 100%; font-size: {{ c.size }}; color: {{ c.fg }}; font-family: {{ c.font }}; background: {{ c.bg }}; padding: {{ c.pad }}; border-radius: 999px; font-weight: {{ c.weight }}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: middle">{{ c.text }}</span>
+                      <sc-if value="{{ c.hasSub }}" hint-placeholder-val="{{ false }}">
+                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t7); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ c.sub }}</div>
+                      </sc-if>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- ══ GENERIC KANBAN ══ -->
+      <sc-if value="{{ showEntityKanban }}" hint-placeholder-val="{{ false }}">
+        <div style="display: grid; grid-template-columns: {{ boardGrid }}; gap: 12px; align-items: start; max-width: 1560px">
+          <sc-for list="{{ board }}" as="c" hint-placeholder-count="5">
+            <div style="border: 1px solid var(--line); background: var(--surface2); border-radius: 14px; padding: 11px">
+              <div style="display: flex; align-items: center; gap: 8px; padding: 0 3px 11px">
+                <div style="width: 6px; height: 6px; border-radius: 50%; background: {{ c.color }}"></div>
+                <div style="font-size: 12px; font-weight: 600">{{ c.name }}</div>
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t7)">{{ c.count }}</div>
+                <div style="flex: 1"></div>
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t6)">{{ c.total }}</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <sc-for list="{{ c.cards }}" as="k" hint-placeholder-count="3">
+                  <div style="border: 1px solid var(--line3); background: var(--surface); border-radius: 11px; padding: 10px 11px; cursor: grab; box-shadow: var(--cardShadow)" style-hover="border-color: var(--a40)">
+                    <div style="font-size: 12.5px; line-height: 1.4">{{ k.title }}</div>
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t7); margin-top: 4px">{{ k.sub }}</div>
+                    <sc-if value="{{ k.hasBar }}" hint-placeholder-val="{{ false }}">
+                      <div style="height: 3px; background: var(--track); border-radius: 2px; margin-top: 9px; overflow: hidden">
+                        <div style="height: 100%; background: {{ c.color }}; width: {{ k.pct }}%"></div>
+                      </div>
+                    </sc-if>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-top: 9px">
+                      <span style="font-size: 10px; padding: 2px 7px; border-radius: 999px; background: {{ k.tagBg }}; color: {{ k.tagFg }}; font-family: 'IBM Plex Mono', monospace">{{ k.tag }}</span>
+                      <div style="flex: 1"></div>
+                      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t6)">{{ k.right }}</span>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- ══ REPORTS ══ -->
+      <sc-if value="{{ isReports }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 14px; max-width: 1560px">
+          <div style="display: flex; gap: 6px; flex-wrap: wrap">
+            <sc-for list="{{ dateFilters }}" as="d" hint-placeholder-count="10">
+              <div style="border: 1px solid {{ d.border }}; background: {{ d.bg }}; border-radius: 999px; padding: 5px 12px; font-size: 11.5px; color: {{ d.fg }}; cursor: pointer; white-space: nowrap">{{ d.label }}</div>
+            </sc-for>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(178px, 1fr)); gap: 12px">
+            <sc-for list="{{ reportKpis }}" as="k" hint-placeholder-count="6">
+              <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 14px; padding: 14px; box-shadow: var(--cardShadow)">
+                <div style="font-size: 11px; color: var(--t5); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 500">{{ k.label }}</div>
+                <div style="display: flex; align-items: baseline; gap: 6px; margin-top: 9px">
+                  <div style="font-size: 25px; font-weight: 600; letter-spacing: -0.02em; color: {{ k.fg }}; font-variant-numeric: tabular-nums">{{ k.value }}</div>
+                  <div style="font-size: 11px; color: var(--t6)">{{ k.unit }}</div>
+                </div>
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t6); margin-top: 7px">{{ k.sub }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; align-items: start">
+            <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 14px; box-shadow: var(--cardShadow); padding: 15px">
+              <div style="display: flex; align-items: center; margin-bottom: 4px">
+                <div style="font-size: 13px; font-weight: 600">Hours worked · last 8 weeks</div>
+                <div style="flex: 1"></div>
+                <div style="display: flex; gap: 14px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t6)">
+                  <span><span style="color: var(--accent)">■</span> client work</span>
+                  <span><span style="color: var(--barMid)">■</span> learning</span>
+                </div>
+              </div>
+              <div style="display: flex; align-items: flex-end; gap: 10px; height: 172px; margin-top: 18px">
+                <sc-for list="{{ hoursChart }}" as="b" hint-placeholder-count="8">
+                  <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 7px">
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t6)">{{ b.label }}</div>
+                    <div style="width: 100%; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px">
+                      <div style="width: 100%; border-radius: 3px 3px 0 0; background: var(--barMid); height: {{ b.h2 }}px"></div>
+                      <div style="width: 100%; border-radius: 0 0 3px 3px; background: var(--accent); height: {{ b.h }}px"></div>
+                    </div>
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t7)">{{ b.m }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 14px; box-shadow: var(--cardShadow); padding: 15px">
+              <div style="font-size: 13px; font-weight: 600; margin-bottom: 15px">Where the time went</div>
+              <div style="display: flex; flex-direction: column; gap: 14px">
+                <sc-for list="{{ timeSplit }}" as="t" hint-placeholder-count="5">
+                  <div>
+                    <div style="display: flex; align-items: baseline; gap: 8px">
+                      <div style="font-size: 12px">{{ t.name }}</div>
+                      <div style="flex: 1"></div>
+                      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--t2)">{{ t.hours }}</div>
+                      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--t7); width: 34px; text-align: right">{{ t.share }}</div>
+                    </div>
+                    <div style="height: 3px; background: var(--track); border-radius: 2px; margin-top: 7px; overflow: hidden">
+                      <div style="height: 100%; background: {{ t.color }}; width: {{ t.pct }}%"></div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start">
+            <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 14px; box-shadow: var(--cardShadow); padding: 15px">
+              <div style="display: flex; align-items: center; margin-bottom: 15px">
+                <div style="font-size: 13px; font-weight: 600">Habit consistency · August</div>
+                <div style="flex: 1"></div>
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t6)">86% overall</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 9px">
+                <sc-for list="{{ habitGrid }}" as="h" hint-placeholder-count="5">
+                  <div style="display: flex; align-items: center; gap: 11px">
+                    <div style="width: 118px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ h.name }}</div>
+                    <div style="flex: 1; display: flex; gap: 3px">
+                      <sc-for list="{{ h.days }}" as="d" hint-placeholder-count="26">
+                        <div style="flex: 1; height: 15px; border-radius: 3px; background: {{ d.bg }}"></div>
+                      </sc-for>
+                    </div>
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--t2); width: 34px; text-align: right">{{ h.pct }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 14px; box-shadow: var(--cardShadow); overflow: hidden">
+              <div style="display: flex; align-items: center; padding: 13px 15px; border-bottom: 1px solid var(--line)">
+                <div style="font-size: 13px; font-weight: 600">Project profitability</div>
+                <div style="flex: 1"></div>
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t7)">MAD · year to date</div>
+              </div>
+              <div style="display: grid; grid-template-columns: 1.6fr 0.8fr 0.9fr 0.9fr 0.7fr; gap: 12px; padding: 9px 15px; border-bottom: 1px solid var(--line); background: var(--surface2); font-size: 10.5px; color: var(--t5); text-transform: uppercase; letter-spacing: 0.07em">
+                <div>Project</div><div style="text-align: right">Hours</div><div style="text-align: right">Revenue</div><div style="text-align: right">Cost</div><div style="text-align: right">/hour</div>
+              </div>
+              <sc-for list="{{ profitability }}" as="p" hint-placeholder-count="5">
+                <div style="display: grid; grid-template-columns: 1.6fr 0.8fr 0.9fr 0.9fr 0.7fr; gap: 12px; padding: 11px 15px; border-bottom: 1px solid var(--line2); align-items: center" style-hover="background: var(--surface3)">
+                  <div style="font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ p.name }}</div>
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--t3); text-align: right">{{ p.hours }}</div>
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; text-align: right; font-variant-numeric: tabular-nums">{{ p.revenue }}</div>
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--red); text-align: right">{{ p.cost }}</div>
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--green); text-align: right">{{ p.rate }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ══ SETTINGS ══ -->
+      <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; max-width: 1060px; align-items: start">
+          <sc-for list="{{ settingsGroups }}" as="g" hint-placeholder-count="4">
+            <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 14px; box-shadow: var(--cardShadow); overflow: hidden">
+              <div style="padding: 13px 15px; border-bottom: 1px solid var(--line); font-size: 13px; font-weight: 600">{{ g.title }}</div>
+              <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="3">
+                <div style="display: flex; align-items: center; gap: 12px; padding: 12px 15px; border-bottom: 1px solid var(--line2)">
+                  <div style="min-width: 0; flex: 1">
+                    <div style="font-size: 12.5px">{{ r.label }}</div>
+                    <div style="font-size: 11px; color: var(--t6); margin-top: 3px; line-height: 1.45">{{ r.hint }}</div>
+                  </div>
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: {{ r.valueFg }}; border: 1px solid {{ r.valueBorder }}; background: {{ r.valueBg }}; border-radius: 999px; padding: 4px 11px; white-space: nowrap; cursor: pointer">{{ r.value }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+
+  </sc-if>
+
+  <!-- ══ MOBILE ══ -->
+  <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+    <div style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 26px; padding: 24px; background: var(--surface2); overflow: auto">
+      <div style="width: 390px; flex: 0 0 390px; height: 792px; border: 1px solid var(--line3); border-radius: 42px; background: var(--bg); box-shadow: var(--modalShadow); overflow: hidden; display: flex; flex-direction: column">
+
+        <div style="display: flex; align-items: center; padding: 14px 26px 6px; font-size: 12px; font-weight: 600; color: var(--text)">
+          <span>9:41</span><div style="flex: 1"></div>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--t5)">▮▮▮ ⌁ 78%</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 11px; padding: 10px 18px 14px">
+          <div style="width: 30px; height: 30px; border-radius: 9px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--onAccent)">A</div>
+          <div style="line-height: 1.25">
+            <div style="font-size: 15px; font-weight: 600">{{ mobileTitle }}</div>
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--t6)">{{ mobileSub }}</div>
+          </div>
+          <div style="flex: 1"></div>
+          <div onClick="{{ openSearch }}" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line3); display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--t4); cursor: pointer">⌕</div>
+        </div>
+
+        <div style="flex: 1; overflow-y: auto; padding: 0 14px 14px; display: flex; flex-direction: column; gap: 12px">
+
+          <sc-if value="{{ isMHome }}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 12px">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+                <sc-for list="{{ mobileStats }}" as="s" hint-placeholder-count="4">
+                  <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 16px; padding: 13px; box-shadow: var(--cardShadow)">
+                    <div style="font-size: 10.5px; color: var(--t5); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 500">{{ s.label }}</div>
+                    <div style="font-size: 22px; font-weight: 600; margin-top: 6px; letter-spacing: -0.02em">{{ s.value }}</div>
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; color: {{ s.deltaFg }}; margin-top: 4px">{{ s.delta }}</div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 16px; box-shadow: var(--cardShadow); overflow: hidden">
+                <div style="display: flex; align-items: center; gap: 9px; padding: 13px 14px; border-bottom: 1px solid var(--line2)">
+                  <div style="font-size: 13px; font-weight: 600">Today</div>
+                  <div style="flex: 1"></div>
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--red)">{{ overdueLabel }}</div>
+                </div>
+                <sc-for list="{{ todayTasks }}" as="t" hint-placeholder-count="5">
+                  <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-bottom: 1px solid var(--line2); min-height: 46px">
+                    <div onClick="{{ t.toggle }}" style="width: 19px; height: 19px; flex: 0 0 19px; border-radius: 6px; border: 1px solid {{ t.boxBorder }}; background: {{ t.boxBg }}; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--onAccent)">{{ t.check }}</div>
+                    <div style="min-width: 0; flex: 1">
+                      <div style="font-size: 13px; color: {{ t.titleFg }}; text-decoration: {{ t.strike }}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ t.title }}</div>
+                      <div style="font-size: 10px; color: var(--t7); font-family: 'IBM Plex Mono', monospace; margin-top: 2px">{{ t.sub }}</div>
+                    </div>
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: {{ t.dueFg }}">{{ t.due }}</div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 16px; box-shadow: var(--cardShadow); padding: 13px 14px">
+                <div style="display: flex; align-items: center; gap: 9px; margin-bottom: 11px">
+                  <div style="font-size: 13px; font-weight: 600">Habits</div>
+                  <div style="flex: 1"></div>
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t6)">{{ habitSummary }}</div>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 7px">
+                  <sc-for list="{{ habits }}" as="h" hint-placeholder-count="5">
+                    <div onClick="{{ h.toggle }}" style="display: flex; align-items: center; gap: 7px; border: 1px solid {{ h.border }}; background: {{ h.bg }}; border-radius: 999px; padding: 8px 12px 8px 9px; cursor: pointer">
+                      <div style="width: 13px; height: 13px; border-radius: 50%; border: 1px solid {{ h.dot }}; background: {{ h.dotBg }}"></div>
+                      <span style="font-size: 12px; color: {{ h.fg }}">{{ h.name }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 16px; box-shadow: var(--cardShadow); overflow: hidden">
+                <div style="padding: 13px 14px; border-bottom: 1px solid var(--line2); font-size: 13px; font-weight: 600">Active projects</div>
+                <sc-for list="{{ projects }}" as="p" hint-placeholder-count="4">
+                  <div style="padding: 12px 14px; border-bottom: 1px solid var(--line2)">
+                    <div style="display: flex; align-items: center; gap: 9px">
+                      <div style="width: 6px; height: 6px; border-radius: 50%; background: {{ p.statusFg }}"></div>
+                      <div style="font-size: 12.5px; font-weight: 500; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ p.name }}</div>
+                      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--t2)">{{ p.pct }}%</div>
+                    </div>
+                    <div style="height: 3px; background: var(--track); border-radius: 2px; margin-top: 9px; overflow: hidden">
+                      <div style="height: 100%; background: {{ p.statusFg }}; width: {{ p.pct }}%"></div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isMTasks }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 12px">
+              <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px">
+                <sc-for list="{{ mobileTaskFilters }}" as="f" hint-placeholder-count="4">
+                  <div style="border: 1px solid {{ f.border }}; background: {{ f.bg }}; border-radius: 999px; padding: 7px 13px; font-size: 12px; color: {{ f.fg }}; white-space: nowrap; cursor: pointer">{{ f.label }}</div>
+                </sc-for>
+              </div>
+              <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 16px; box-shadow: var(--cardShadow); overflow: hidden">
+                <sc-for list="{{ allTasks }}" as="t" hint-placeholder-count="9">
+                  <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-bottom: 1px solid var(--line2); min-height: 46px">
+                    <div onClick="{{ t.toggle }}" style="width: 19px; height: 19px; flex: 0 0 19px; border-radius: 6px; border: 1px solid {{ t.boxBorder }}; background: {{ t.boxBg }}; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--onAccent)">{{ t.check }}</div>
+                    <div style="min-width: 0; flex: 1">
+                      <div style="font-size: 13px; color: {{ t.titleFg }}; text-decoration: {{ t.strike }}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ t.title }}</div>
+                      <div style="display: flex; align-items: center; gap: 7px; margin-top: 4px">
+                        <span style="font-size: 9.5px; padding: 2px 7px; border-radius: 999px; color: {{ t.statusFg }}; background: {{ t.statusBg }}">{{ t.status }}</span>
+                        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; color: var(--t7)">{{ t.project }}</span>
+                      </div>
+                    </div>
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: {{ t.dueFg }}">{{ t.dueFull }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isMMoney }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 12px">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+                <sc-for list="{{ finKpis }}" as="k" hint-placeholder-count="4">
+                  <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 16px; padding: 13px; box-shadow: var(--cardShadow)">
+                    <div style="font-size: 10.5px; color: var(--t5); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 500">{{ k.label }}</div>
+                    <div style="font-size: 21px; font-weight: 600; margin-top: 6px; color: {{ k.fg }}; font-variant-numeric: tabular-nums">{{ k.value }}</div>
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; color: var(--t6); margin-top: 4px">{{ k.sub }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 16px; box-shadow: var(--cardShadow); padding: 14px">
+                <div style="font-size: 13px; font-weight: 600; margin-bottom: 14px">Revenue · last 6 months</div>
+                <div style="display: flex; align-items: flex-end; gap: 8px; height: 96px">
+                  <sc-for list="{{ revBars }}" as="b" hint-placeholder-count="6">
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px">
+                      <div style="width: 100%; border-radius: 4px 4px 0 0; background: {{ b.fill }}; height: {{ b.h }}px"></div>
+                      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; color: var(--t7)">{{ b.m }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 16px; box-shadow: var(--cardShadow); overflow: hidden">
+                <div style="padding: 13px 14px; border-bottom: 1px solid var(--line2); font-size: 13px; font-weight: 600">Income</div>
+                <sc-for list="{{ income }}" as="i" hint-placeholder-count="6">
+                  <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-bottom: 1px solid var(--line2)">
+                    <div style="flex: 1; min-width: 0">
+                      <div style="font-size: 12.5px">{{ i.client }}</div>
+                      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; color: var(--t7); margin-top: 2px">{{ i.date }} · {{ i.project }}</div>
+                    </div>
+                    <span style="font-size: 9.5px; padding: 2px 7px; border-radius: 999px; color: {{ i.statusFg }}; background: {{ i.statusBg }}">{{ i.status }}</span>
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-variant-numeric: tabular-nums">{{ i.amount }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isMLearn }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 12px">
+              <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 16px; box-shadow: var(--cardShadow); padding: 14px">
+                <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 13px">
+                  <div style="font-size: 13px; font-weight: 600">Odoo topics</div>
+                  <div style="flex: 1"></div>
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t6)">{{ sessionsTotal }}</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 13px">
+                  <sc-for list="{{ topics }}" as="t" hint-placeholder-count="6">
+                    <div>
+                      <div style="display: flex; align-items: baseline; gap: 8px">
+                        <div style="font-size: 12.5px">{{ t.name }}</div>
+                        <div style="flex: 1"></div>
+                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--t6)">{{ t.time }}</div>
+                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--t2); width: 30px; text-align: right">{{ t.pct }}%</div>
+                      </div>
+                      <div style="height: 3px; background: var(--track); border-radius: 2px; margin-top: 7px; overflow: hidden">
+                        <div style="height: 100%; background: var(--accent); width: {{ t.pct }}%"></div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="border: 1px solid var(--line); background: var(--surface); border-radius: 16px; box-shadow: var(--cardShadow); overflow: hidden">
+                <div style="padding: 13px 14px; border-bottom: 1px solid var(--line2); font-size: 13px; font-weight: 600">Recent sessions</div>
+                <sc-for list="{{ sessions }}" as="s" hint-placeholder-count="5">
+                  <div style="padding: 12px 14px; border-bottom: 1px solid var(--line2)">
+                    <div style="display: flex; align-items: baseline; gap: 9px">
+                      <div style="font-size: 12.5px; flex: 1">{{ s.topic }}</div>
+                      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--t6)">{{ s.date }}</div>
+                      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--t2)">{{ s.dur }}</div>
+                    </div>
+                    <div style="font-size: 11.5px; color: var(--t5); margin-top: 5px; line-height: 1.45">{{ s.note }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 6px; padding: 2px 0 6px">
+            <sc-for list="{{ quickActions }}" as="q" hint-placeholder-count="6">
+              <div style="border: 1px solid var(--line3); background: var(--surface); border-radius: 999px; padding: 8px 13px; font-size: 12px; color: var(--t3); cursor: pointer">+ {{ q }}</div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display: flex; border-top: 1px solid var(--line); background: var(--topbar); padding: 8px 6px 20px">
+          <sc-for list="{{ mobileTabs }}" as="m" hint-placeholder-count="5">
+            <div onClick="{{ m.go }}" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 7px 0; cursor: pointer">
+              <div style="width: 7px; height: 7px; border-radius: 2px; background: {{ m.dot }}"></div>
+              <div style="font-size: 10.5px; color: {{ m.fg }}; font-weight: {{ m.weight }}">{{ m.label }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="max-width: 250px; display: flex; flex-direction: column; gap: 10px">
+        <div style="font-size: 13px; font-weight: 600; color: var(--text)">Mobile shell</div>
+        <div style="font-size: 12px; color: var(--t5); line-height: 1.6">Sidebar collapses into a five-item tab bar. Same data, fewer columns per card, 44px minimum touch targets on every row and habit chip.</div>
+        <div onClick="{{ toDesktop }}" style="align-self: flex-start; border: 1px solid var(--line3); border-radius: 999px; padding: 7px 13px; font-size: 12px; color: var(--t3); cursor: pointer" style-hover="border-color: var(--line5); color: var(--text)">← Back to desktop</div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ══ COMMAND PALETTE ══ -->
+  <sc-if value="{{ searchOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeSearch }}" style="position: fixed; inset: 0; background: var(--overlay); backdrop-filter: blur(3px); display: flex; align-items: flex-start; justify-content: center; padding-top: 12vh; z-index: 50">
+      <div onClick="{{ stop }}" style="width: 620px; max-width: 90vw; border: 1px solid var(--line4); background: var(--modal); border-radius: 16px; box-shadow: var(--modalShadow); overflow: hidden">
+        <div style="display: flex; align-items: center; gap: 11px; padding: 15px 17px; border-bottom: 1px solid var(--line3)">
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--accent)">&gt;</span>
+          <div style="font-size: 15px; color: var(--text)">Odoo Purchase</div>
+          <div style="flex: 1"></div>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t7)">esc</span>
+        </div>
+        <div style="max-height: 58vh; overflow-y: auto; padding: 7px 0">
+          <sc-for list="{{ searchGroups }}" as="g" hint-placeholder-count="5">
+            <div>
+              <div style="padding: 9px 17px 5px; font-size: 10px; color: var(--t6); text-transform: uppercase; letter-spacing: 0.09em; font-family: 'IBM Plex Mono', monospace">{{ g.label }}</div>
+              <sc-for list="{{ g.items }}" as="r" hint-placeholder-count="2">
+                <div style="display: flex; align-items: center; gap: 11px; padding: 8px 17px; cursor: pointer; background: {{ r.bg }}" style-hover="background: var(--a09)">
+                  <div style="width: 5px; height: 5px; border-radius: 50%; background: {{ g.color }}"></div>
+                  <div style="font-size: 13px">{{ r.title }}</div>
+                  <div style="flex: 1"></div>
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--t7)">{{ r.meta }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: flex; gap: 16px; padding: 10px 17px; border-top: 1px solid var(--line3); background: var(--surface2); font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--t7)">
+          <span>↑↓ navigate</span><span>↵ open</span><span>⌘↵ open in new tab</span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Preview&quot;},&quot;device&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;desktop&quot;,&quot;options&quot;:[&quot;desktop&quot;,&quot;mobile&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Preview&quot;},&quot;defaultScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Dashboard&quot;,&quot;options&quot;:[&quot;Dashboard&quot;,&quot;Tasks&quot;,&quot;Learning&quot;,&quot;Finance&quot;,&quot;Timeline&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Preview&quot;},&quot;defaultTaskView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;List&quot;,&quot;options&quot;:[&quot;List&quot;,&quot;Kanban&quot;,&quot;Calendar&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Preview&quot;},&quot;showQuickActions&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Dashboard&quot;}}">
+const V = 'var(--accent)', A = 'var(--amber)', G = 'var(--green)', R = 'var(--red)', B = 'var(--blue)', DIM = 'var(--t4)';
+
+const PRIO = { Low: 'var(--t6)', Medium: 'var(--t3)', High: A, Urgent: R };
+const STATUS = {
+  'Backlog':     ['var(--t4)', 'var(--chip)'],
+  'Todo':        ['var(--t2)', 'var(--line3)'],
+  'In Progress': [V, 'var(--a13)'],
+  'Waiting':     [A, 'var(--am13)'],
+  'Done':        [G, 'var(--g12)'],
+  'Not Started': ['var(--t4)', 'var(--chip)'],
+  'Learning':    [V, 'var(--a13)'],
+  'Practicing':  [B, 'var(--b13)'],
+  'Completed':   [G, 'var(--g12)'],
+  'Reviewing':   [A, 'var(--am13)'],
+  'Expected':    ['var(--t4)', 'var(--chip)'],
+  'Invoiced':    [A, 'var(--am13)'],
+  'Paid':        [G, 'var(--g12)']
+};
+
+const NAV = [
+  ['Dashboard', ''], ['Tasks', '14'], ['Projects', '4'], ['Learning', '6'], ['Habits', '5'],
+  ['Goals', '4'], ['Time', ''], ['Clients', '3'], ['Finance', ''], ['Timeline', ''],
+  ['Reports', ''], ['Settings', '']
+];
+
+const TASKS = [
+  { title: 'Send Yomad ERP proposal v2', project: 'Yomad ERP', status: 'In Progress', priority: 'Urgent', due: '-1d', dueFull: 'Aug 25', time: '1h 10m', subtasks: '2/3 subtasks', overdue: true, today: true },
+  { title: 'Finish Purchase practice scenarios', project: 'Odoo Learning', status: 'In Progress', priority: 'High', due: '14:00', dueFull: 'Aug 26', time: '3h 40m', subtasks: '4/6 subtasks', today: true },
+  { title: 'Configure vendor pricelists demo', project: 'Yomad ERP', status: 'Todo', priority: 'High', due: '17:00', dueFull: 'Aug 26', time: '—', subtasks: '', today: true },
+  { title: 'Weekly invoice check', project: 'Finance', status: 'Todo', priority: 'Medium', due: '—', dueFull: 'Aug 26', time: '—', subtasks: '', today: true },
+  { title: 'Reply to Ahmed — Atlas Textile', project: 'Leads', status: 'Waiting', priority: 'Low', due: '—', dueFull: 'Aug 27', time: '15m', subtasks: '', today: true },
+  { title: 'Build AMHIL OS dashboard queries', project: 'AMHIL OS', status: 'In Progress', priority: 'High', due: '', dueFull: 'Aug 28', time: '6h 20m', subtasks: '3/8 subtasks' },
+  { title: 'Supabase RLS policies review', project: 'AMHIL OS', status: 'Todo', priority: 'Medium', due: '', dueFull: 'Aug 29', time: '—', subtasks: '' },
+  { title: 'Accounting chapter 4 — journals', project: 'Odoo Cert', status: 'Todo', priority: 'Medium', due: '', dueFull: 'Aug 30', time: '—', subtasks: '' },
+  { title: 'Atlas Textile discovery workshop notes', project: 'Atlas Textile', status: 'Backlog', priority: 'Low', due: '', dueFull: 'Sep 02', time: '—', subtasks: '' },
+  { title: 'Inventory reordering rules practice', project: 'Odoo Learning', status: 'Done', priority: 'Medium', due: '', dueFull: 'Aug 24', time: '2h 05m', subtasks: '', done: true },
+  { title: 'Yomad ERP milestone 2 invoice', project: 'Yomad ERP', status: 'Done', priority: 'High', due: '', dueFull: 'Aug 22', time: '25m', subtasks: '', done: true }
+];
+
+const COLUMNS = [
+  ['Backlog', 'var(--t4)'], ['Todo', 'var(--t2)'], ['In Progress', V], ['Waiting', A], ['Done', G]
+];
+
+const TOPICS = [
+  ['Purchase', 'Learning', 65, '8h 35m', 7], ['Inventory', 'Practicing', 80, '12h 10m', 8],
+  ['Accounting', 'Learning', 40, '6h 05m', 5], ['Sales', 'Completed', 100, '9h 40m', 9],
+  ['CRM', 'Completed', 100, '5h 20m', 8], ['Invoicing', 'Not Started', 0, '—', 0]
+];
+
+Object.assign(STATUS, {
+  'Idea':        ['var(--t4)', 'var(--chip)'],
+  'Planned':     ['var(--blue)', 'var(--b13)'],
+  'Active':      ['var(--accent)', 'var(--a13)'],
+  'On Hold':     ['var(--amber)', 'var(--am13)'],
+  'Archived':    ['var(--t6)', 'var(--chip)'],
+  'At Risk':     ['var(--red)', 'var(--r13)'],
+  'Achieved':    ['var(--green)', 'var(--g12)'],
+  'Lead':        ['var(--t3)', 'var(--chip)'],
+  'Contacted':   ['var(--blue)', 'var(--b13)'],
+  'Proposal':    ['var(--amber)', 'var(--am13)'],
+  'Negotiation': ['var(--accent)', 'var(--a13)'],
+  'Won':         ['var(--green)', 'var(--g12)'],
+  'Lost':        ['var(--red)', 'var(--r13)'],
+  'Client':      ['var(--green)', 'var(--g12)'],
+  'Inactive':    ['var(--t6)', 'var(--chip)'],
+  'Paused':      ['var(--amber)', 'var(--am13)'],
+  'Cancelled':   ['var(--t6)', 'var(--chip)']
+});
+
+const SANS = "'Mona Sans', sans-serif", MONOF = "'IBM Plex Mono', monospace";
+const TXT = (text, o) => { o = o || {}; return {
+  isText: true, text: text, fg: o.fg || 'var(--text)', size: o.size || '12.5px', font: o.font || SANS,
+  bg: o.bg || 'transparent', pad: o.pad || '0', weight: o.weight || 400, align: o.align || 'left',
+  hasSub: !!o.sub, sub: o.sub || '' }; };
+const MONO = (text, o) => TXT(text, Object.assign({ font: MONOF, size: '11px', fg: 'var(--t3)' }, o || {}));
+const BADGE = (text) => { const c = STATUS[text] || ['var(--t3)', 'var(--chip)']; return TXT(text, { size: '10.5px', fg: c[0], bg: c[1], pad: '2px 8px' }); };
+const BAR = (pct, color) => ({ isBar: true, pct: pct, color: color || 'var(--accent)', align: 'left' });
+const TAG = (text) => { const c = STATUS[text] || ['var(--t3)', 'var(--chip)']; return { tag: text, tagFg: c[0], tagBg: c[1] }; };
+
+const PROJECTS_DATA = [
+  ['Yomad ERP Implementation', 'Yomad SARL', 'Active', 62, '48.5h', '18,000', 'Sep 12'],
+  ['AMHIL OS', 'personal', 'Active', 31, '22.0h', '—', 'Oct 01'],
+  ['Odoo Accounting Certification', 'personal', 'Active', 55, '26.0h', '—', 'Nov 15'],
+  ['Fiverr Odoo gigs', 'marketplace', 'Active', 45, '11.0h', '4,200', 'rolling'],
+  ['Atlas Textile Discovery', 'Atlas Textile', 'Planned', 8, '3.5h', '4,500', 'Sep 30'],
+  ['Personal site rebuild', 'personal', 'On Hold', 20, '6.5h', '—', '—'],
+  ['Odoo partner application', 'personal', 'Idea', 0, '0.0h', '—', 'Dec 2026'],
+  ['Casablanca retail POS pilot', 'Medina Retail', 'Idea', 0, '0.0h', '—', '—'],
+  ['Yomad data migration', 'Yomad SARL', 'Completed', 100, '19.5h', '13,000', 'Jul 20']
+];
+
+const HABITS_DATA = [
+  ['Odoo study 1h', 'Daily', '18d', '42d', '6/7', '24/26', 92],
+  ['Read 20 pages', 'Daily', '6d', '31d', '5/7', '19/26', 73],
+  ['No phone before 9', 'Daily', '11d', '28d', '7/7', '22/26', 85],
+  ['Journal', 'Daily', '31d', '31d', '7/7', '26/26', 100],
+  ['Gym', '3×/week', '2d', '14d', '2/3', '9/12', 75],
+  ['Weekly review', 'Weekly', '3w', '8w', '1/1', '4/4', 100],
+  ['Arabic writing', 'Paused', '0d', '6d', '0/3', '3/12', 25]
+];
+
+const GOALS_DATA = [
+  ['Reach 10,000 MAD / month', 'Income', 'Dec 2026', 'Achieved', 100, '3 projects · 6 income records'],
+  ['Become an Odoo Functional Consultant', 'Career', 'Mar 2027', 'Active', 58, '6 topics · 2 projects'],
+  ['Complete Odoo Accounting', 'Learning', 'Nov 2026', 'Active', 40, '1 topic · 12 sessions'],
+  ['Build AMHIL OS', 'Product', 'Oct 2026', 'Active', 31, '14 tasks · 1 project'],
+  ['Get 5 recurring clients', 'Business', 'Jun 2027', 'At Risk', 40, '2 of 5 clients'],
+  ['Read 24 books', 'Personal', 'Dec 2026', 'Active', 46, 'habit: Read 20 pages'],
+  ['Launch an Odoo course', 'Business', 'Jun 2027', 'Planned', 0, 'not started']
+];
+
+const TIME_DATA = [
+  ['Aug 26', 'Odoo Learning', 'Purchase practice scenarios', 'Learning', '1h 15m'],
+  ['Aug 26', 'Yomad ERP', 'Proposal v2', 'Client work', '1h 10m'],
+  ['Aug 25', 'Yomad ERP', 'Milestone 2 review', 'Client work', '2h 30m'],
+  ['Aug 25', 'Odoo Learning', 'Accounting chapter 3', 'Learning', '55m'],
+  ['Aug 24', 'AMHIL OS', 'Database schema draft', 'AMHIL OS', '3h 10m'],
+  ['Aug 24', 'Odoo Learning', 'Reordering rules', 'Learning', '2h 05m'],
+  ['Aug 23', '—', 'Invoices and admin', 'Admin', '40m'],
+  ['Aug 22', 'Yomad ERP', 'Vendor pricelists', 'Client work', '1h 45m'],
+  ['Aug 22', 'AMHIL OS', 'Dashboard queries', 'AMHIL OS', '3h 10m']
+];
+
+const CLIENTS_DATA = [
+  ['Yomad SARL', 'ERP rollout', 'Morocco', 'referral', 'Client', '2', '31,000'],
+  ['Fiverr buyers', 'marketplace', 'mixed', 'Fiverr', 'Client', '3', '9,300'],
+  ['Atlas Textile', 'manufacturing', 'Morocco', 'LinkedIn', 'Proposal', '1', '12,500'],
+  ['Medina Retail', 'retail chain', 'Morocco', 'referral', 'Negotiation', '0', '—'],
+  ['Tanger Foods', 'food processing', 'Morocco', 'LinkedIn', 'Contacted', '0', '—'],
+  ['Sahara Logistics', 'freight', 'Morocco', 'cold email', 'Lead', '0', '—'],
+  ['Oasis Tours', 'tourism', 'Morocco', 'Upwork', 'Inactive', '1', '4,700'],
+  ['Rabat Clinic', 'healthcare', 'Morocco', 'referral', 'Lost', '0', '—']
+];
+
+const ENTITY_SCREENS = ['Projects', 'Habits', 'Goals', 'Time', 'Clients'];
+const VIEW_SCREENS = ENTITY_SCREENS.concat(['Learning', 'Finance']);
+
+class Component extends DCLogic {
+  state = {
+    screen: this.props.defaultScreen || 'Dashboard',
+    view: this.props.defaultTaskView || 'List',
+    theme: this.props.theme || 'light',
+    device: this.props.device || 'desktop',
+    mtab: 'Home',
+    views: {},
+    searchOpen: false,
+    doneTasks: { 'Inventory reordering rules practice': true, 'Yomad ERP milestone 2 invoice': true },
+    habitsDone: { 'Odoo study 1h': true, 'Journal': true }
+  };
+
+  componentDidMount() {
+    this._key = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); this.setState({ searchOpen: true }); }
+      if (e.key === 'Escape') this.setState({ searchOpen: false });
+    };
+    window.addEventListener('keydown', this._key);
+  }
+  componentWillUnmount() { window.removeEventListener('keydown', this._key); }
+
+  toggleTask(title) {
+    this.setState(s => ({ doneTasks: Object.assign({}, s.doneTasks, { [title]: !s.doneTasks[title] }) }));
+  }
+  toggleHabit(name) {
+    this.setState(s => ({ habitsDone: Object.assign({}, s.habitsDone, { [name]: !s.habitsDone[name] }) }));
+  }
+
+  taskRow(t) {
+    const done = !!this.state.doneTasks[t.title];
+    const [sf, sb] = STATUS[done ? 'Done' : t.status];
+    return {
+      title: t.title, project: t.project, subtasks: t.subtasks, time: t.time,
+      status: done ? 'Done' : t.status, statusFg: sf, statusBg: sb,
+      priority: t.priority, prioFg: PRIO[t.priority], prioBg: t.priority === 'Urgent' ? 'var(--r13)' : t.priority === 'High' ? 'var(--am13)' : 'var(--chip)',
+      due: t.due, dueFull: t.dueFull, dueFg: t.overdue && !done ? R : 'var(--t6)',
+      sub: t.project + (t.subtasks ? ' · ' + t.subtasks : ''),
+      check: done ? '✓' : '', boxBg: done ? V : 'transparent', boxBorder: done ? V : 'var(--line4)',
+      titleFg: done ? 'var(--t6)' : 'var(--text)', strike: done ? 'line-through' : 'none',
+      toggle: () => this.toggleTask(t.title)
+    };
+  }
+
+  entity(screen) {
+    if (screen === 'Projects') return {
+      grid: '2fr 1.1fr 0.9fr 1.1fr 0.7fr 0.9fr 0.8fr',
+      columns: ['Project', 'Client', 'Status', 'Progress', 'Hours', 'Revenue', 'Target'],
+      rows: PROJECTS_DATA.map(p => ({ cells: [
+        TXT(p[0], { weight: 500 }), TXT(p[1], { fg: 'var(--t3)', size: '12px' }), BADGE(p[2]),
+        BAR(p[3], STATUS[p[2]][0]), MONO(p[4]), MONO(p[5], { fg: p[5] === '—' ? 'var(--t7)' : 'var(--amber)' }), MONO(p[6], { fg: 'var(--t6)' })
+      ]})),
+      stats: [
+        { label: 'active', value: '4' }, { label: 'hours', value: '137h' },
+        { label: 'revenue', value: '39,700', fg: 'var(--amber)' }, { label: 'avg progress', value: '46%' }
+      ],
+      filters: ['Client', 'Status', 'Category'],
+      board: [['Idea'], ['Planned'], ['Active'], ['On Hold'], ['Completed']].map(([st]) => {
+        const items = PROJECTS_DATA.filter(p => p[2] === st);
+        return { name: st, color: STATUS[st][0], count: items.length,
+          total: items.length ? items.map(p => parseFloat(p[4])).reduce((a, b) => a + b, 0).toFixed(1) + 'h' : '',
+          cards: items.map(p => Object.assign({ title: p[0], sub: p[1] + ' · ' + p[6], right: p[4], hasBar: true, pct: p[3] }, TAG(p[2]))) };
+      })
+    };
+
+    if (screen === 'Habits') return {
+      grid: '1.6fr 0.9fr 0.7fr 0.7fr 0.8fr 0.8fr 1.1fr',
+      columns: ['Habit', 'Frequency', 'Streak', 'Best', 'This week', 'This month', 'Consistency'],
+      rows: HABITS_DATA.map(h => ({ cells: [
+        TXT(h[0], { weight: 500 }), BADGE(h[1] === 'Paused' ? 'Paused' : h[1]) ,
+        MONO(h[2], { fg: h[2] === '0d' ? 'var(--t7)' : 'var(--green)' }), MONO(h[3]),
+        MONO(h[4]), MONO(h[5]), BAR(h[6], h[6] >= 80 ? 'var(--green)' : h[6] >= 50 ? 'var(--accent)' : 'var(--amber)')
+      ]})),
+      stats: [
+        { label: 'today', value: '2 / 5' }, { label: 'this week', value: '86%', fg: 'var(--green)' },
+        { label: 'best streak', value: '42d' }, { label: 'active', value: '6' }
+      ],
+      filters: ['Frequency', 'Status'],
+      board: [['Daily', 'var(--accent)'], ['3×/week', 'var(--blue)'], ['Weekly', 'var(--amber)'], ['Paused', 'var(--t5)']].map(([st, color]) => {
+        const items = HABITS_DATA.filter(h => h[1] === st);
+        return { name: st, color: color, count: items.length, total: '',
+          cards: items.map(h => Object.assign({ title: h[0], sub: 'streak ' + h[2] + ' · best ' + h[3], right: h[5], hasBar: true, pct: h[6] },
+            { tag: h[6] + '% consistency', tagFg: color, tagBg: 'var(--chip)' })) };
+      })
+    };
+
+    if (screen === 'Goals') return {
+      grid: '2.1fr 0.9fr 0.9fr 0.9fr 1.1fr 1.4fr',
+      columns: ['Goal', 'Category', 'Target', 'Status', 'Progress', 'Linked to'],
+      rows: GOALS_DATA.map(g => ({ cells: [
+        TXT(g[0], { weight: 500 }), TXT(g[1], { fg: 'var(--t3)', size: '12px' }), MONO(g[2], { fg: 'var(--t6)' }),
+        BADGE(g[3]), BAR(g[4], STATUS[g[3]][0]), MONO(g[5], { fg: 'var(--t6)', size: '10.5px' })
+      ]})),
+      stats: [
+        { label: 'active', value: '4' }, { label: 'achieved', value: '1', fg: 'var(--green)' },
+        { label: 'at risk', value: '1', fg: 'var(--red)' }, { label: 'avg progress', value: '45%' }
+      ],
+      filters: ['Category', 'Status', 'Year'],
+      board: [['Planned'], ['Active'], ['At Risk'], ['Achieved']].map(([st]) => {
+        const items = GOALS_DATA.filter(g => g[3] === st);
+        return { name: st, color: STATUS[st][0], count: items.length, total: '',
+          cards: items.map(g => Object.assign({ title: g[0], sub: g[5], right: g[2], hasBar: true, pct: g[4] }, TAG(g[1] === '' ? st : g[1]))) };
+      })
+    };
+
+    if (screen === 'Time') return {
+      grid: '0.6fr 1.1fr 1.9fr 1fr 0.7fr',
+      columns: ['Date', 'Project', 'Task', 'Category', { label: 'Duration', align: 'right' }],
+      rows: TIME_DATA.map(t => ({ cells: [
+        MONO(t[0], { fg: 'var(--t6)' }), TXT(t[1], { size: '12px', fg: t[1] === '—' ? 'var(--t7)' : 'var(--text)' }),
+        TXT(t[2], { fg: 'var(--t2)', size: '12px' }), BADGE(t[3] === 'Client work' ? 'Active' : t[3] === 'Learning' ? 'Planned' : t[3] === 'Admin' ? 'On Hold' : 'Negotiation'),
+        MONO(t[4], { fg: 'var(--text)', size: '11.5px', align: 'right' })
+      ]})),
+      stats: [
+        { label: 'this week', value: '31.5h' }, { label: 'client', value: '14.2h', fg: 'var(--accent)' },
+        { label: 'learning', value: '8.6h', fg: 'var(--blue)' }, { label: 'entries', value: '23' }
+      ],
+      filters: ['Project', 'Category', 'Date range'],
+      board: [['Client work', 'var(--accent)'], ['Learning', 'var(--blue)'], ['AMHIL OS', 'var(--pink)'], ['Admin', 'var(--amber)']].map(([st, color]) => {
+        const items = TIME_DATA.filter(t => t[3] === st);
+        return { name: st, color: color, count: items.length,
+          total: items.length + ' entries',
+          cards: items.map(t => Object.assign({ title: t[2], sub: t[1], right: t[4], hasBar: false, pct: 0 },
+            { tag: t[0], tagFg: color, tagBg: 'var(--chip)' })) };
+      })
+    };
+
+    return {
+      grid: '1.4fr 1.2fr 0.8fr 0.9fr 1fr 0.9fr 1fr',
+      columns: ['Client', 'Company', 'Country', 'Source', 'Status', 'Projects', { label: 'Revenue', align: 'right' }],
+      rows: CLIENTS_DATA.map(c => ({ cells: [
+        TXT(c[0], { weight: 500 }), TXT(c[1], { fg: 'var(--t3)', size: '12px' }), MONO(c[2], { fg: 'var(--t6)' }),
+        MONO(c[3], { fg: 'var(--t6)' }), BADGE(c[4]), MONO(c[5]),
+        MONO(c[6], { fg: c[6] === '—' ? 'var(--t7)' : 'var(--amber)', size: '11.5px', align: 'right' })
+      ]})),
+      stats: [
+        { label: 'clients', value: '3', fg: 'var(--green)' }, { label: 'pipeline', value: '4' },
+        { label: 'pipeline value', value: '46,000', fg: 'var(--amber)' }, { label: 'conversion', value: '38%' }
+      ],
+      filters: ['Status', 'Source', 'Country'],
+      board: [['Lead'], ['Contacted'], ['Proposal'], ['Negotiation'], ['Client']].map(([st]) => {
+        const items = CLIENTS_DATA.filter(c => c[4] === st);
+        return { name: st, color: STATUS[st][0], count: items.length, total: '',
+          cards: items.map(c => Object.assign({ title: c[0], sub: c[1] + ' · ' + c[3], right: c[6], hasBar: false, pct: 0 },
+            { tag: c[5] + ' projects', tagFg: STATUS[st][0], tagBg: STATUS[st][1] })) };
+      })
+    };
+  }
+
+  learningBoard() {
+    return [['Not Started'], ['Learning'], ['Practicing'], ['Reviewing'], ['Completed']].map(([st]) => {
+      const items = TOPICS.filter(t => t[1] === st);
+      return { name: st, color: STATUS[st][0], count: items.length, total: '',
+        cards: items.map(t => Object.assign({ title: t[0], sub: 'confidence ' + t[4] + '/10', right: t[3], hasBar: true, pct: t[2] }, TAG(st))) };
+    });
+  }
+
+  financeBoard() {
+    const rows = [
+      ['Yomad SARL', 'Yomad ERP · milestone 3', 'Expected', '6,000', 'Sep 10'],
+      ['Yomad SARL', 'Yomad ERP · milestone 2', 'Invoiced', '6,000', 'Aug 24'],
+      ['Atlas Textile', 'Discovery workshop', 'Paid', '4,500', 'Aug 18'],
+      ['Freelance', 'Odoo config gig', 'Paid', '1,900', 'Aug 09'],
+      ['Yomad SARL', 'Yomad ERP · milestone 1', 'Paid', '6,000', 'Jul 28'],
+      ['Freelance', 'Data import gig', 'Paid', '2,300', 'Jul 14'],
+      ['Medina Retail', 'POS pilot scoping', 'Cancelled', '3,000', 'Jul 02']
+    ];
+    return [['Expected'], ['Invoiced'], ['Paid'], ['Cancelled']].map(([st]) => {
+      const items = rows.filter(r => r[2] === st);
+      return { name: st, color: STATUS[st][0], count: items.length,
+        total: items.length ? items.map(r => parseFloat(r[3].replace(',', ''))).reduce((a, b) => a + b, 0).toLocaleString('en-US') + ' MAD' : '',
+        cards: items.map(r => Object.assign({ title: r[3] + ' MAD', sub: r[0] + ' · ' + r[1], right: r[4], hasBar: false, pct: 0 }, TAG(st))) };
+    });
+  }
+
+  renderVals() {
+    const screen = this.state.screen;
+    const view = this.state.views[screen] || 'List';
+    const ent = ENTITY_SCREENS.indexOf(screen) >= 0 ? this.entity(screen) : null;
+    const board = screen === 'Learning' ? this.learningBoard() : screen === 'Finance' ? this.financeBoard() : ent ? ent.board : [];
+    const meta = {
+      Dashboard: 'Wednesday, 26 August 2026', Tasks: '14 open · 3 overdue',
+      Learning: '41h 50m total · 6 topics', Finance: 'August 2026 · MAD', Timeline: '1,284 events',
+      Projects: '9 projects · 4 active', Habits: '6 active · 86% this week', Goals: '7 goals · 1 achieved',
+      Time: '31.5h this week · 23 entries', Clients: '8 records · 3 clients', Reports: 'August 2026',
+      Settings: 'private · single user'
+    };
+
+    const habitList = [
+      ['Odoo study 1h', '18d'], ['Read 20 pages', '6d'], ['Gym', '2d'], ['No phone before 9', '11d'], ['Journal', '31d']
+    ];
+    const habitsDoneCount = habitList.filter(h => this.state.habitsDone[h[0]]).length;
+
+    const todayTasks = TASKS.filter(t => t.today).map(t => this.taskRow(t));
+    const openOverdue = TASKS.filter(t => t.overdue && !this.state.doneTasks[t.title]).length;
+
+    return {
+      screenTitle: screen,
+      screenMeta: meta[screen] || '',
+      isDashboard: screen === 'Dashboard',
+      isTasks: screen === 'Tasks',
+      isLearning: screen === 'Learning' && view === 'List',
+      isFinance: screen === 'Finance' && view === 'List',
+      isTimeline: screen === 'Timeline',
+      isReports: screen === 'Reports',
+      isSettings: screen === 'Settings',
+      isStub: false,
+      showViewBar: VIEW_SCREENS.indexOf(screen) >= 0,
+      viewToggle: ['List', 'Kanban'].map(label => ({
+        label, go: () => this.setState(s => ({ views: Object.assign({}, s.views, { [screen]: label }) })),
+        fg: view === label ? 'var(--text)' : 'var(--t4)',
+        bg: view === label ? 'var(--a13)' : 'transparent'
+      })),
+      showEntityList: !!ent && view === 'List',
+      showEntityKanban: VIEW_SCREENS.indexOf(screen) >= 0 && view === 'Kanban',
+      entityGrid: ent ? ent.grid : '1fr',
+      entityColumns: ent ? ent.columns.map(c => (typeof c === 'string' ? { label: c, align: 'left' } : { label: c.label, align: c.align })) : [],
+      entityRows: ent ? ent.rows : [],
+      entityStats: ent ? ent.stats.map(s => ({ label: s.label, value: s.value, fg: s.fg || 'var(--text)' })) : [],
+      entityFilters: ent ? ent.filters : (screen === 'Learning' ? ['Area', 'Status'] : screen === 'Finance' ? ['Client', 'Status', 'Month'] : []),
+      board: board,
+      boardGrid: 'repeat(' + Math.max(board.length, 1) + ', minmax(210px, 1fr))',
+
+      dateFilters: ['Today', 'Yesterday', 'This Week', 'Last Week', 'This Month', 'Last Month', 'This Quarter', 'This Year', 'Last Year', 'Custom'].map((label, i) => ({
+        label,
+        border: i === 4 ? 'var(--a40)' : 'var(--line3)',
+        bg: i === 4 ? 'var(--a11)' : 'transparent',
+        fg: i === 4 ? 'var(--text)' : 'var(--t3)'
+      })),
+      reportKpis: [
+        { label: 'Tasks completed', value: '87', unit: '', sub: '+12 vs July', fg: 'var(--text)' },
+        { label: 'Completion rate', value: '78', unit: '%', sub: '112 created · 87 done', fg: 'var(--text)' },
+        { label: 'Hours worked', value: '132.5', unit: 'h', sub: '21 productive days', fg: 'var(--text)' },
+        { label: 'Learning', value: '34h 10m', unit: '', sub: '2 topics completed', fg: 'var(--text)' },
+        { label: 'Revenue', value: '12,400', unit: 'MAD', sub: '3 income records', fg: 'var(--text)' },
+        { label: 'Net margin', value: '82', unit: '%', sub: '2,180 MAD expenses', fg: 'var(--green)' }
+      ],
+      hoursChart: [
+        { m: 'W27', label: '28h', h: 74, h2: 34 }, { m: 'W28', label: '31h', h: 82, h2: 38 },
+        { m: 'W29', label: '26h', h: 66, h2: 32 }, { m: 'W30', label: '35h', h: 92, h2: 42 },
+        { m: 'W31', label: '30h', h: 78, h2: 36 }, { m: 'W32', label: '33.5h', h: 88, h2: 40 },
+        { m: 'W33', label: '33.5h', h: 86, h2: 44 }, { m: 'W34', label: '31.5h', h: 76, h2: 48 }
+      ],
+      timeSplit: [
+        { name: 'Client work', hours: '61.5h', share: '46%', pct: 46, color: 'var(--accent)' },
+        { name: 'Learning', hours: '34.2h', share: '26%', pct: 26, color: 'var(--blue)' },
+        { name: 'AMHIL OS', hours: '21.5h', share: '16%', pct: 16, color: 'var(--pink)' },
+        { name: 'Admin', hours: '9.3h', share: '7%', pct: 7, color: 'var(--amber)' },
+        { name: 'Other', hours: '6.0h', share: '5%', pct: 5, color: 'var(--t5)' }
+      ],
+      habitGrid: HABITS_DATA.slice(0, 5).map(h => ({
+        name: h[0], pct: h[6] + '%',
+        days: Array.from({ length: 26 }, (_, i) => {
+          const seed = (i * 7 + h[0].length * 3) % 100;
+          const hit = seed < h[6];
+          return { bg: hit ? (h[6] >= 80 ? 'var(--green)' : 'var(--accent)') : 'var(--track)' };
+        })
+      })),
+      profitability: [
+        { name: 'Yomad ERP Implementation', hours: '48.5h', revenue: '18,000', cost: '900', rate: '352' },
+        { name: 'Yomad data migration', hours: '19.5h', revenue: '13,000', cost: '400', rate: '646' },
+        { name: 'Atlas Textile Discovery', hours: '3.5h', revenue: '4,500', cost: '0', rate: '1,285' },
+        { name: 'Fiverr Odoo gigs', hours: '11.0h', revenue: '4,200', cost: '630', rate: '324' },
+        { name: 'AMHIL OS', hours: '22.0h', revenue: '—', cost: '250', rate: '—' }
+      ],
+      settingsGroups: [
+        { title: 'Account', rows: [
+          { label: 'Email', hint: 'Supabase Auth identity', value: 'amhil@…', valueFg: 'var(--t3)', valueBorder: 'var(--line3)', valueBg: 'transparent' },
+          { label: 'Password', hint: 'Last changed 3 weeks ago', value: 'Change', valueFg: 'var(--accent)', valueBorder: 'var(--a40)', valueBg: 'var(--a11)' },
+          { label: 'Row Level Security', hint: 'Every table scoped to your user id', value: 'Enabled', valueFg: 'var(--green)', valueBorder: 'var(--g35)', valueBg: 'var(--g10)' }
+        ]},
+        { title: 'Preferences', rows: [
+          { label: 'Currency', hint: 'Used across finance and reports', value: 'MAD', valueFg: 'var(--text)', valueBorder: 'var(--line3)', valueBg: 'transparent' },
+          { label: 'Week starts on', hint: 'Affects weekly reports and habits', value: 'Monday', valueFg: 'var(--text)', valueBorder: 'var(--line3)', valueBg: 'transparent' },
+          { label: 'Theme', hint: 'Follows system by default', value: 'Dark / Light', valueFg: 'var(--text)', valueBorder: 'var(--line3)', valueBg: 'transparent' }
+        ]},
+        { title: 'Data', rows: [
+          { label: 'Export CSV', hint: 'One file per table', value: 'Export', valueFg: 'var(--accent)', valueBorder: 'var(--a40)', valueBg: 'var(--a11)' },
+          { label: 'Export JSON', hint: 'Full snapshot including relations', value: 'Export', valueFg: 'var(--accent)', valueBorder: 'var(--a40)', valueBg: 'var(--a11)' },
+          { label: 'Automatic backup', hint: 'Weekly snapshot to storage', value: 'Sunday 03:00', valueFg: 'var(--t3)', valueBorder: 'var(--line3)', valueBg: 'transparent' }
+        ]},
+        { title: 'System', rows: [
+          { label: 'Database', hint: 'Postgres · 21 tables · 1,284 timeline events', value: 'Supabase', valueFg: 'var(--t3)', valueBorder: 'var(--line3)', valueBg: 'transparent' },
+          { label: 'Deployment', hint: 'Private URL, single user', value: 'Vercel', valueFg: 'var(--t3)', valueBorder: 'var(--line3)', valueBg: 'transparent' },
+          { label: 'Version', hint: 'Phase 2 of 6 implemented', value: 'v0.4.0', valueFg: 'var(--t3)', valueBorder: 'var(--line3)', valueBg: 'transparent' }
+        ]}
+      ],
+      isList: this.state.view === 'List',
+      isKanban: this.state.view === 'Kanban',
+      isCalendar: this.state.view === 'Calendar',
+      isDesktop: this.state.device !== 'mobile',
+      isMobile: this.state.device === 'mobile',
+      isMHome: this.state.mtab === 'Home',
+      isMTasks: this.state.mtab === 'Tasks',
+      isMMoney: this.state.mtab === 'Money',
+      isMLearn: this.state.mtab === 'Learn',
+      toDesktop: () => this.setState({ device: 'desktop' }),
+      mobileTitle: { Home: 'Wed 26 Aug', Tasks: 'Tasks', Money: 'August', Learn: 'Learning' }[this.state.mtab],
+      mobileSub: { Home: 'good morning, Amhil', Tasks: '14 open · 3 overdue', Money: 'MAD · 3 records', Learn: '41h 50m · 6 topics' }[this.state.mtab],
+      mobileTabs: ['Home', 'Tasks', 'Learn', 'Money', 'More'].map(label => {
+        const on = this.state.mtab === label;
+        return {
+          label, go: () => this.setState({ mtab: label }),
+          dot: on ? 'var(--accent)' : 'var(--line4)',
+          fg: on ? 'var(--text)' : 'var(--t6)', weight: on ? 600 : 400
+        };
+      }),
+      mobileStats: [
+        { label: 'Tasks done', value: '23', delta: '+5 vs last week', deltaFg: 'var(--green)' },
+        { label: 'Hours', value: '31.5', delta: '−2.0 vs last week', deltaFg: 'var(--red)' },
+        { label: 'Learning', value: '8h 35m', delta: '+1h 20m', deltaFg: 'var(--green)' },
+        { label: 'Income', value: '6,400', delta: 'MAD · 2 paid', deltaFg: 'var(--t6)' }
+      ],
+      mobileTaskFilters: ['All', 'Today', 'Overdue', 'In Progress', 'Yomad ERP'].map((label, i) => ({
+        label,
+        border: i === 0 ? 'var(--a40)' : 'var(--line3)',
+        bg: i === 0 ? 'var(--a11)' : 'transparent',
+        fg: i === 0 ? 'var(--text)' : 'var(--t3)'
+      })),
+      device: this.state.device,
+      deviceToggle: ['Desktop', 'Mobile'].map(label => ({
+        label, go: () => this.setState({ device: label.toLowerCase() }),
+        fg: this.state.device === label.toLowerCase() ? 'var(--text)' : 'var(--t4)',
+        bg: this.state.device === label.toLowerCase() ? 'var(--a13)' : 'transparent'
+      })),
+      theme: this.state.theme,
+      themeToggle: ['Dark', 'Light'].map(label => ({
+        label, go: () => this.setState({ theme: label.toLowerCase() }),
+        fg: this.state.theme === label.toLowerCase() ? 'var(--text)' : 'var(--t4)',
+        bg: this.state.theme === label.toLowerCase() ? 'var(--a13)' : 'transparent'
+      })),
+      searchOpen: this.state.searchOpen,
+      openSearch: () => this.setState({ searchOpen: true }),
+      closeSearch: () => this.setState({ searchOpen: false }),
+      stop: (e) => e.stopPropagation(),
+
+      nav: NAV.map(([label, count]) => {
+        const on = label === screen;
+        return {
+          label, count, go: () => this.setState({ screen: label }),
+          fg: on ? '#FFFFFF' : '#9FBDB8', bg: on ? 'var(--a16)' : 'transparent',
+          weight: on ? 600 : 400, countFg: on ? '#2DD4BF' : '#5C7A76'
+        };
+      }),
+
+      showQuickActions: this.props.showQuickActions !== false,
+      quickActions: ['New Task', 'Log Time', 'Log Learning', 'Complete Habit', 'Add Income', 'Add Expense', 'New Note'],
+
+      weekStats: [
+        { label: 'Tasks done', value: '23', unit: 'this week', delta: '+5 vs last week', deltaFg: G },
+        { label: 'Hours worked', value: '31.5', unit: 'h', delta: '−2.0 vs last week', deltaFg: R },
+        { label: 'Learning', value: '8h 35m', unit: '', delta: '+1h 20m', deltaFg: G },
+        { label: 'Habits', value: '86', unit: '%', delta: '30 / 35 completions', deltaFg: DIM },
+        { label: 'Income', value: '6,400', unit: 'MAD', delta: '2 invoices paid', deltaFg: DIM }
+      ],
+
+      todayLabel: 'Wed 26 Aug',
+      overdueLabel: openOverdue ? openOverdue + ' overdue' : 'nothing overdue',
+      todayTasks,
+      habitSummary: habitsDoneCount + ' / ' + habitList.length + ' today · best streak 42d',
+      habits: habitList.map(([name, streak]) => {
+        const on = !!this.state.habitsDone[name];
+        return {
+          name, streak, toggle: () => this.toggleHabit(name),
+          border: on ? 'var(--g35)' : 'var(--line3)',
+          bg: on ? 'var(--g08)' : 'var(--surface3)',
+          dot: on ? G : 'var(--line4)', dotBg: on ? G : 'transparent',
+          fg: on ? 'var(--text)' : 'var(--t3)'
+        };
+      }),
+
+      projects: [
+        { name: 'Yomad ERP Implementation', client: 'Yomad SARL', pct: 62, due: 'due Sep 12', hours: '48.5h', revenue: '18,000 MAD', statusFg: V },
+        { name: 'AMHIL OS', client: 'personal', pct: 31, due: 'due Oct 01', hours: '22.0h', revenue: '—', statusFg: B },
+        { name: 'Odoo Accounting Certification', client: 'personal', pct: 55, due: 'due Nov 15', hours: '26.0h', revenue: '—', statusFg: A },
+        { name: 'Atlas Textile Discovery', client: 'Atlas Textile', pct: 8, due: 'due Sep 30', hours: '3.5h', revenue: '4,500 MAD', statusFg: G }
+      ],
+
+      learningWeek: '8h 35m this week',
+      learningTop: [
+        { name: 'Odoo Inventory', pct: 80, time: '12h 10m' },
+        { name: 'Odoo Purchase', pct: 65, time: '8h 35m' },
+        { name: 'Odoo Accounting', pct: 40, time: '6h 05m' },
+        { name: 'Supabase & Postgres', pct: 45, time: '5h 15m' }
+      ],
+
+      financeMini: [
+        { label: 'Revenue', value: '12,400', fg: 'var(--text)' },
+        { label: 'Expenses', value: '2,180', fg: R },
+        { label: 'Net', value: '10,220', fg: G },
+        { label: 'Unpaid', value: '6,000', fg: A }
+      ],
+      revBars: [
+        { m: 'Mar', h: 26, fill: 'var(--barDim)' }, { m: 'Apr', h: 32, fill: 'var(--barDim)' },
+        { m: 'May', h: 24, fill: 'var(--barDim)' }, { m: 'Jun', h: 40, fill: 'var(--barDim)' },
+        { m: 'Jul', h: 48, fill: 'var(--barMid)' }, { m: 'Aug', h: 56, fill: V }
+      ],
+
+      goals: [
+        { title: '10,000 MAD / month', pct: 100, detail: '12,400 / 10,000' },
+        { title: 'Odoo Functional Consultant', pct: 58, detail: '58%' },
+        { title: '5 recurring clients', pct: 40, detail: '2 / 5' },
+        { title: 'Ship AMHIL OS v1', pct: 31, detail: 'phase 2 of 6' }
+      ],
+
+      taskViews: ['List', 'Kanban', 'Calendar'].map(label => ({
+        label, go: () => this.setState({ view: label }),
+        fg: this.state.view === label ? 'var(--text)' : 'var(--t4)',
+        bg: this.state.view === label ? 'var(--a13)' : 'transparent'
+      })),
+      taskFilters: ['Project', 'Status', 'Priority', 'Due date', 'Tags'],
+      allTasks: TASKS.map(t => this.taskRow(t)),
+
+      columns: COLUMNS.map(([name, color]) => {
+        const cards = TASKS.filter(t => (this.state.doneTasks[t.title] ? 'Done' : t.status) === name);
+        return {
+          name, color, count: cards.length,
+          cards: cards.map(t => ({
+            title: t.title, project: t.project, priority: t.priority,
+            prioFg: PRIO[t.priority], due: t.dueFull
+          }))
+        };
+      }),
+
+      weekdays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      calDays: (() => {
+        const events = {
+          24: [['Inventory practice', G]], 25: [['Proposal v2', R]],
+          26: [['Purchase scenarios', V], ['Vendor pricelists', V], ['Invoice check', 'var(--t2)']],
+          27: [['Reply to Ahmed', A]], 28: [['Dashboard queries', V]],
+          29: [['RLS review', 'var(--t2)']], 30: [['Accounting ch.4', 'var(--t2)']],
+          19: [['Milestone 1', G]], 22: [['Milestone 2 invoice', G]]
+        };
+        const out = [];
+        for (let i = 0; i < 42; i++) {
+          const day = i - 4;
+          const inMonth = day >= 1 && day <= 31;
+          const isToday = day === 26;
+          out.push({
+            num: inMonth ? String(day) : '',
+            numFg: isToday ? V : inMonth ? 'var(--t3)' : 'var(--t9)',
+            bg: isToday ? 'var(--a05)' : 'transparent',
+            items: (inMonth && events[day] ? events[day] : []).map(([label, c]) => ({
+              label, fg: c, bg: c === G ? 'var(--g10)' : c === R ? 'var(--r10)' : c === V ? 'var(--a11)' : c === A ? 'var(--am11)' : 'var(--chip)'
+            }))
+          });
+        }
+        return out;
+      })(),
+
+      areas: [
+        { name: 'Odoo', hours: '41h 50m', topics: '6 topics', pct: 64, color: V },
+        { name: 'Web Development', hours: '18h 25m', topics: '4 topics', pct: 45, color: B },
+        { name: 'Business', hours: '7h 10m', topics: '3 topics', pct: 30, color: A },
+        { name: 'Marketing', hours: '3h 40m', topics: '2 topics', pct: 18, color: G },
+        { name: 'Languages', hours: '9h 05m', topics: '2 topics', pct: 52, color: 'var(--pink)' }
+      ],
+      topics: TOPICS.map(([name, status, pct, time, conf]) => {
+        const [sf, sb] = STATUS[status];
+        return {
+          name, status, statusFg: sf, statusBg: sb, pct, time,
+          conf: conf ? '●'.repeat(conf) + '○'.repeat(10 - conf) : '—'
+        };
+      }),
+      sessionsTotal: '41h 50m logged',
+      sessions: [
+        { date: 'Aug 26', topic: 'Purchase', dur: '1h 15m', note: 'Blanket orders and vendor pricelists. Practiced multi-vendor price rules on demo DB.', conf: 'confidence 6 → 7' },
+        { date: 'Aug 25', topic: 'Accounting', dur: '55m', note: 'Chart of accounts, fiscal positions for Morocco VAT.', conf: 'confidence 4 → 5' },
+        { date: 'Aug 24', topic: 'Inventory', dur: '2h 05m', note: 'Reordering rules, min/max, replenishment report.', conf: 'confidence 7 → 8' },
+        { date: 'Aug 22', topic: 'Purchase', dur: '1h 40m', note: 'RFQ flow end to end, comparison of vendor quotes.', conf: 'confidence 5 → 6' },
+        { date: 'Aug 21', topic: 'Sales', dur: '1h 00m', note: 'Reviewed quotation templates before certification mock.', conf: 'confidence 9 → 9' }
+      ],
+
+      finKpis: [
+        { label: 'Revenue', value: '12,400', fg: 'var(--text)', sub: 'Aug 2026 · 3 records' },
+        { label: 'Expenses', value: '2,180', fg: R, sub: '5 records' },
+        { label: 'Net income', value: '10,220', fg: G, sub: '82% margin' },
+        { label: 'Unpaid', value: '6,000', fg: A, sub: '1 invoice · 12d out' }
+      ],
+      revChart: [
+        { m: 'Jan', label: '4.1k', h: 46, h2: 0, radius: '3px' }, { m: 'Feb', label: '5.3k', h: 60, h2: 0, radius: '3px' },
+        { m: 'Mar', label: '6.2k', h: 70, h2: 0, radius: '3px' }, { m: 'Apr', label: '7.4k', h: 84, h2: 0, radius: '3px' },
+        { m: 'May', label: '5.8k', h: 66, h2: 0, radius: '3px' }, { m: 'Jun', label: '9.1k', h: 103, h2: 0, radius: '3px' },
+        { m: 'Jul', label: '10.8k', h: 122, h2: 0, radius: '3px' }, { m: 'Aug', label: '12.4k', h: 72, h2: 68, radius: '0 0 3px 3px' }
+      ],
+      byClient: [
+        { name: 'Yomad SARL', amount: '31,000', share: '54%', pct: 54 },
+        { name: 'Atlas Textile', amount: '12,500', share: '22%', pct: 22 },
+        { name: 'Freelance / marketplace', amount: '9,300', share: '16%', pct: 16 },
+        { name: 'Others', amount: '4,700', share: '8%', pct: 8 }
+      ],
+      incomeMeta: 'last 6 records',
+      income: [
+        { date: 'Aug 24', client: 'Yomad SARL', project: 'Yomad ERP', status: 'Invoiced', amount: '6,000' },
+        { date: 'Aug 18', client: 'Atlas Textile', project: 'Discovery', status: 'Paid', amount: '4,500' },
+        { date: 'Aug 09', client: 'Freelance', project: 'Odoo config gig', status: 'Paid', amount: '1,900' },
+        { date: 'Jul 28', client: 'Yomad SARL', project: 'Yomad ERP', status: 'Paid', amount: '6,000' },
+        { date: 'Jul 14', client: 'Freelance', project: 'Data import gig', status: 'Paid', amount: '2,300' },
+        { date: 'Sep 10', client: 'Yomad SARL', project: 'Yomad ERP', status: 'Expected', amount: '6,000' }
+      ].map(i => { const [f, b] = STATUS[i.status]; return Object.assign({}, i, { statusFg: f, statusBg: b }); }),
+      expenseMeta: '2,180 MAD in August',
+      expenses: [
+        { date: 'Aug 20', name: 'Odoo certification exam', category: 'Education', amount: '1,200' },
+        { date: 'Aug 12', name: 'Coworking day passes', category: 'Workspace', amount: '330' },
+        { date: 'Aug 05', name: 'Internet', category: 'Utilities', amount: '400' },
+        { date: 'Aug 03', name: 'Supabase Pro', category: 'Software', amount: '250' },
+        { date: 'Jul 30', name: 'Domain renewal', category: 'Software', amount: '120' }
+      ],
+
+      timelineFilters: [
+        { label: 'All', on: true }, { label: 'Tasks' }, { label: 'Projects' }, { label: 'Learning' },
+        { label: 'Habits' }, { label: 'Finance' }, { label: 'Goals' }, { label: 'Notes' }
+      ].map(f => ({
+        label: f.label,
+        border: f.on ? 'var(--a40)' : 'var(--line3)',
+        bg: f.on ? 'rgba(45,212,191,0.1)' : 'transparent',
+        fg: f.on ? 'var(--text)' : 'var(--t3)'
+      })),
+      timeline: [
+        { label: 'Today', date: 'Wed 26 Aug', events: [
+          { time: '09:15', title: 'Learning session — Odoo Purchase, 1h 15m', kind: 'learning', entity: 'Odoo → Purchase', color: V, tagBg: 'var(--a11)' },
+          { time: '08:40', title: 'Habit completed — Odoo study 1h (18 day streak)', kind: 'habit', entity: 'Habits', color: G, tagBg: 'var(--g10)' },
+          { time: '08:05', title: 'Note created — Vendor pricelists cheatsheet', kind: 'note', entity: 'Odoo → Purchase', color: B, tagBg: 'var(--b11)' }
+        ]},
+        { label: 'Yesterday', date: 'Tue 25 Aug', events: [
+          { time: '18:20', title: 'Income invoiced — 6,000 MAD', kind: 'finance', entity: 'Yomad SARL → Yomad ERP', color: A, tagBg: 'var(--am11)' },
+          { time: '16:05', title: 'Task completed — Yomad ERP milestone 2 review', kind: 'task', entity: 'Yomad ERP', color: G, tagBg: 'var(--g10)' },
+          { time: '11:30', title: 'Learning session — Odoo Accounting, 55m', kind: 'learning', entity: 'Odoo → Accounting', color: V, tagBg: 'var(--a11)' }
+        ]},
+        { label: 'Sun', date: '24 Aug', events: [
+          { time: '20:10', title: 'Learning topic completed — Odoo Sales (100%)', kind: 'milestone', entity: 'Odoo → Sales', color: G, tagBg: 'var(--g10)' },
+          { time: '15:45', title: 'Task completed — Inventory reordering rules practice', kind: 'task', entity: 'Odoo Learning', color: G, tagBg: 'var(--g10)' },
+          { time: '10:00', title: 'Time logged — 2h 05m', kind: 'time', entity: 'Odoo Learning', color: 'var(--t2)', tagBg: 'var(--chip)' }
+        ]},
+        { label: 'Fri', date: '22 Aug', events: [
+          { time: '17:00', title: 'Goal reached — 10,000 MAD / month', kind: 'goal', entity: 'Goals → Revenue', color: A, tagBg: 'var(--am11)' },
+          { time: '14:20', title: 'Project created — Atlas Textile Discovery', kind: 'project', entity: 'Atlas Textile', color: V, tagBg: 'var(--a11)' }
+        ]}
+      ],
+
+      searchGroups: [
+        { label: 'Learning topics', color: V, items: [{ title: 'Purchase', meta: 'Odoo · 65% · 8h 35m', bg: 'var(--a09)' }] },
+        { label: 'Tasks', color: G, items: [
+          { title: 'Finish Purchase practice scenarios', meta: 'In Progress · today', bg: 'transparent' },
+          { title: 'Configure vendor pricelists demo', meta: 'Todo · today', bg: 'transparent' }
+        ]},
+        { label: 'Projects', color: B, items: [{ title: 'Yomad ERP Implementation', meta: 'Active · 62%', bg: 'transparent' }] },
+        { label: 'Notes', color: A, items: [{ title: 'Vendor pricelists cheatsheet', meta: 'updated today', bg: 'transparent' }] },
+        { label: 'Timeline', color: 'var(--t4)', items: [{ title: 'Started Purchase learning', meta: 'Aug 12', bg: 'transparent' }] }
+      ]
+    };
+  }
+}
+
+</script>
+</body>
+</html>

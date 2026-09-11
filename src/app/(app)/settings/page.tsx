@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardHeader } from "@/components/ui/card";
 import { SignOutButton } from "@/components/layout/sign-out-button";
+import { ProfileForm } from "@/components/settings/profile-form";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -14,12 +15,19 @@ export default async function SettingsPage() {
     redirect("/login");
   }
 
+  const { data: profile } = await supabase.from("profiles").select("full_name,avatar_url").eq("id", user.id).maybeSingle();
+
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-xl font-semibold tracking-tight">Settings</h1>
         <p className="text-sm text-muted">Account and application preferences.</p>
       </div>
+
+      <Card>
+        <CardHeader title="My Profile" />
+        <ProfileForm fullName={profile?.full_name ?? null} avatarUrl={profile?.avatar_url ?? null} />
+      </Card>
 
       <Card>
         <CardHeader title="Account" />

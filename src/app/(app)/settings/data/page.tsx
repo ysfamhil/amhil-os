@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { DataExport } from "@/components/settings/data-export";
 import { DataImport } from "@/components/settings/data-import";
 import { BackupInfo } from "@/components/settings/backup-info";
+import { DangerZone } from "@/components/settings/danger-zone";
 
 export default async function DataSettingsPage() {
   const supabase = await createClient();
@@ -24,6 +25,7 @@ export default async function DataSettingsPage() {
       <DataExport />
       <DataImport />
       <BackupInfo />
+      <DangerZone />
     </div>
   );
 }

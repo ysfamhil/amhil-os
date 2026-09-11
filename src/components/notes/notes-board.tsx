@@ -12,17 +12,11 @@ import type { NoteWithRelations } from "@/lib/queries/notes";
 
 export function NotesBoard({
   notes,
-  projects,
-  clients,
   tasks = [],
-  topics = [],
   goals = [],
 }: {
   notes: NoteWithRelations[];
-  projects: RelationOption[];
-  clients: RelationOption[];
   tasks?: RelationOption[];
-  topics?: RelationOption[];
   goals?: RelationOption[];
 }) {
   const router = useRouter();
@@ -68,12 +62,13 @@ export function NotesBoard({
           value={search}
           onChange={(e) => handleSearchChange(e.target.value)}
           placeholder="Search notes…"
-          className="flex-1 min-w-[200px] rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
+          className="min-w-[200px] flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--domain-notes)]"
         />
         <button
           type="button"
           onClick={openNew}
-          className="ml-auto inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-sm font-medium text-accent-foreground hover:opacity-90"
+          className="ml-auto inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-white hover:opacity-90"
+          style={{ backgroundColor: "var(--domain-notes)" }}
         >
           <Plus size={16} />
           New Note
@@ -84,7 +79,7 @@ export function NotesBoard({
         <EmptyState
           icon={StickyNote}
           title="No notes yet"
-          description="Jot down anything worth remembering — optionally linked to a project, client, task, learning topic, or goal."
+          description="Jot down anything worth remembering — optionally linked to a task or goal."
           action={
             <button
               type="button"
@@ -116,10 +111,7 @@ export function NotesBoard({
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         note={editingNote}
-        projects={projects}
-        clients={clients}
         tasks={tasks}
-        topics={topics}
         goals={goals}
       />
 

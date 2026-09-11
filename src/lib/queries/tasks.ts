@@ -7,12 +7,10 @@ export type TaskTab = "today" | "upcoming" | "overdue" | "completed" | "all";
 export interface TaskFilters {
   tab: TaskTab;
   q?: string;
-  projectId?: string;
-  priority?: TaskPriority;
+  priorities?: TaskPriority[];
+  tags?: string[];
   sort?: "due_date" | "created_at" | "priority";
 }
-
-export type TaskWithProject = Task & { projects: { id: string; name: string } | null };
 
 const PRIORITY_RANK: Record<TaskPriority, number> = {
   Urgent: 0,
@@ -25,8 +23,8 @@ export async function getTasks(
   supabase: SupabaseClient<Database>,
   userId: string,
   filters: TaskFilters
-): Promise<TaskWithProject[]> {
-  let query = supabase.from("tasks").select("*, projects(id, name)").eq("user_id", userId);
+): Promise<Task[]> {
+  let query = supabase.from("tasks").select("*").eq("user_id", userId);
 
   const today = todayISODate();
   switch (filters.tab) {
@@ -47,8 +45,8 @@ export async function getTasks(
       break;
   }
 
-  if (filters.projectId) query = query.eq("project_id", filters.projectId);
-  if (filters.priority) query = query.eq("priority", filters.priority);
+  if (filters.priorities && filters.priorities.length > 0) query = query.in("priority", filters.priorities);
+  if (filters.tags && filters.tags.length > 0) query = query.in("category", filters.tags);
   if (filters.q) query = query.ilike("title", `%${filters.q}%`);
 
   query = query.order("due_date", { ascending: true, nullsFirst: false }).order("created_at", { ascending: false });
@@ -56,7 +54,7 @@ export async function getTasks(
   const { data, error } = await query;
   if (error) throw new Error(error.message);
 
-  const tasks = (data ?? []) as unknown as TaskWithProject[];
+  const tasks = (data ?? []) as Task[];
 
   if (filters.sort === "priority") {
     return [...tasks].sort((a, b) => PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority]);
@@ -145,4 +143,42 @@ export async function getSubtaskProgressMap(
     map[row.task_id] = entry;
   }
   return map;
+}
+
+/** Minutes logged per task, for the row's "◷ 3h 40m" meta line. */
+export async function getTaskTimeLoggedMap(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  taskIds: string[]
+): Promise<Record<string, number>> {
+  if (taskIds.length === 0) return {};
+
+  const { data, error } = await supabase
+    .from("time_entries")
+    .select("task_id, duration_minutes")
+    .eq("user_id", userId)
+    .in("task_id", taskIds);
+
+  if (error) throw new Error(error.message);
+
+  const map: Record<string, number> = {};
+  for (const row of data ?? []) {
+    if (!row.task_id) continue;
+    map[row.task_id] = (map[row.task_id] ?? 0) + row.duration_minutes;
+  }
+  return map;
+}
+
+/** Distinct tag values in use, for the tag filter menu. */
+export async function getDistinctTags(supabase: SupabaseClient<Database>, userId: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from("tasks")
+    .select("category")
+    .eq("user_id", userId)
+    .not("category", "is", null);
+
+  if (error) throw new Error(error.message);
+
+  const tags = new Set((data ?? []).map((row) => row.category).filter((c): c is string => Boolean(c)));
+  return [...tags].sort();
 }

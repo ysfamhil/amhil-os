@@ -18,25 +18,13 @@ import type { NoteWithRelations } from "@/lib/queries/notes";
 export function EntityNotes({
   taskId,
   taskLabel,
-  topicId,
-  topicLabel,
   goalId,
   goalLabel,
-  projectId,
-  projectLabel,
-  clientId,
-  clientLabel,
 }: {
   taskId?: string;
   taskLabel?: string;
-  topicId?: string;
-  topicLabel?: string;
   goalId?: string;
   goalLabel?: string;
-  projectId?: string;
-  projectLabel?: string;
-  clientId?: string;
-  clientLabel?: string;
 }) {
   const [notes, setNotes] = useState<NoteWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,7 +35,7 @@ export function EntityNotes({
   async function load() {
     setLoading(true);
     try {
-      const data = await getNotesForRelation({ taskId, topicId, goalId, projectId, clientId });
+      const data = await getNotesForRelation({ taskId, goalId });
       setNotes(data);
     } finally {
       setLoading(false);
@@ -58,7 +46,7 @@ export function EntityNotes({
     // eslint-disable-next-line react-hooks/set-state-in-effect -- fetching notes for this record on mount/relation change
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [taskId, topicId, goalId, projectId, clientId]);
+  }, [taskId, goalId]);
 
   function openNew() {
     setEditingNote(null);
@@ -111,7 +99,12 @@ export function EntityNotes({
                   </button>
                 </div>
               </div>
-              {note.content && <p className="mt-1 line-clamp-2 whitespace-pre-wrap text-sm text-muted">{note.content}</p>}
+              {note.content && (
+                <div
+                  className="mt-1 line-clamp-2 text-sm text-muted [&_ol]:list-decimal [&_ol]:pl-4 [&_ul]:list-disc [&_ul]:pl-4"
+                  dangerouslySetInnerHTML={{ __html: note.content }}
+                />
+              )}
             </li>
           ))}
         </ul>
@@ -126,15 +119,9 @@ export function EntityNotes({
         }}
         note={editingNote}
         tasks={taskId && taskLabel ? [{ id: taskId, name: taskLabel }] : []}
-        topics={topicId && topicLabel ? [{ id: topicId, name: topicLabel }] : []}
         goals={goalId && goalLabel ? [{ id: goalId, name: goalLabel }] : []}
-        projects={projectId && projectLabel ? [{ id: projectId, name: projectLabel }] : []}
-        clients={clientId && clientLabel ? [{ id: clientId, name: clientLabel }] : []}
         defaultTaskId={taskId}
-        defaultTopicId={topicId}
         defaultGoalId={goalId}
-        defaultProjectId={projectId}
-        defaultClientId={clientId}
       />
 
       <ConfirmDialog

@@ -52,15 +52,13 @@ export function GoalDetailClient({ goal }: { goal: GoalDetail }) {
         <CardHeader title="Progress" />
         <div className="mb-2 flex items-center justify-between text-sm">
           <span className="text-muted">
-            {goal.source === "tasks" && "Calculated from linked tasks"}
-            {goal.source === "projects" && "Calculated from linked projects"}
-            {goal.source === "manual" && "Set manually — link tasks or projects to automate this"}
+            {goal.source === "tasks" ? "Calculated from linked tasks" : "Set manually — link tasks to automate this"}
           </span>
           <span className="font-medium">{goal.progress}%</span>
         </div>
         <ProgressBar value={goal.progress} />
         <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4 text-sm text-muted">
-          <div>Category: {goal.category ?? "—"}</div>
+          <div>Tag: {goal.category ?? "—"}</div>
           <div>Start: {goal.start_date ?? "—"}</div>
           <div>Target: {goal.target_date ?? "—"}</div>
           <div>Created: {new Date(goal.created_at).toLocaleDateString()}</div>
@@ -88,40 +86,6 @@ export function GoalDetailClient({ goal }: { goal: GoalDetail }) {
         </Card>
 
         <Card>
-          <CardHeader title={`Projects (${goal.projects.length})`} />
-          {goal.projects.length === 0 ? (
-            <p className="text-sm text-muted">No projects linked yet.</p>
-          ) : (
-            <ul className="flex flex-col gap-2">
-              {goal.projects.map((project) => (
-                <li key={project.id}>
-                  <Link href={`/projects/${project.id}`} className="flex items-center justify-between text-sm hover:underline">
-                    <span>{project.name}</span>
-                    <Badge tone="neutral">{project.status}</Badge>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-
-        <Card>
-          <CardHeader title={`Learning topics (${goal.topics.length})`} />
-          {goal.topics.length === 0 ? (
-            <p className="text-sm text-muted">No learning topics linked yet.</p>
-          ) : (
-            <ul className="flex flex-col gap-2">
-              {goal.topics.map((topic) => (
-                <li key={topic.id} className="flex items-center justify-between text-sm">
-                  <span>{topic.name}</span>
-                  <Badge tone="neutral">{topic.status}</Badge>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-
-        <Card>
           <CardHeader title={`Habits (${goal.habits.length})`} />
           {goal.habits.length === 0 ? (
             <p className="text-sm text-muted">No habits linked yet.</p>
@@ -134,6 +98,9 @@ export function GoalDetailClient({ goal }: { goal: GoalDetail }) {
               ))}
             </ul>
           )}
+          <Link href="/habits" className="mt-3 inline-block text-xs font-medium text-accent hover:underline">
+            Go to habits →
+          </Link>
         </Card>
       </div>
 
@@ -147,7 +114,7 @@ export function GoalDetailClient({ goal }: { goal: GoalDetail }) {
         open={deleteOpen}
         onClose={() => setDeleteOpen(false)}
         title="Delete goal"
-        description={`Delete "${goal.title}"? Linked tasks, projects, topics, and habits stay intact and just become unlinked.`}
+        description={`Delete "${goal.title}"? Linked tasks and habits stay intact and just become unlinked.`}
         onConfirm={async () => {
           await deleteGoal(goal.id);
           router.push("/goals");

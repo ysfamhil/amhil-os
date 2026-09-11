@@ -14,6 +14,26 @@ async function requireUser() {
   return { supabase, user };
 }
 
+export async function getTask(id: string): Promise<Task | null> {
+  const { supabase, user } = await requireUser();
+  const { data, error } = await supabase.from("tasks").select("*").eq("id", id).eq("user_id", user.id).maybeSingle();
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+/** Persists a manual drag-reorder from the dashboard's Tasks widget. */
+export async function reorderTasks(orderedIds: string[]) {
+  const { supabase, user } = await requireUser();
+
+  await Promise.all(
+    orderedIds.map((id, index) =>
+      supabase.from("tasks").update({ position: index }).eq("id", id).eq("user_id", user.id)
+    )
+  );
+
+  revalidatePath("/dashboard");
+}
+
 export interface TaskInput {
   title: string;
   description?: string | null;

@@ -2,7 +2,6 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, NotificationType } from "@/types/database";
 import { todayISODate, addDaysISODate } from "@/lib/dates";
 
-const STALE_PROJECT_DAYS = 14;
 const GOAL_DEADLINE_HORIZON_DAYS = 3;
 const PAYMENT_REMINDER_AGE_DAYS = 30;
 
@@ -26,14 +25,13 @@ export async function runAutomationChecks(supabase: SupabaseClient<Database>, us
   const today = todayISODate();
   const candidates: Candidate[] = [];
 
-  const [overdueTasksRes, activeProjectsRes, habitsRes, goalsRes, invoicedIncomeRes] = await Promise.all([
+  const [overdueTasksRes, habitsRes, goalsRes, invoicedIncomeRes] = await Promise.all([
     supabase
       .from("tasks")
       .select("id,title")
       .eq("user_id", userId)
       .lt("due_date", today)
       .not("status", "in", "(Done,Cancelled)"),
-    supabase.from("projects").select("id,name,updated_at").eq("user_id", userId).eq("status", "Active"),
     supabase.from("habits").select("id,name").eq("user_id", userId).eq("is_active", true),
     supabase
       .from("goals")
@@ -59,19 +57,6 @@ export async function runAutomationChecks(supabase: SupabaseClient<Database>, us
       relatedEntityType: "task",
       relatedEntityId: task.id,
     });
-  }
-
-  const staleThreshold = `${addDaysISODate(-STALE_PROJECT_DAYS)}T00:00:00.000Z`;
-  for (const project of activeProjectsRes.data ?? []) {
-    if (project.updated_at < staleThreshold) {
-      candidates.push({
-        type: "stale_project",
-        title: "Stale project",
-        message: `"${project.name}" has had no activity for ${STALE_PROJECT_DAYS}+ days.`,
-        relatedEntityType: "project",
-        relatedEntityId: project.id,
-      });
-    }
   }
 
   const habitIds = (habitsRes.data ?? []).map((h) => h.id);

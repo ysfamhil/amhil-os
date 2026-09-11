@@ -66,12 +66,14 @@ export interface HabitWithStats extends Habit {
   monthlyConsistency: number;
   yearlyConsistency: number;
   completionRate: number;
+  /** Completion state for each date in `opts.weekDates`, if passed. */
+  weekCompletions: Record<string, boolean>;
 }
 
 export async function getHabits(
   supabase: SupabaseClient<Database>,
   userId: string,
-  opts?: { activeOnly?: boolean }
+  opts?: { activeOnly?: boolean; weekDates?: string[] }
 ): Promise<HabitWithStats[]> {
   let query = supabase.from("habits").select("*").eq("user_id", userId);
   if (opts?.activeOnly) query = query.eq("is_active", true);
@@ -114,6 +116,7 @@ export async function getHabits(
       monthlyConsistency: consistency(dateSet, monthStart, today),
       yearlyConsistency: consistency(dateSet, yearStart, today),
       completionRate: consistency(dateSet, completionRateStart, today),
+      weekCompletions: Object.fromEntries((opts?.weekDates ?? []).map((date) => [date, dateSet.has(date)])),
     };
   });
 }

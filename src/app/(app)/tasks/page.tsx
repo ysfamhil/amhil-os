@@ -1,6 +1,14 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getSubtaskProgressMap, getTasks, getTaskTabCounts, type TaskTab } from "@/lib/queries/tasks";
+import {
+  getDistinctTags,
+  getSubtaskProgressMap,
+  getTaskTimeLoggedMap,
+  getTasks,
+  getTaskTabCounts,
+  type TaskTab,
+} from "@/lib/queries/tasks";
+import { getGoals } from "@/lib/queries/goals";
 import { TaskBoard } from "@/components/tasks/task-board";
 import type { TaskPriority } from "@/types/database";
 
@@ -21,41 +29,59 @@ export default async function TasksPage({
   }
 
   const sp = await searchParams;
-  const tabParam = typeof sp.tab === "string" ? sp.tab : "today";
-  const tab: TaskTab = VALID_TABS.includes(tabParam as TaskTab) ? (tabParam as TaskTab) : "today";
+  const tabParam = typeof sp.tab === "string" ? sp.tab : "all";
+  const tab: TaskTab = VALID_TABS.includes(tabParam as TaskTab) ? (tabParam as TaskTab) : "all";
+  const priorities = typeof sp.priority === "string" ? (sp.priority.split(",") as TaskPriority[]) : undefined;
+  const tags = typeof sp.tag === "string" ? sp.tag.split(",") : undefined;
 
-  const [tasks, counts, projectsRes, goalsRes] = await Promise.all([
+  const [tasks, counts, allTags, goals] = await Promise.all([
     getTasks(supabase, user.id, {
       tab,
       q: typeof sp.q === "string" ? sp.q : undefined,
-      projectId: typeof sp.project === "string" ? sp.project : undefined,
-      priority: typeof sp.priority === "string" ? (sp.priority as TaskPriority) : undefined,
+      priorities,
+      tags,
       sort: typeof sp.sort === "string" ? (sp.sort as "due_date" | "created_at" | "priority") : undefined,
     }),
     getTaskTabCounts(supabase, user.id),
-    supabase.from("projects").select("id,name").eq("user_id", user.id).order("name"),
-    supabase.from("goals").select("id,title").eq("user_id", user.id).order("title"),
+    getDistinctTags(supabase, user.id),
+    getGoals(supabase, user.id),
   ]);
 
-  const subtaskProgress = await getSubtaskProgressMap(
-    supabase,
-    user.id,
-    tasks.map((t) => t.id)
-  );
+  const [subtaskProgress, timeLogged] = await Promise.all([
+    getSubtaskProgressMap(
+      supabase,
+      user.id,
+      tasks.map((t) => t.id)
+    ),
+    getTaskTimeLoggedMap(
+      supabase,
+      user.id,
+      tasks.map((t) => t.id)
+    ),
+  ]);
+
+  const goalSuggestions = goals
+    .filter((g) => g.linkedTasks === 0 && (g.status === "In Progress" || g.status === "Not Started"))
+    .slice(0, 3)
+    .map((g) => ({ id: g.id, title: g.title, category: g.category }));
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">Tasks</h1>
-        <p className="text-sm text-muted">Everything you need to do, in one place.</p>
+    <div className="flex flex-col gap-5">
+      <div className="flex items-center gap-3">
+        <span className="h-[28px] w-[5px] shrink-0 rounded-full bg-[var(--domain-tasks)]" />
+        <div>
+          <h1 className="text-[28px] font-extrabold leading-none tracking-[-0.03em]">Tasks</h1>
+          <p className="mt-1.5 text-[13px] text-muted">Everything you need to do, in one place.</p>
+        </div>
       </div>
 
       <TaskBoard
         tasks={tasks}
         counts={counts}
         subtaskProgress={subtaskProgress}
-        projects={projectsRes.data ?? []}
-        goals={goalsRes.data ?? []}
+        timeLogged={timeLogged}
+        tags={allTags}
+        goalSuggestions={goalSuggestions}
       />
     </div>
   );

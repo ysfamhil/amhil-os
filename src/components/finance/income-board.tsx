@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { IncomeFormModal, type ClientOption, type ProjectOption } from "@/components/finance/income-form-modal";
+import { IncomeFormModal } from "@/components/finance/income-form-modal";
 import { deleteIncome } from "@/lib/actions/income";
 import type { Income, IncomeStatus } from "@/types/database";
 
@@ -19,34 +19,20 @@ const STATUS_TONE: Record<IncomeStatus, "neutral" | "accent" | "success" | "dang
   Cancelled: "danger",
 };
 
-export type IncomeWithRelations = Income & {
-  clients: { id: string; name: string } | null;
-  projects: { id: string; name: string } | null;
-};
-
 function money(amount: number) {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(amount);
 }
 
-export function IncomeBoard({
-  entries,
-  clients,
-  projects,
-}: {
-  entries: IncomeWithRelations[];
-  clients: ClientOption[];
-  projects: ProjectOption[];
-}) {
+export function IncomeBoard({ entries }: { entries: Income[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const [modalOpen, setModalOpen] = useState(() => searchParams.get("new") === "1");
   const [editingEntry, setEditingEntry] = useState<Income | null>(null);
-  const [deletingEntry, setDeletingEntry] = useState<IncomeWithRelations | null>(null);
+  const [deletingEntry, setDeletingEntry] = useState<Income | null>(null);
 
   const status = searchParams.get("status") ?? "";
-  const clientId = searchParams.get("client") ?? "";
 
   function updateParams(patch: Record<string, string | null>) {
     const params = new URLSearchParams(window.location.search);
@@ -62,32 +48,18 @@ export function IncomeBoard({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <select
-            value={status}
-            onChange={(e) => updateParams({ status: e.target.value || null })}
-            className="rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
-          >
-            <option value="">All statuses</option>
-            {STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-          <select
-            value={clientId}
-            onChange={(e) => updateParams({ client: e.target.value || null })}
-            className="rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
-          >
-            <option value="">All clients</option>
-            {clients.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        <select
+          value={status}
+          onChange={(e) => updateParams({ status: e.target.value || null })}
+          className="rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
+        >
+          <option value="">All statuses</option>
+          {STATUSES.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
 
         <button
           type="button"
@@ -103,7 +75,7 @@ export function IncomeBoard({
       </div>
 
       {entries.length === 0 ? (
-        <EmptyState icon={Wallet} title="No income records" description="Add income and assign it to a client or project." />
+        <EmptyState icon={Wallet} title="No income records" description="Add income as it comes in." />
       ) : (
         <>
           <p className="text-xs text-muted">
@@ -117,8 +89,7 @@ export function IncomeBoard({
                     <span className="font-medium">{money(entry.amount)} MAD</span>
                     <Badge tone={STATUS_TONE[entry.status]}>{entry.status}</Badge>
                     <span className="text-muted">{entry.date}</span>
-                    {entry.clients && <span className="text-muted">{entry.clients.name}</span>}
-                    {entry.projects && <span className="text-muted">· {entry.projects.name}</span>}
+                    {entry.source && <Badge tone="neutral">{entry.source}</Badge>}
                   </div>
                   {entry.description && <p className="mt-1 text-sm text-muted">{entry.description}</p>}
                 </div>
@@ -152,8 +123,6 @@ export function IncomeBoard({
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         income={editingEntry}
-        clients={clients}
-        projects={projects}
       />
 
       <ConfirmDialog

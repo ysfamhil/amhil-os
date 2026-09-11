@@ -30,6 +30,19 @@ function revalidateGoalPaths(id?: string) {
   if (id) revalidatePath(`/goals/${id}`);
 }
 
+/** Persists a manual drag-reorder from the dashboard's Goals widget. */
+export async function reorderGoals(orderedIds: string[]) {
+  const { supabase, user } = await requireUser();
+
+  await Promise.all(
+    orderedIds.map((id, index) =>
+      supabase.from("goals").update({ position: index }).eq("id", id).eq("user_id", user.id)
+    )
+  );
+
+  revalidatePath("/dashboard");
+}
+
 export async function createGoal(input: GoalInput) {
   const { supabase, user } = await requireUser();
   const title = input.title.trim();

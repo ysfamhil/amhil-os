@@ -1,10 +1,10 @@
-export function ProgressBar({ value }: { value: number }) {
+export function ProgressBar({ value, color = "var(--accent)" }: { value: number; color?: string }) {
   const clamped = Math.min(100, Math.max(0, value));
   return (
-    <div className="h-1.5 w-full overflow-hidden rounded-full bg-border/60">
+    <div className="h-[6px] w-full overflow-hidden rounded-[4px] bg-track">
       <div
-        className="h-full rounded-full bg-accent transition-[width]"
-        style={{ width: `${clamped}%` }}
+        className="h-full rounded-[4px] transition-[width] duration-150 ease-out"
+        style={{ width: `${clamped}%`, backgroundColor: color }}
       />
     </div>
   );

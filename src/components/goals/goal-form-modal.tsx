@@ -5,6 +5,7 @@ import { useState, type FormEvent } from "react";
 import { Modal } from "@/components/ui/modal";
 import { Field, Select, TextInput, Textarea } from "@/components/ui/field";
 import { createGoal, updateGoal } from "@/lib/actions/goals";
+import { TASK_TAGS } from "@/lib/tags";
 import type { Goal, GoalStatus } from "@/types/database";
 
 const STATUSES: GoalStatus[] = ["Not Started", "In Progress", "Completed", "Cancelled"];
@@ -84,13 +85,19 @@ export function GoalFormModal({
         </Field>
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <Field label="Category" htmlFor="goal-category">
+          <Field label="Tag" htmlFor="goal-category">
             <TextInput
               id="goal-category"
+              list="goal-tag-suggestions"
               value={category ?? ""}
               onChange={(e) => setCategory(e.target.value)}
-              placeholder="e.g. Income"
+              placeholder="e.g. Career"
             />
+            <datalist id="goal-tag-suggestions">
+              {TASK_TAGS.map((t) => (
+                <option key={t} value={t} />
+              ))}
+            </datalist>
           </Field>
 
           <Field label="Status" htmlFor="goal-status">
@@ -136,8 +143,8 @@ export function GoalFormModal({
             onChange={(e) => setProgress(e.target.value)}
           />
           <p className="mt-1 text-xs text-muted">
-            Used only when no tasks or projects are linked to this goal — once you link some, progress is
-            calculated automatically from their completion.
+            Used only when no tasks are linked to this goal — once you link some, progress is calculated
+            automatically from their completion.
           </p>
         </Field>
 

@@ -5,37 +5,21 @@ import { useState, type FormEvent } from "react";
 import { Modal } from "@/components/ui/modal";
 import { Field, Select, TextInput, Textarea } from "@/components/ui/field";
 import { SubtaskList } from "@/components/tasks/subtask-list";
-import { EntityNotes } from "@/components/notes/entity-notes";
 import { createTask, updateTask } from "@/lib/actions/tasks";
+import { TASK_TAGS } from "@/lib/tags";
 import type { Task, TaskPriority, TaskStatus } from "@/types/database";
 
 const STATUSES: TaskStatus[] = ["Backlog", "Todo", "In Progress", "Waiting", "Done", "Cancelled"];
 const PRIORITIES: TaskPriority[] = ["Low", "Medium", "High", "Urgent"];
 
-export interface ProjectOption {
-  id: string;
-  name: string;
-}
-
-export interface GoalOption {
-  id: string;
-  title: string;
-}
-
 export function TaskFormModal({
   open,
   onClose,
   task,
-  projects,
-  goals = [],
-  defaultProjectId,
 }: {
   open: boolean;
   onClose: () => void;
   task?: Task | null;
-  projects: ProjectOption[];
-  goals?: GoalOption[];
-  defaultProjectId?: string;
 }) {
   const router = useRouter();
   const isEditing = Boolean(task);
@@ -48,8 +32,6 @@ export function TaskFormModal({
   const [estimatedMinutes, setEstimatedMinutes] = useState(
     task?.estimated_minutes != null ? String(task.estimated_minutes) : ""
   );
-  const [projectId, setProjectId] = useState(task?.project_id ?? defaultProjectId ?? "");
-  const [goalId, setGoalId] = useState(task?.goal_id ?? "");
   const [category, setCategory] = useState(task?.category ?? "");
   const [notes, setNotes] = useState(task?.notes ?? "");
 
@@ -63,8 +45,6 @@ export function TaskFormModal({
     setPriority("Medium");
     setDueDate("");
     setEstimatedMinutes("");
-    setProjectId(defaultProjectId ?? "");
-    setGoalId("");
     setCategory("");
     setNotes("");
   }
@@ -87,8 +67,6 @@ export function TaskFormModal({
         priority,
         due_date: dueDate || null,
         estimated_minutes: estimatedMinutes ? Number(estimatedMinutes) : null,
-        project_id: projectId || null,
-        goal_id: goalId || null,
         category: category || null,
         notes: notes || null,
       };
@@ -179,44 +157,20 @@ export function TaskFormModal({
           </Field>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Project" htmlFor="task-project">
-            <Select
-              id="task-project"
-              value={projectId ?? ""}
-              onChange={(e) => setProjectId(e.target.value)}
-            >
-              <option value="">No project</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-
-          <Field label="Category" htmlFor="task-category">
-            <TextInput
-              id="task-category"
-              value={category ?? ""}
-              onChange={(e) => setCategory(e.target.value)}
-              placeholder="e.g. Client work"
-            />
-          </Field>
-        </div>
-
-        {goals.length > 0 && (
-          <Field label="Goal" htmlFor="task-goal">
-            <Select id="task-goal" value={goalId ?? ""} onChange={(e) => setGoalId(e.target.value)}>
-              <option value="">No goal</option>
-              {goals.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.title}
-                </option>
-              ))}
-            </Select>
-          </Field>
-        )}
+        <Field label="Tag" htmlFor="task-category">
+          <TextInput
+            id="task-category"
+            list="task-tag-suggestions"
+            value={category ?? ""}
+            onChange={(e) => setCategory(e.target.value)}
+            placeholder="e.g. Odoo"
+          />
+          <datalist id="task-tag-suggestions">
+            {TASK_TAGS.map((t) => (
+              <option key={t} value={t} />
+            ))}
+          </datalist>
+        </Field>
 
         <Field label="Notes" htmlFor="task-notes">
           <Textarea
@@ -250,7 +204,6 @@ export function TaskFormModal({
       {isEditing && task && (
         <div className="mt-6 flex flex-col gap-6 border-t border-border pt-4">
           <SubtaskList taskId={task.id} />
-          <EntityNotes taskId={task.id} taskLabel={task.title} />
         </div>
       )}
     </Modal>

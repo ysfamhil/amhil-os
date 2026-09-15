@@ -27,10 +27,18 @@ interface Timestamped {
   updated_at: string;
 }
 
+export type UserRole = "user" | "admin";
+export type UserStatus = "pending" | "approved" | "suspended";
+
 export interface Profile {
   id: string;
+  email: string | null;
   full_name: string | null;
   avatar_url: string | null;
+  role: UserRole;
+  status: UserStatus;
+  approved_at: string | null;
+  approved_by: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -15,5 +15,12 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.redirect(`${origin}/login`);
+  // Covers both an outright invalid code and an expired/already-used one —
+  // exchangeCodeForSession fails the same way for either, and neither should
+  // ever reach a page that assumes a valid session exists.
+  const loginUrl = new URL(`${origin}/login`);
+  if (next === "/reset-password") {
+    loginUrl.searchParams.set("error", "reset_link_invalid");
+  }
+  return NextResponse.redirect(loginUrl);
 }

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { Menu, Search, X } from "lucide-react";
-import { NAV_ITEMS, type NavItem } from "@/lib/nav";
+import { NAV_ITEMS, ADMIN_NAV_ITEM, type NavItem } from "@/lib/nav";
 import { ThemeToggle } from "./theme-toggle";
 import { NotificationBell } from "./notification-bell";
 import { ProfileMenu } from "./profile-menu";
@@ -36,14 +36,17 @@ export function AppHeader({
   avatarUrl,
   notifications,
   unreadCount,
+  isAdmin = false,
 }: {
   fullName: string | null;
   email: string | null;
   avatarUrl: string | null;
   notifications: Notification[];
   unreadCount: number;
+  isAdmin?: boolean;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const items = isAdmin ? [...NAV_ITEMS, ADMIN_NAV_ITEM] : NAV_ITEMS;
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-topbar">
@@ -65,7 +68,7 @@ export function AppHeader({
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
-          {NAV_ITEMS.map((item) => (
+          {items.map((item) => (
             <NavLink key={item.href} item={item} />
           ))}
         </nav>
@@ -100,7 +103,7 @@ export function AppHeader({
 
       {mobileOpen && (
         <nav className="flex flex-col gap-1 border-t border-line px-4 py-3 md:hidden">
-          {NAV_ITEMS.map((item) => (
+          {items.map((item) => (
             <NavLink key={item.href} item={item} onClick={() => setMobileOpen(false)} />
           ))}
         </nav>

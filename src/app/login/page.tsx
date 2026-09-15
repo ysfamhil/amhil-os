@@ -1,11 +1,12 @@
 "use client";
 
 import { Suspense, useState, type FormEvent } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { safeNextPath } from "@/lib/safe-redirect";
-
-type Mode = "sign-in" | "sign-up";
+import { AuthShell } from "@/components/auth/auth-shell";
+import { Field, TextInput } from "@/components/ui/field";
 
 export default function LoginPage() {
   return (
@@ -18,109 +19,79 @@ export default function LoginPage() {
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [mode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [info, setInfo] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    searchParams.get("error") === "reset_link_invalid"
+      ? "That password reset link is invalid or has expired. Use \"Forgot password?\" above to request a new one."
+      : null
+  );
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
-    setInfo(null);
     setLoading(true);
 
     const supabase = createClient();
-
-    if (mode === "sign-in") {
-      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-      setLoading(false);
-      if (signInError) {
-        setError(signInError.message);
-        return;
-      }
-      const next = safeNextPath(searchParams.get("next"));
-      router.push(next);
-      router.refresh();
-    } else {
-      const { error: signUpError } = await supabase.auth.signUp({ email, password });
-      setLoading(false);
-      if (signUpError) {
-        setError(signUpError.message);
-        return;
-      }
-      setInfo("Account created. Check your email to confirm, then sign in.");
-      setMode("sign-in");
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+    if (signInError) {
+      setError(signInError.message);
+      return;
     }
+    const next = safeNextPath(searchParams.get("next"));
+    router.push(next);
+    router.refresh();
   }
 
   return (
-    <div className="flex min-h-screen flex-1 items-center justify-center bg-background px-4">
-      <div className="w-full max-w-sm rounded-xl border border-border bg-surface p-8 shadow-sm">
-        <div className="mb-6 text-center">
-          <p className="text-lg font-semibold tracking-tight">AMHIL OS</p>
-          <p className="mt-1 text-sm text-muted">
-            {mode === "sign-in" ? "Sign in to your command center" : "Create your account"}
-          </p>
-        </div>
+    <AuthShell subtitle="Sign in to your command center">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <Field label="Email" htmlFor="email">
+          <TextInput
+            id="email"
+            type="email"
+            required
+            autoComplete="email"
+            autoFocus
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </Field>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="email" className="text-sm font-medium">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
-            />
-          </div>
+        <Field label="Password" htmlFor="password">
+          <TextInput
+            id="password"
+            type="password"
+            required
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </Field>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="password" className="text-sm font-medium">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              minLength={6}
-              autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
-            />
-          </div>
+        <Link href="/forgot-password" className="-mt-2 self-end text-xs text-muted hover:text-foreground">
+          Forgot password?
+        </Link>
 
-          {error && <p className="text-sm text-danger">{error}</p>}
-          {info && <p className="text-sm text-success">{info}</p>}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="mt-2 rounded-lg bg-accent px-3 py-2 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
-          >
-            {loading ? "Please wait…" : mode === "sign-in" ? "Sign in" : "Sign up"}
-          </button>
-        </form>
+        {error && <p className="text-sm text-danger">{error}</p>}
 
         <button
-          type="button"
-          onClick={() => {
-            setMode(mode === "sign-in" ? "sign-up" : "sign-in");
-            setError(null);
-            setInfo(null);
-          }}
-          className="mt-4 w-full text-center text-sm text-muted hover:text-foreground"
+          type="submit"
+          disabled={loading}
+          className="mt-2 rounded-lg bg-accent px-3 py-2 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
         >
-          {mode === "sign-in" ? "Need an account? Sign up" : "Already have an account? Sign in"}
+          {loading ? "Signing in…" : "Sign in"}
         </button>
-      </div>
-    </div>
+      </form>
+
+      <p className="mt-5 text-center text-sm text-muted">
+        Don&apos;t have an account?{" "}
+        <Link href="/signup" className="font-medium text-foreground hover:underline">
+          Sign up
+        </Link>
+      </p>
+    </AuthShell>
   );
 }

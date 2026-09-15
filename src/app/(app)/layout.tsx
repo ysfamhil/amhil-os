@@ -2,6 +2,7 @@ import { AppHeader } from "@/components/layout/app-header";
 import { CommandPalette } from "@/components/search/command-palette";
 import { createClient } from "@/lib/supabase/server";
 import { getNotifications, getUnreadNotificationCount } from "@/lib/queries/notifications";
+import { isActiveAdmin } from "@/lib/auth";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -13,7 +14,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     ? await Promise.all([
         getNotifications(supabase, user.id),
         getUnreadNotificationCount(supabase, user.id),
-        supabase.from("profiles").select("full_name,avatar_url").eq("id", user.id).maybeSingle(),
+        supabase.from("profiles").select("full_name,avatar_url,role,status").eq("id", user.id).maybeSingle(),
       ])
     : [[], 0, { data: null }];
 
@@ -25,6 +26,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         avatarUrl={profileRes.data?.avatar_url ?? null}
         notifications={notifications}
         unreadCount={unreadCount}
+        isAdmin={isActiveAdmin(profileRes.data)}
       />
       <main className="scroll-thin min-h-0 flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-8">{children}</main>
       <CommandPalette />

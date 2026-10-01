@@ -21,6 +21,7 @@ export type ClientStatus =
   | "Inactive";
 export type LeadStatus = "Lead" | "Contacted" | "Proposal" | "Negotiation" | "Won" | "Lost";
 export type IncomeStatus = "Expected" | "Invoiced" | "Paid" | "Cancelled";
+export type CrmLeadStatus = "New" | "Contacted" | "Replied" | "Mockup sent" | "Won" | "Lost";
 
 interface Timestamped {
   created_at: string;
@@ -256,6 +257,17 @@ export interface EmergencyFundTransaction extends Timestamped {
   note: string | null;
 }
 
+export interface CrmLead extends Timestamped {
+  id: string;
+  user_id: string;
+  name: string;
+  website_url: string | null;
+  contact: string | null;
+  status: CrmLeadStatus;
+  notes: string | null;
+  date: string;
+}
+
 export interface Note extends Timestamped {
   id: string;
   user_id: string;
@@ -340,6 +352,7 @@ type ExpenseInsert = InsertOf<Expense, "amount">;
 type EmergencyFundInsert = InsertOf<EmergencyFund, "user_id">;
 type EmergencyFundTransactionInsert = InsertOf<EmergencyFundTransaction, "amount">;
 type NoteInsert = InsertOf<Note, "title">;
+type CrmLeadInsert = InsertOf<CrmLead, "name">;
 type TimelineEventInsert = InsertOf<TimelineEvent, "event_type" | "title">;
 type NotificationInsert = InsertOf<Notification, "type" | "title" | "message">;
 
@@ -374,6 +387,7 @@ export interface Database {
       emergency_fund: TableDef<EmergencyFund, EmergencyFundInsert>;
       emergency_fund_transactions: TableDef<EmergencyFundTransaction, EmergencyFundTransactionInsert>;
       notes: TableDef<Note, NoteInsert>;
+      crm_leads: TableDef<CrmLead, CrmLeadInsert>;
       timeline_events: TableDef<TimelineEvent, TimelineEventInsert>;
       notifications: TableDef<Notification, NotificationInsert>;
     };

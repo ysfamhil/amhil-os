@@ -6,6 +6,7 @@ import {
   Clock,
   StickyNote,
   Wallet,
+  Handshake,
   ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
@@ -27,6 +28,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Timesheet", href: "/time", icon: Clock, domainVar: "--domain-time" },
   { label: "Notes", href: "/notes", icon: StickyNote, domainVar: "--domain-notes" },
   { label: "Finance", href: "/finance", icon: Wallet, domainVar: "--domain-finance" },
+  { label: "CRM", href: "/crm", icon: Handshake, domainVar: "--domain-crm" },
 ];
 
 /** Only ever rendered for role = "admin" — see AppHeader. */

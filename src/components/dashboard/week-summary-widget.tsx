@@ -87,10 +87,10 @@ export function WeekSummaryWidget({ data }: { data: DashboardData }) {
         />
         <Tile
           label="Net Income"
-          value={money(data.finance.netIncome)}
+          value={money(data.week.netIncome)}
           unit="MAD"
-          delta={data.finance.netIncome >= 0 ? "positive" : "negative"}
-          deltaTone={data.finance.netIncome >= 0 ? "up" : "down"}
+          delta={data.week.netIncome >= 0 ? "positive" : "negative"}
+          deltaTone={data.week.netIncome >= 0 ? "up" : "down"}
           color="var(--domain-finance)"
           sparkline={data.finance.netIncomeSparkline}
         />

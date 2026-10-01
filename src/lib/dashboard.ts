@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   addDaysISODate,
   endOfMonthISODate,
+  endOfWeekISODate,
   startOfMonthISODate,
   startOfWeek,
   startOfWeekISODate,
@@ -33,6 +34,7 @@ type TaskRow = Pick<Task, "id" | "title" | "status" | "priority" | "due_date" | 
 export async function getDashboardData(supabase: SupabaseClient<Database>, userId: string) {
   const today = todayISODate();
   const weekStartDate = startOfWeekISODate();
+  const weekEndDate = endOfWeekISODate();
   const lastWeekStartDate = addDaysISODate(-7, startOfWeek());
   const monthStart = startOfMonthISODate();
   const monthEnd = endOfMonthISODate();
@@ -55,6 +57,7 @@ export async function getDashboardData(supabase: SupabaseClient<Database>, userI
     habits,
     goals,
     timeStats,
+    financeThisWeek,
     financeThisMonth,
     financeAllTime,
     financeTrend,
@@ -128,6 +131,7 @@ export async function getDashboardData(supabase: SupabaseClient<Database>, userI
     getHabits(supabase, userId, { activeOnly: true, weekDates }),
     getGoals(supabase, userId),
     getTimeStats(supabase, userId),
+    getFinanceOverview(supabase, userId, { start: weekStartDate, end: weekEndDate }),
     getFinanceOverview(supabase, userId, { start: monthStart, end: monthEnd }),
     getFinanceOverview(supabase, userId, resolveDateRange("all_time")),
     getMonthlyFinanceTrend(supabase, userId, 6),
@@ -257,6 +261,7 @@ export async function getDashboardData(supabase: SupabaseClient<Database>, userI
       habitPossible: habits.length * 7,
       income: sum((incomeWeekRes.data ?? []) as { amount: number }[]),
       incomePaidCount: incomePaidWeekCountRes.count ?? 0,
+      netIncome: financeThisWeek.overview.netIncome,
     },
     goals: {
       active: activeGoals.length,

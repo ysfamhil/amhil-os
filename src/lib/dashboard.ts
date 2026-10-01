@@ -183,7 +183,7 @@ export async function getDashboardData(supabase: SupabaseClient<Database>, userI
     subtasks: subtaskProgress[task.id] ?? null,
   });
 
-  const hoursWorkedLastWeek = sumMinutes((timeEntriesLastWeekRes.data ?? []) as { duration_minutes: number }[]) / 60;
+  const hoursWorkedLastWeekMinutes = sumMinutes((timeEntriesLastWeekRes.data ?? []) as { duration_minutes: number }[]);
 
   const tasksCompletedThisWeek = (tasksCompletedWeekRes.data ?? []) as { completed_at: string | null }[];
   const timeEntriesThisWeek = (timeEntriesThisWeekRes.data ?? []) as { date: string; duration_minutes: number }[];
@@ -252,7 +252,7 @@ export async function getDashboardData(supabase: SupabaseClient<Database>, userI
       habitsSparkline,
       hoursWorked: timeStats.weekHours,
       hoursWorkedMinutes: timeStats.weekMinutes,
-      hoursWorkedDelta: timeStats.weekHours - hoursWorkedLastWeek,
+      hoursWorkedDeltaMinutes: timeStats.weekMinutes - hoursWorkedLastWeekMinutes,
       habitConsistency:
         habits.length > 0
           ? Math.round(habits.reduce((t, h) => t + h.weeklyConsistency, 0) / habits.length)

@@ -7,6 +7,7 @@ const TABS: { key: string; label: string }[] = [
   { key: "overview", label: "Overview" },
   { key: "income", label: "Income" },
   { key: "expenses", label: "Expenses" },
+  { key: "funds", label: "Funds" },
 ];
 
 export function FinanceTabBar({ active }: { active: string }) {

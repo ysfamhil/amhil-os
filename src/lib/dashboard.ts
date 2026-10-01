@@ -12,6 +12,7 @@ import { getHabits } from "@/lib/queries/habits";
 import { getGoals } from "@/lib/queries/goals";
 import { getTimeStats } from "@/lib/queries/time-entries";
 import { getFinanceOverview, getMonthlyFinanceTrend } from "@/lib/queries/finance";
+import { resolveDateRange } from "@/lib/date-ranges";
 import { getEmergencyFundSummary } from "@/lib/queries/emergency-fund";
 import { getSubtaskProgressMap } from "@/lib/queries/tasks";
 import type { Database, Task, TaskStatus } from "@/types/database";
@@ -55,6 +56,7 @@ export async function getDashboardData(supabase: SupabaseClient<Database>, userI
     goals,
     timeStats,
     financeThisMonth,
+    financeAllTime,
     financeTrend,
     habitCompletionsWeekRes,
     recentTimeEntriesRes,
@@ -127,6 +129,7 @@ export async function getDashboardData(supabase: SupabaseClient<Database>, userI
     getGoals(supabase, userId),
     getTimeStats(supabase, userId),
     getFinanceOverview(supabase, userId, { start: monthStart, end: monthEnd }),
+    getFinanceOverview(supabase, userId, resolveDateRange("all_time")),
     getMonthlyFinanceTrend(supabase, userId, 6),
     supabase
       .from("habit_completions")
@@ -244,6 +247,7 @@ export async function getDashboardData(supabase: SupabaseClient<Database>, userI
       hoursSparkline,
       habitsSparkline,
       hoursWorked: timeStats.weekHours,
+      hoursWorkedMinutes: timeStats.weekMinutes,
       hoursWorkedDelta: timeStats.weekHours - hoursWorkedLastWeek,
       habitConsistency:
         habits.length > 0
@@ -262,6 +266,8 @@ export async function getDashboardData(supabase: SupabaseClient<Database>, userI
     time: {
       todayHours: timeStats.todayHours,
       weekHours: timeStats.weekHours,
+      todayMinutes: timeStats.todayMinutes,
+      weekMinutes: timeStats.weekMinutes,
       recentEntries: recentTimeEntries,
     },
     habitsToday: {
@@ -282,6 +288,11 @@ export async function getDashboardData(supabase: SupabaseClient<Database>, userI
       unpaidIncome: financeThisMonth.overview.invoicedIncome,
       recentTransactions,
       netIncomeSparkline,
+      allTime: {
+        revenue: financeAllTime.overview.paidRevenue,
+        expenses: financeAllTime.overview.expenses,
+        netIncome: financeAllTime.overview.netIncome,
+      },
     },
     notes: {
       recent: recentNotes,

@@ -29,7 +29,8 @@ export function TimeEntryFormModal({
   const isEditing = Boolean(entry);
 
   const [date, setDate] = useState(entry?.date ?? new Date().toISOString().slice(0, 10));
-  const [duration, setDuration] = useState(entry?.duration_minutes != null ? String(entry.duration_minutes) : "30");
+  const [hours, setHours] = useState(entry?.duration_minutes != null ? String(Math.floor(entry.duration_minutes / 60)) : "0");
+  const [minutes, setMinutes] = useState(entry?.duration_minutes != null ? String(entry.duration_minutes % 60) : "30");
   const [category, setCategory] = useState(entry?.category ?? "Work");
   const [taskId, setTaskId] = useState(entry?.task_id ?? "");
   const [description, setDescription] = useState(entry?.description ?? "");
@@ -40,9 +41,19 @@ export function TimeEntryFormModal({
     e.preventDefault();
     setError(null);
 
-    const durationValue = Number(duration);
-    if (!durationValue || durationValue <= 0) {
-      setError("Duration must be a positive number of minutes");
+    const hoursValue = Number(hours) || 0;
+    const minutesValue = Number(minutes) || 0;
+    if (minutesValue < 0 || minutesValue > 59) {
+      setError("Minutes must be between 0 and 59");
+      return;
+    }
+    if (hoursValue < 0) {
+      setError("Hours can't be negative");
+      return;
+    }
+    const durationValue = hoursValue * 60 + minutesValue;
+    if (durationValue <= 0) {
+      setError("Duration must be greater than zero");
       return;
     }
 
@@ -73,17 +84,28 @@ export function TimeEntryFormModal({
   return (
     <Modal open={open} onClose={onClose} title={isEditing ? "Edit time entry" : "Log time"} size="md">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <Field label="Date" htmlFor="time-date">
             <TextInput id="time-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
           </Field>
-          <Field label="Duration (minutes)" htmlFor="time-duration">
+          <Field label="Hours" htmlFor="time-hours">
             <TextInput
-              id="time-duration"
+              id="time-hours"
               type="number"
-              min={1}
-              value={duration}
-              onChange={(e) => setDuration(e.target.value)}
+              min={0}
+              value={hours}
+              onChange={(e) => setHours(e.target.value)}
+              required
+            />
+          </Field>
+          <Field label="Minutes" htmlFor="time-minutes">
+            <TextInput
+              id="time-minutes"
+              type="number"
+              min={0}
+              max={59}
+              value={minutes}
+              onChange={(e) => setMinutes(e.target.value)}
               required
             />
           </Field>

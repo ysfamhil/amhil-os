@@ -6,6 +6,8 @@ import { FinanceTabBar } from "@/components/finance/finance-tab-bar";
 import { FinanceOverview } from "@/components/finance/finance-overview";
 import { IncomeBoard } from "@/components/finance/income-board";
 import { ExpenseBoard } from "@/components/finance/expense-board";
+import { FundsBoard } from "@/components/finance/funds-board";
+import { getEmergencyFunds } from "@/lib/queries/emergency-fund";
 import type { IncomeStatus } from "@/types/database";
 
 export default async function FinancePage({
@@ -51,6 +53,9 @@ export default async function FinancePage({
 
     const { data } = await query;
     body = <ExpenseBoard entries={data ?? []} />;
+  } else if (tab === "funds") {
+    const funds = await getEmergencyFunds(supabase, user.id);
+    body = <FundsBoard funds={funds} />;
   } else {
     const [{ overview }, trend] = await Promise.all([
       getFinanceOverview(supabase, user.id, resolvedRange),

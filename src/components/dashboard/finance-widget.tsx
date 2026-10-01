@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
+import clsx from "clsx";
 import { WidgetShell, WidgetAddButton } from "./widget-shell";
 import type { DashboardData } from "@/lib/dashboard";
 
@@ -15,15 +19,42 @@ export function FinanceWidget({
   onAddIncome: () => void;
   onAddExpense: () => void;
 }) {
+  const [period, setPeriod] = useState<"month" | "all">("month");
   const monthLabel = new Date().toLocaleDateString("en-GB", { month: "long", year: "numeric" });
   const maxBar = Math.max(1, ...data.financeTrend.map((p) => Math.max(p.revenue, p.expenses)));
 
+  const revenue = period === "month" ? data.finance.monthRevenue : data.finance.allTime.revenue;
+  const expenses = period === "month" ? data.finance.monthExpenses : data.finance.allTime.expenses;
+  const netIncome = period === "month" ? data.finance.netIncome : data.finance.allTime.netIncome;
+
   return (
     <WidgetShell
-      title={`Finance · ${monthLabel}`}
+      title={`Finance · ${period === "month" ? monthLabel : "All Time"}`}
       domain="finance"
       action={
         <div className="flex items-center gap-1">
+          <div className="flex rounded-lg border border-line3 p-[2px]">
+            <button
+              type="button"
+              onClick={() => setPeriod("month")}
+              className={clsx(
+                "rounded-[6px] px-2 py-[3px] text-[10.5px] font-semibold",
+                period === "month" ? "bg-a13 text-accent" : "text-t5 hover:text-t2"
+              )}
+            >
+              This Month
+            </button>
+            <button
+              type="button"
+              onClick={() => setPeriod("all")}
+              className={clsx(
+                "rounded-[6px] px-2 py-[3px] text-[10.5px] font-semibold",
+                period === "all" ? "bg-a13 text-accent" : "text-t5 hover:text-t2"
+              )}
+            >
+              All Time
+            </button>
+          </div>
           <Link href="/finance" className="rounded-lg px-2 py-1 text-[11px] font-semibold text-t6 hover:bg-surface2 hover:text-t3">
             View all
           </Link>
@@ -41,21 +72,21 @@ export function FinanceWidget({
                 Income
               </p>
               <p className="mt-1 text-[22px] font-extrabold tabular-nums tracking-[-0.02em] text-green">
-                +{money(data.finance.monthRevenue)}
+                +{money(revenue)}
               </p>
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.11em] text-red">Expenses</p>
               <p className="mt-1 text-[22px] font-extrabold tabular-nums tracking-[-0.02em] text-red">
-                -{money(data.finance.monthExpenses)}
+                -{money(expenses)}
               </p>
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.11em] text-t5">Net</p>
               <p
-                className={`mt-1 text-[22px] font-extrabold tabular-nums tracking-[-0.02em] ${data.finance.netIncome >= 0 ? "text-green" : "text-red"}`}
+                className={`mt-1 text-[22px] font-extrabold tabular-nums tracking-[-0.02em] ${netIncome >= 0 ? "text-green" : "text-red"}`}
               >
-                {money(data.finance.netIncome)}
+                {money(netIncome)}
               </p>
             </div>
           </div>
@@ -84,7 +115,9 @@ export function FinanceWidget({
         <div className="scroll-thin overflow-y-auto">
           {data.finance.recentTransactions.length === 0 ? (
             <div className="flex flex-col items-start gap-2 px-[16px] py-4">
-              <p className="text-[12.5px] text-t6">No income logged in {monthLabel.split(" ")[0]}.</p>
+              <p className="text-[12.5px] text-t6">
+                {period === "month" ? `No income logged in ${monthLabel.split(" ")[0]}.` : "No income logged yet."}
+              </p>
               <button type="button" onClick={onAddIncome} className="text-[12px] font-bold" style={{ color: "var(--domain-finance)" }}>
                 + Add income
               </button>

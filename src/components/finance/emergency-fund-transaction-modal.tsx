@@ -10,7 +10,15 @@ import { addEmergencyFundDeposit, addEmergencyFundWithdrawal } from "@/lib/actio
 
 type Mode = "deposit" | "withdraw";
 
-export function EmergencyFundTransactionModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function EmergencyFundTransactionModal({
+  open,
+  onClose,
+  fundId,
+}: {
+  open: boolean;
+  onClose: () => void;
+  fundId: string;
+}) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("deposit");
   const [amount, setAmount] = useState("");
@@ -38,9 +46,9 @@ export function EmergencyFundTransactionModal({ open, onClose }: { open: boolean
     setPending(true);
     try {
       if (mode === "deposit") {
-        await addEmergencyFundDeposit(amountValue, note || null);
+        await addEmergencyFundDeposit(fundId, amountValue, note || null);
       } else {
-        await addEmergencyFundWithdrawal(amountValue, note || null);
+        await addEmergencyFundWithdrawal(fundId, amountValue, note || null);
       }
       router.refresh();
       reset();

@@ -1,18 +1,7 @@
 import Link from "next/link";
 import { WidgetShell, WidgetAddButton } from "./widget-shell";
+import { formatDuration } from "@/lib/duration";
 import type { DashboardData } from "@/lib/dashboard";
-
-function hours(value: number) {
-  return `${value.toFixed(1)}h`;
-}
-
-function durationLabel(minutes: number) {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  if (h === 0) return `${m}m`;
-  if (m === 0) return `${h}h`;
-  return `${h}h ${m}m`;
-}
 
 function formatEntryDate(date: string) {
   const today = new Date().toISOString().slice(0, 10);
@@ -43,13 +32,13 @@ export function TimesheetWidget({ data, onLogTime }: { data: DashboardData; onLo
           <p className="text-[10px] font-bold uppercase tracking-[0.11em]" style={{ color: "var(--domain-time)" }}>
             Today
           </p>
-          <p className="mt-1 text-[22px] font-extrabold tabular-nums tracking-[-0.02em]">{hours(data.time.todayHours)}</p>
+          <p className="mt-1 text-[22px] font-extrabold tabular-nums tracking-[-0.02em]">{formatDuration(data.time.todayMinutes)}</p>
         </div>
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.11em]" style={{ color: "var(--domain-time)" }}>
             This week
           </p>
-          <p className="mt-1 text-[22px] font-extrabold tabular-nums tracking-[-0.02em]">{hours(data.time.weekHours)}</p>
+          <p className="mt-1 text-[22px] font-extrabold tabular-nums tracking-[-0.02em]">{formatDuration(data.time.weekMinutes)}</p>
         </div>
       </div>
 
@@ -71,7 +60,7 @@ export function TimesheetWidget({ data, onLogTime }: { data: DashboardData; onLo
                   {entry.category && ` · ${entry.category}`}
                 </p>
               </div>
-              <span className="shrink-0 font-mono text-[11.5px] font-semibold text-t3">{durationLabel(entry.durationMinutes)}</span>
+              <span className="shrink-0 font-mono text-[11.5px] font-semibold text-t3">{formatDuration(entry.durationMinutes)}</span>
             </li>
           ))}
         </ul>

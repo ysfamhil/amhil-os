@@ -12,14 +12,11 @@ import {
   type TaskOption,
 } from "@/components/time/time-entry-form-modal";
 import { deleteTimeEntry } from "@/lib/actions/time-entries";
+import { formatDuration } from "@/lib/duration";
 import type { TimeEntryWithRelations, TimeStats } from "@/lib/queries/time-entries";
 import type { TimeEntry } from "@/types/database";
 
 const CATEGORIES = ["Work", "Learning", "Personal", "Other"];
-
-function hours(h: number) {
-  return `${h.toFixed(1)}h`;
-}
 
 export function TimeBoard({
   entries,
@@ -60,19 +57,19 @@ export function TimeBoard({
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Card>
           <p className="text-xs text-muted">Today</p>
-          <p className="mt-1 text-lg font-semibold">{hours(stats.todayHours)}</p>
+          <p className="mt-1 text-lg font-semibold">{formatDuration(stats.todayMinutes)}</p>
         </Card>
         <Card>
           <p className="text-xs text-muted">This week</p>
-          <p className="mt-1 text-lg font-semibold">{hours(stats.weekHours)}</p>
+          <p className="mt-1 text-lg font-semibold">{formatDuration(stats.weekMinutes)}</p>
         </Card>
         <Card>
           <p className="text-xs text-muted">This month</p>
-          <p className="mt-1 text-lg font-semibold">{hours(stats.monthHours)}</p>
+          <p className="mt-1 text-lg font-semibold">{formatDuration(stats.monthMinutes)}</p>
         </Card>
         <Card>
           <p className="text-xs text-muted">All time</p>
-          <p className="mt-1 text-lg font-semibold">{hours(stats.totalHours)}</p>
+          <p className="mt-1 text-lg font-semibold">{formatDuration(stats.totalMinutes)}</p>
         </Card>
       </div>
 
@@ -82,7 +79,7 @@ export function TimeBoard({
           <div className="flex flex-wrap gap-2">
             {stats.byCategory.map((c) => (
               <Badge key={c.category} tone="neutral">
-                {c.category}: {hours(c.hours)}
+                {c.category}: {formatDuration(c.minutes)}
               </Badge>
             ))}
           </div>
@@ -144,7 +141,7 @@ export function TimeBoard({
                 </div>
                 {entry.description && <p className="mt-1 text-sm text-muted">{entry.description}</p>}
               </div>
-              <Badge tone="accent">{hours(entry.duration_minutes / 60)}</Badge>
+              <Badge tone="accent">{formatDuration(entry.duration_minutes)}</Badge>
               <button
                 type="button"
                 onClick={() => {

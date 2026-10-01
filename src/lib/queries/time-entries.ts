@@ -33,7 +33,11 @@ export interface TimeStats {
   todayHours: number;
   weekHours: number;
   monthHours: number;
-  byCategory: { category: string; hours: number }[];
+  totalMinutes: number;
+  todayMinutes: number;
+  weekMinutes: number;
+  monthMinutes: number;
+  byCategory: { category: string; hours: number; minutes: number }[];
 }
 
 export async function getTimeStats(supabase: SupabaseClient<Database>, userId: string): Promise<TimeStats> {
@@ -49,7 +53,7 @@ export async function getTimeStats(supabase: SupabaseClient<Database>, userId: s
   if (error) throw new Error(error.message);
   const entries = (data ?? []) as { date: string; duration_minutes: number; category: string | null }[];
 
-  const sum = (rows: typeof entries) => rows.reduce((t, r) => t + r.duration_minutes, 0) / 60;
+  const sumMinutes = (rows: typeof entries) => rows.reduce((t, r) => t + r.duration_minutes, 0);
 
   const categoryMap = new Map<string, number>();
   for (const entry of entries) {
@@ -57,13 +61,22 @@ export async function getTimeStats(supabase: SupabaseClient<Database>, userId: s
     categoryMap.set(cat, (categoryMap.get(cat) ?? 0) + entry.duration_minutes);
   }
 
+  const totalMinutes = sumMinutes(entries);
+  const todayMinutes = sumMinutes(entries.filter((e) => e.date === today));
+  const weekMinutes = sumMinutes(entries.filter((e) => e.date >= weekStart));
+  const monthMinutes = sumMinutes(entries.filter((e) => e.date >= monthStart));
+
   return {
-    totalHours: sum(entries),
-    todayHours: sum(entries.filter((e) => e.date === today)),
-    weekHours: sum(entries.filter((e) => e.date >= weekStart)),
-    monthHours: sum(entries.filter((e) => e.date >= monthStart)),
+    totalHours: totalMinutes / 60,
+    todayHours: todayMinutes / 60,
+    weekHours: weekMinutes / 60,
+    monthHours: monthMinutes / 60,
+    totalMinutes,
+    todayMinutes,
+    weekMinutes,
+    monthMinutes,
     byCategory: [...categoryMap.entries()]
-      .map(([category, minutes]) => ({ category, hours: minutes / 60 }))
-      .sort((a, b) => b.hours - a.hours),
+      .map(([category, minutes]) => ({ category, hours: minutes / 60, minutes }))
+      .sort((a, b) => b.minutes - a.minutes),
   };
 }

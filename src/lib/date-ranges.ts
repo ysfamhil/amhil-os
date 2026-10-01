@@ -26,6 +26,7 @@ export const DATE_RANGE_PRESETS = [
   "this_quarter",
   "this_year",
   "last_year",
+  "all_time",
   "custom",
 ] as const;
 
@@ -47,8 +48,13 @@ export const DATE_RANGE_LABELS: Record<DateRangePreset, string> = {
   this_quarter: "This Quarter",
   this_year: "This Year",
   last_year: "Last Year",
+  all_time: "All Time",
   custom: "Custom Range",
 };
+
+/** Wide enough to include every real record without relying on an "unfiltered" query path. */
+const ALL_TIME_START = "1900-01-01";
+const ALL_TIME_END = "2999-12-31";
 
 export function resolveDateRange(preset: DateRangePreset, custom?: { start: string; end: string }): DateRange {
   const today = todayISODate();
@@ -83,6 +89,8 @@ export function resolveDateRange(preset: DateRangePreset, custom?: { start: stri
       const lastYearDay = new Date(new Date().getFullYear() - 1, 0, 1);
       return { start: startOfYearISODate(lastYearDay), end: endOfYearISODate(lastYearDay), label };
     }
+    case "all_time":
+      return { start: ALL_TIME_START, end: ALL_TIME_END, label };
     case "custom":
       return { start: custom?.start ?? today, end: custom?.end ?? today, label };
     default:

@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { WidgetShell } from "./widget-shell";
 import { Sparkline } from "./sparkline";
+import { formatDuration } from "@/lib/duration";
 import type { DashboardData } from "@/lib/dashboard";
 
 function money(amount: number) {
@@ -70,8 +71,7 @@ export function WeekSummaryWidget({ data }: { data: DashboardData }) {
         />
         <Tile
           label="Hours Worked"
-          value={data.week.hoursWorked.toFixed(1)}
-          unit="h"
+          value={formatDuration(data.week.hoursWorkedMinutes)}
           delta={`${signed(data.week.hoursWorkedDelta, 1)} vs last wk`}
           deltaTone={data.week.hoursWorkedDelta > 0 ? "up" : data.week.hoursWorkedDelta < 0 ? "down" : "neutral"}
           color="var(--domain-time)"

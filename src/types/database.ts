@@ -247,12 +247,14 @@ export interface Expense extends Timestamped {
 export interface EmergencyFund extends Timestamped {
   id: string;
   user_id: string;
+  name: string;
   target_amount: number;
 }
 
 export interface EmergencyFundTransaction extends Timestamped {
   id: string;
   user_id: string;
+  fund_id: string;
   amount: number;
   note: string | null;
 }
@@ -350,7 +352,7 @@ type TimeEntryInsert = InsertOf<TimeEntry, "duration_minutes">;
 type IncomeInsert = InsertOf<Income, "amount">;
 type ExpenseInsert = InsertOf<Expense, "amount">;
 type EmergencyFundInsert = InsertOf<EmergencyFund, "user_id">;
-type EmergencyFundTransactionInsert = InsertOf<EmergencyFundTransaction, "amount">;
+type EmergencyFundTransactionInsert = InsertOf<EmergencyFundTransaction, "amount" | "fund_id">;
 type NoteInsert = InsertOf<Note, "title">;
 type CrmLeadInsert = InsertOf<CrmLead, "name">;
 type TimelineEventInsert = InsertOf<TimelineEvent, "event_type" | "title">;

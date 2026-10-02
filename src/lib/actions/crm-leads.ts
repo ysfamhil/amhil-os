@@ -67,6 +67,82 @@ export async function createCrmLead(input: CrmLeadInput) {
   return data;
 }
 
+const IMPORT_STATUSES: CrmLeadStatus[] = ["New", "Contacted", "Replied", "Mockup sent", "Won", "Lost"];
+
+export interface CrmLeadImportRow {
+  name?: string;
+  website?: string;
+  contact?: string;
+  status?: string;
+  date?: string;
+  notes?: string;
+}
+
+export async function importCrmLeads(rows: CrmLeadImportRow[]): Promise<{ imported: number; skipped: number }> {
+  const { supabase, user } = await requireUser();
+
+  const { data: existing, error: existingError } = await supabase
+    .from("crm_leads")
+    .select("website_url")
+    .eq("user_id", user.id)
+    .not("website_url", "is", null);
+  if (existingError) throw new Error(existingError.message);
+
+  const seenWebsites = new Set((existing ?? []).map((l) => (l.website_url ?? "").trim().toLowerCase()));
+  const toInsert: {
+    name: string;
+    website_url: string | null;
+    contact: string | null;
+    status: CrmLeadStatus;
+    notes: string | null;
+    date: string;
+    user_id: string;
+  }[] = [];
+  let skipped = 0;
+
+  for (const row of rows) {
+    const name = row.name?.trim();
+    if (!name) continue;
+
+    let website: string | null = null;
+    try {
+      website = sanitizeWebsiteUrl(row.website);
+    } catch {
+      website = null;
+    }
+
+    if (website) {
+      const key = website.toLowerCase();
+      if (seenWebsites.has(key)) {
+        skipped++;
+        continue;
+      }
+      seenWebsites.add(key);
+    }
+
+    const statusInput = row.status?.trim().toLowerCase();
+    const status = IMPORT_STATUSES.find((s) => s.toLowerCase() === statusInput) ?? "New";
+
+    toInsert.push({
+      name,
+      website_url: website,
+      contact: row.contact?.trim() || null,
+      status,
+      notes: row.notes?.trim() || null,
+      date: row.date?.trim() || todayISODate(),
+      user_id: user.id,
+    });
+  }
+
+  if (toInsert.length > 0) {
+    const { error } = await supabase.from("crm_leads").insert(toInsert);
+    if (error) throw new Error(error.message);
+  }
+
+  revalidatePath("/crm");
+  return { imported: toInsert.length, skipped };
+}
+
 export async function updateCrmLead(id: string, input: Partial<CrmLeadInput>) {
   const { supabase, user } = await requireUser();
 

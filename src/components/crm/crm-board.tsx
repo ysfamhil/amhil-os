@@ -1,12 +1,14 @@
 "use client";
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { useState } from "react";
-import { Plus, Handshake } from "lucide-react";
+import { useRef, useState } from "react";
+import { Plus, Handshake, Upload } from "lucide-react";
 import clsx from "clsx";
 import { CrmTable } from "@/components/crm/crm-table";
 import { CrmKanban } from "@/components/crm/crm-kanban";
 import { CrmLeadFormModal } from "@/components/crm/crm-lead-form-modal";
+import { ImportLeadsModal } from "@/components/crm/import-leads-modal";
+import { fromCSV } from "@/lib/csv";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { deleteCrmLead, setCrmLeadStatus } from "@/lib/actions/crm-leads";
@@ -24,6 +26,15 @@ export function CrmBoard({ leads }: { leads: CrmLead[] }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<CrmLead | null>(null);
   const [deletingLead, setDeletingLead] = useState<CrmLead | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importRows, setImportRows] = useState<Record<string, string>[]>([]);
+  const [importOpen, setImportOpen] = useState(false);
+
+  async function handleImportFile(file: File) {
+    const text = await file.text();
+    setImportRows(fromCSV(text));
+    setImportOpen(true);
+  }
 
   function updateParams(patch: Record<string, string | null>) {
     const params = new URLSearchParams(window.location.search);
@@ -54,15 +65,36 @@ export function CrmBoard({ leads }: { leads: CrmLead[] }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={openNew}
-          className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-white hover:opacity-90"
-          style={{ backgroundColor: "var(--domain-crm)" }}
-        >
-          <Plus size={16} />
-          Add Lead
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={openNew}
+            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-white hover:opacity-90"
+            style={{ backgroundColor: "var(--domain-crm)" }}
+          >
+            <Plus size={16} />
+            Add Lead
+          </button>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-line3 px-3 py-2 text-sm font-semibold text-t3 hover:bg-surface2"
+          >
+            <Upload size={16} />
+            Import Leads
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv,text/csv"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleImportFile(file);
+              e.target.value = "";
+            }}
+          />
+        </div>
 
         <div className="flex rounded-[11px] border border-line3 p-[3px]">
           <button
@@ -127,6 +159,8 @@ export function CrmBoard({ leads }: { leads: CrmLead[] }) {
       )}
 
       <CrmLeadFormModal key={editingLead?.id ?? "new"} open={modalOpen} onClose={() => setModalOpen(false)} lead={editingLead} />
+
+      <ImportLeadsModal open={importOpen} onClose={() => setImportOpen(false)} rows={importRows} />
 
       <ConfirmDialog
         open={Boolean(deletingLead)}

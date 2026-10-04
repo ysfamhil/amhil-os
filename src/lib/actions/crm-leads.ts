@@ -168,6 +168,34 @@ export async function setCrmLeadStatus(id: string, status: CrmLeadStatus) {
   revalidatePath("/crm");
 }
 
+export async function markCrmLeadFollowedUp(id: string) {
+  const { supabase, user } = await requireUser();
+
+  const { data: lead, error: readError } = await supabase
+    .from("crm_leads")
+    .select("follow_up_count")
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .single();
+  if (readError) throw new Error(readError.message);
+
+  const { error } = await supabase
+    .from("crm_leads")
+    .update({ follow_up_count: lead.follow_up_count + 1, last_followed_up: todayISODate() })
+    .eq("id", id)
+    .eq("user_id", user.id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/crm");
+}
+
+export async function deleteCrmLeads(ids: string[]) {
+  if (ids.length === 0) return;
+  const { supabase, user } = await requireUser();
+  const { error } = await supabase.from("crm_leads").delete().in("id", ids).eq("user_id", user.id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/crm");
+}
+
 export async function deleteCrmLead(id: string) {
   const { supabase, user } = await requireUser();
   const { error } = await supabase.from("crm_leads").delete().eq("id", id).eq("user_id", user.id);

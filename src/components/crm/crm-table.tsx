@@ -14,18 +14,34 @@ export function CrmTable({
   onEdit,
   onDelete,
   onStatusChange,
+  selectedIds,
+  onToggleSelect,
+  onToggleSelectAll,
 }: {
   leads: CrmLead[];
   onEdit: (lead: CrmLead) => void;
   onDelete: (lead: CrmLead) => void;
   onStatusChange: (lead: CrmLead, status: CrmLeadStatus) => void;
+  selectedIds: Set<string>;
+  onToggleSelect: (id: string) => void;
+  onToggleSelectAll: () => void;
 }) {
+  const allSelected = leads.length > 0 && leads.every((l) => selectedIds.has(l.id));
   return (
     <div className="overflow-hidden rounded-[16px] border border-line bg-surface">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-[13px]">
           <thead>
             <tr className="border-b border-line text-[11px] uppercase tracking-[0.07em] text-t5">
+              <th className="w-10 px-4 py-3">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={onToggleSelectAll}
+                  aria-label="Select all leads"
+                  className="h-4 w-4 cursor-pointer accent-[var(--domain-crm)]"
+                />
+              </th>
               <th className="px-4 py-3 font-semibold">Name</th>
               <th className="px-4 py-3 font-semibold">Website</th>
               <th className="px-4 py-3 font-semibold">Contact</th>
@@ -37,6 +53,15 @@ export function CrmTable({
           <tbody>
             {leads.map((lead) => (
               <tr key={lead.id} className="border-b border-line2 last:border-b-0 hover:bg-surface2">
+                <td className="w-10 px-4 py-3">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(lead.id)}
+                    onChange={() => onToggleSelect(lead.id)}
+                    aria-label={`Select ${lead.name}`}
+                    className="h-4 w-4 cursor-pointer accent-[var(--domain-crm)]"
+                  />
+                </td>
                 <td className="px-4 py-3 font-medium">{lead.name}</td>
                 <td className="px-4 py-3 text-t4">
                   {lead.website_url ? (

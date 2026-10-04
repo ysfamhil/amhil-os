@@ -268,6 +268,9 @@ export interface CrmLead extends Timestamped {
   status: CrmLeadStatus;
   notes: string | null;
   date: string;
+  follow_up_count: number;
+  last_followed_up: string | null;
+  status_changed_at: string;
 }
 
 export interface Note extends Timestamped {

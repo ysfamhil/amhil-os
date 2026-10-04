@@ -2,16 +2,18 @@
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
-import { Plus, Handshake, Upload } from "lucide-react";
+import { Plus, Handshake, Upload, Trash2 } from "lucide-react";
 import clsx from "clsx";
 import { CrmTable } from "@/components/crm/crm-table";
 import { CrmKanban } from "@/components/crm/crm-kanban";
 import { CrmLeadFormModal } from "@/components/crm/crm-lead-form-modal";
 import { ImportLeadsModal } from "@/components/crm/import-leads-modal";
+import { CrmFollowUp } from "@/components/crm/crm-follow-up";
 import { fromCSV } from "@/lib/csv";
+import { getFollowUpGroups } from "@/lib/crm-follow-up";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
-import { deleteCrmLead, setCrmLeadStatus } from "@/lib/actions/crm-leads";
+import { deleteCrmLead, deleteCrmLeads, markCrmLeadFollowedUp, setCrmLeadStatus } from "@/lib/actions/crm-leads";
 import type { CrmLead, CrmLeadStatus } from "@/types/database";
 
 const STATUSES: CrmLeadStatus[] = ["New", "Contacted", "Replied", "Mockup sent", "Won", "Lost"];
@@ -20,7 +22,8 @@ export function CrmBoard({ leads }: { leads: CrmLead[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const view = searchParams.get("view") === "kanban" ? "kanban" : "table";
+  const viewParam = searchParams.get("view");
+  const view = viewParam === "table" || viewParam === "followup" ? viewParam : "kanban";
   const statusFilter = searchParams.get("status") ?? "all";
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -29,6 +32,8 @@ export function CrmBoard({ leads }: { leads: CrmLead[] }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importRows, setImportRows] = useState<Record<string, string>[]>([]);
   const [importOpen, setImportOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
   async function handleImportFile(file: File) {
     const text = await file.text();
@@ -61,6 +66,30 @@ export function CrmBoard({ leads }: { leads: CrmLead[] }) {
   }
 
   const tableLeads = statusFilter === "all" ? leads : leads.filter((l) => l.status === statusFilter);
+  const followUpGroups = getFollowUpGroups(leads);
+  const followUpCount = followUpGroups.cold.length + followUpGroups.warm.length;
+  const selectedLeadIds = leads.filter((l) => selectedIds.has(l.id)).map((l) => l.id);
+
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    setSelectedIds((prev) => {
+      const allSelected = tableLeads.length > 0 && tableLeads.every((l) => prev.has(l.id));
+      const next = new Set(prev);
+      for (const l of tableLeads) {
+        if (allSelected) next.delete(l.id);
+        else next.add(l.id);
+      }
+      return next;
+    });
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -97,28 +126,51 @@ export function CrmBoard({ leads }: { leads: CrmLead[] }) {
         </div>
 
         <div className="flex rounded-[11px] border border-line3 p-[3px]">
-          <button
-            type="button"
-            onClick={() => updateParams({ view: "table" })}
-            className={clsx(
-              "rounded-[8px] px-3 py-1.5 text-[13px] font-semibold",
-              view === "table" ? "bg-a13 text-accent" : "text-t5 hover:text-t2"
-            )}
-          >
-            Table
-          </button>
-          <button
-            type="button"
-            onClick={() => updateParams({ view: "kanban" })}
-            className={clsx(
-              "rounded-[8px] px-3 py-1.5 text-[13px] font-semibold",
-              view === "kanban" ? "bg-a13 text-accent" : "text-t5 hover:text-t2"
-            )}
-          >
-            Kanban
-          </button>
+          {(
+            [
+              { key: "kanban", label: "Kanban" },
+              { key: "table", label: "Table" },
+              { key: "followup", label: "Needs follow-up" },
+            ] as const
+          ).map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => updateParams({ view: tab.key === "kanban" ? null : tab.key })}
+              className={clsx(
+                "rounded-[8px] px-3 py-1.5 text-[13px] font-semibold",
+                view === tab.key ? "bg-a13 text-accent" : "text-t5 hover:text-t2"
+              )}
+            >
+              {tab.label}
+              {tab.key === "followup" && followUpCount > 0 && (
+                <span className="ml-1.5 font-mono text-[11px]">{followUpCount}</span>
+              )}
+            </button>
+          ))}
         </div>
       </div>
+
+      {view !== "followup" && selectedLeadIds.length > 0 && (
+        <div className="flex flex-wrap items-center gap-3 rounded-[11px] border border-line3 bg-surface px-3 py-2 text-[13px]">
+          <span className="font-semibold">{selectedLeadIds.length} selected</span>
+          <button
+            type="button"
+            onClick={() => setBulkDeleteOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-semibold text-red hover:bg-r13"
+          >
+            <Trash2 size={14} />
+            Delete selected
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedIds(new Set())}
+            className="text-t5 hover:text-t2"
+          >
+            Clear
+          </button>
+        </div>
+      )}
 
       {view === "table" && (
         <div className="flex items-center gap-2">
@@ -152,15 +204,51 @@ export function CrmBoard({ leads }: { leads: CrmLead[] }) {
             </button>
           }
         />
+      ) : view === "followup" ? (
+        <CrmFollowUp
+          groups={followUpGroups}
+          onMarkFollowedUp={async (id) => {
+            await markCrmLeadFollowedUp(id);
+            router.refresh();
+          }}
+        />
       ) : view === "kanban" ? (
-        <CrmKanban leads={leads} onEdit={openEdit} onDelete={setDeletingLead} onStatusChange={handleStatusChange} />
+        <CrmKanban
+          leads={leads}
+          onEdit={openEdit}
+          onDelete={setDeletingLead}
+          onStatusChange={handleStatusChange}
+          selectedIds={selectedIds}
+          onToggleSelect={toggleSelect}
+        />
       ) : (
-        <CrmTable leads={tableLeads} onEdit={openEdit} onDelete={setDeletingLead} onStatusChange={handleStatusChange} />
+        <CrmTable
+          leads={tableLeads}
+          onEdit={openEdit}
+          onDelete={setDeletingLead}
+          onStatusChange={handleStatusChange}
+          selectedIds={selectedIds}
+          onToggleSelect={toggleSelect}
+          onToggleSelectAll={toggleSelectAll}
+        />
       )}
 
       <CrmLeadFormModal key={editingLead?.id ?? "new"} open={modalOpen} onClose={() => setModalOpen(false)} lead={editingLead} />
 
       <ImportLeadsModal open={importOpen} onClose={() => setImportOpen(false)} rows={importRows} />
+
+      <ConfirmDialog
+        open={bulkDeleteOpen}
+        onClose={() => setBulkDeleteOpen(false)}
+        title="Delete selected leads"
+        description={`Delete ${selectedLeadIds.length} selected ${selectedLeadIds.length === 1 ? "lead" : "leads"}? This can't be undone.`}
+        confirmLabel="Delete"
+        onConfirm={async () => {
+          await deleteCrmLeads(selectedLeadIds);
+          setSelectedIds(new Set());
+          router.refresh();
+        }}
+      />
 
       <ConfirmDialog
         open={Boolean(deletingLead)}

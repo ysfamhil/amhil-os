@@ -16,11 +16,15 @@ export function CrmKanban({
   onEdit,
   onDelete,
   onStatusChange,
+  selectedIds,
+  onToggleSelect,
 }: {
   leads: CrmLead[];
   onEdit: (lead: CrmLead) => void;
   onDelete: (lead: CrmLead) => void;
   onStatusChange: (lead: CrmLead, status: CrmLeadStatus) => void;
+  selectedIds: Set<string>;
+  onToggleSelect: (id: string) => void;
 }) {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<CrmLeadStatus | null>(null);
@@ -70,9 +74,19 @@ export function CrmKanban({
                   onDragEnd={() => setDraggingId(null)}
                   className={clsx(
                     "cursor-grab rounded-[12px] border border-line bg-surface p-3 hover:border-[var(--domain-crm)]/50 active:cursor-grabbing",
-                    draggingId === lead.id && "opacity-40"
+                    draggingId === lead.id && "opacity-40",
+                    selectedIds.has(lead.id) && "border-[var(--domain-crm)]"
                   )}
                 >
+                  <div className="mb-1.5 flex justify-end">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(lead.id)}
+                      onChange={() => onToggleSelect(lead.id)}
+                      aria-label={`Select ${lead.name}`}
+                      className="h-4 w-4 cursor-pointer accent-[var(--domain-crm)]"
+                    />
+                  </div>
                   <button type="button" onClick={() => onEdit(lead)} className="block w-full text-left">
                     <p className="text-[13px] font-medium">{lead.name}</p>
                     {lead.website_url && (

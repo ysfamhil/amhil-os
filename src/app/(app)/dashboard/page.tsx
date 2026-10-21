@@ -3,6 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import { getDashboardData } from "@/lib/dashboard";
 import { OverviewClient } from "@/components/dashboard/overview-client";
 import { runAutomationChecks } from "@/lib/automation";
+import { getJournalSummary } from "@/lib/queries/journal";
+import { orNull } from "@/lib/safe-query";
+import { todayISODate } from "@/lib/dates";
 
 function greeting() {
   const hour = new Date().getHours();
@@ -25,12 +28,14 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const [data, , profileRes, goalsRes, tasksRes] = await Promise.all([
+  const [data, , profileRes, goalsRes, tasksRes, journal] = await Promise.all([
     getDashboardData(supabase, user.id),
     runAutomationChecks(supabase, user.id),
     supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
     supabase.from("goals").select("id,title").eq("user_id", user.id).order("title"),
     supabase.from("tasks").select("id,title").eq("user_id", user.id).order("title"),
+    // Optional strip: a Journal failure must never take down the Overview page.
+    orNull("journal summary", () => getJournalSummary(supabase, user.id, todayISODate())),
   ]);
 
   const firstName = profileRes.data?.full_name?.trim().split(" ")[0];
@@ -51,6 +56,7 @@ export default async function DashboardPage() {
         data={data}
         goalOptions={goalsRes.data ?? []}
         taskOptions={tasksRes.data ?? []}
+        journal={journal}
       />
     </div>
   );

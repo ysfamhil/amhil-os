@@ -22,6 +22,7 @@ export type ClientStatus =
 export type LeadStatus = "Lead" | "Contacted" | "Proposal" | "Negotiation" | "Won" | "Lost";
 export type IncomeStatus = "Expected" | "Invoiced" | "Paid" | "Cancelled";
 export type CrmLeadStatus = "New" | "Contacted" | "Replied" | "Mockup sent" | "Won" | "Lost";
+export type JournalMood = "great" | "productive" | "normal" | "difficult";
 
 interface Timestamped {
   created_at: string;
@@ -273,6 +274,19 @@ export interface CrmLead extends Timestamped {
   status_changed_at: string;
 }
 
+export interface JournalEntry extends Timestamped {
+  id: string;
+  user_id: string;
+  entry_date: string;
+  title: string | null;
+  story: string | null;
+  mood: JournalMood | null;
+  highlights: string | null;
+  challenges: string | null;
+  lessons: string | null;
+  tomorrow_focus: string | null;
+}
+
 export interface Note extends Timestamped {
   id: string;
   user_id: string;
@@ -358,6 +372,7 @@ type EmergencyFundInsert = InsertOf<EmergencyFund, "user_id">;
 type EmergencyFundTransactionInsert = InsertOf<EmergencyFundTransaction, "amount" | "fund_id">;
 type NoteInsert = InsertOf<Note, "title">;
 type CrmLeadInsert = InsertOf<CrmLead, "name">;
+type JournalEntryInsert = InsertOf<JournalEntry, "entry_date">;
 type TimelineEventInsert = InsertOf<TimelineEvent, "event_type" | "title">;
 type NotificationInsert = InsertOf<Notification, "type" | "title" | "message">;
 
@@ -393,6 +408,7 @@ export interface Database {
       emergency_fund_transactions: TableDef<EmergencyFundTransaction, EmergencyFundTransactionInsert>;
       notes: TableDef<Note, NoteInsert>;
       crm_leads: TableDef<CrmLead, CrmLeadInsert>;
+      journal_entries: TableDef<JournalEntry, JournalEntryInsert>;
       timeline_events: TableDef<TimelineEvent, TimelineEventInsert>;
       notifications: TableDef<Notification, NotificationInsert>;
     };

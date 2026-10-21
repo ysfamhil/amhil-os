@@ -11,6 +11,7 @@ import { NotesWidget } from "./notes-widget";
 import { EmergencyFundWidget } from "./emergency-fund-widget";
 import { FinanceWidget } from "./finance-widget";
 import { WeekSummaryWidget } from "./week-summary-widget";
+import { JournalStrip } from "./journal-strip";
 import { TaskFormModal } from "@/components/tasks/task-form-modal";
 import { HabitFormModal, type GoalOption } from "@/components/habits/habit-form-modal";
 import { GoalFormModal } from "@/components/goals/goal-form-modal";
@@ -19,6 +20,7 @@ import { NoteFormModal } from "@/components/notes/note-form-modal";
 import { IncomeFormModal } from "@/components/finance/income-form-modal";
 import { ExpenseFormModal } from "@/components/finance/expense-form-modal";
 import type { DashboardData } from "@/lib/dashboard";
+import type { JournalSummary } from "@/lib/queries/journal";
 
 const QUICK_ACTIONS = [
   { key: "task", label: "Task", icon: ListPlus },
@@ -34,10 +36,12 @@ export function OverviewClient({
   data,
   goalOptions,
   taskOptions,
+  journal,
 }: {
   data: DashboardData;
   goalOptions: GoalOption[];
   taskOptions: TaskOption[];
+  journal: JournalSummary | null;
 }) {
   const router = useRouter();
 
@@ -84,6 +88,8 @@ export function OverviewClient({
           );
         })}
       </div>
+
+      {journal && <JournalStrip summary={journal} />}
 
       <div className="flex flex-1 flex-col gap-3 lg:min-h-0">
         {/* Two 3-per-row desktop rows: Week Summary/Tasks/Notes, then

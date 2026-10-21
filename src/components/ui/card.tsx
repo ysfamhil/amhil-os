@@ -10,6 +10,7 @@ const DOMAIN_COLORS = {
   learning: "var(--domain-learning)",
   notes: "var(--domain-notes)",
   savings: "var(--domain-savings)",
+  journal: "var(--domain-journal)",
   danger: "var(--domain-danger)",
 } as const;
 

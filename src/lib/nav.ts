@@ -5,6 +5,7 @@ import {
   Target,
   Clock,
   StickyNote,
+  BookOpen,
   Wallet,
   Handshake,
   ShieldCheck,
@@ -27,6 +28,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Goals", href: "/goals", icon: Target, domainVar: "--domain-goals" },
   { label: "Timesheet", href: "/time", icon: Clock, domainVar: "--domain-time" },
   { label: "Notes", href: "/notes", icon: StickyNote, domainVar: "--domain-notes" },
+  { label: "Journal", href: "/journal", icon: BookOpen, domainVar: "--domain-journal" },
   { label: "Finance", href: "/finance", icon: Wallet, domainVar: "--domain-finance" },
   { label: "CRM", href: "/crm", icon: Handshake, domainVar: "--domain-crm" },
 ];

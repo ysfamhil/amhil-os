@@ -41,7 +41,7 @@ export function OverviewClient({
   data: DashboardData;
   goalOptions: GoalOption[];
   taskOptions: TaskOption[];
-  journal: JournalSummary;
+  journal: JournalSummary | null;
 }) {
   const router = useRouter();
 
@@ -89,7 +89,7 @@ export function OverviewClient({
         })}
       </div>
 
-      <JournalStrip summary={journal} />
+      {journal && <JournalStrip summary={journal} />}
 
       <div className="flex flex-1 flex-col gap-3 lg:min-h-0">
         {/* Two 3-per-row desktop rows: Week Summary/Tasks/Notes, then

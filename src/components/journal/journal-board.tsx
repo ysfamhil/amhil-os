@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useSyncExternalStore, useTransition } from "react";
+import { useEffect, useMemo, useRef, useSyncExternalStore, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { JournalCalendar } from "@/components/journal/journal-calendar";
 import { JournalEditor } from "@/components/journal/journal-editor";
@@ -35,13 +35,21 @@ export function JournalBoard({
   // Browser-local "today" (server snapshot during hydration avoids a mismatch).
   const today = useSyncExternalStore(subscribeNoop, todayISODate, () => serverToday);
   const entryDateSet = useMemo(() => new Set(entryDates), [entryDates]);
+  // Params from a navigation that hasn't landed yet, so two quick changes
+  // (e.g. mood then a date) build on each other instead of the stale URL.
+  const pendingParams = useRef<URLSearchParams | null>(null);
+
+  useEffect(() => {
+    if (!isPending) pendingParams.current = null;
+  }, [isPending]);
 
   function navigate(patch: Record<string, string | null>, mode: "push" | "replace" = "push") {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(pendingParams.current ?? window.location.search);
     for (const [key, value] of Object.entries(patch)) {
       if (value) params.set(key, value);
       else params.delete(key);
     }
+    pendingParams.current = params;
     const href = params.toString() ? `${pathname}?${params.toString()}` : pathname;
     startTransition(() => {
       if (mode === "replace") router.replace(href);

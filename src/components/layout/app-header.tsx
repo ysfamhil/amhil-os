@@ -55,7 +55,7 @@ export function AppHeader({
           type="button"
           onClick={() => setMobileOpen((o) => !o)}
           aria-label="Toggle navigation"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-foreground md:hidden"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-foreground lg:hidden"
         >
           {mobileOpen ? <X size={18} /> : <Menu size={18} />}
         </button>
@@ -67,7 +67,7 @@ export function AppHeader({
           <span className="hidden text-[14px] font-extrabold tracking-[-0.01em] lg:inline">AMHIL OS</span>
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex">
+        <nav className="hidden items-center gap-1 lg:flex">
           {items.map((item) => (
             <NavLink key={item.href} item={item} />
           ))}
@@ -102,7 +102,7 @@ export function AppHeader({
       </div>
 
       {mobileOpen && (
-        <nav className="flex flex-col gap-1 border-t border-line px-4 py-3 md:hidden">
+        <nav className="flex flex-col gap-1 border-t border-line px-4 py-3 lg:hidden">
           {items.map((item) => (
             <NavLink key={item.href} item={item} onClick={() => setMobileOpen(false)} />
           ))}

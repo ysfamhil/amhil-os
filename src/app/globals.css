@@ -32,6 +32,7 @@
   --domain-notes: #8b7cff;
   --domain-savings: #22d3ee;
   --domain-crm: #fbbf24;
+  --domain-journal: #ff8f6b;
   --domain-danger: #ff5a5f;
 
   /* legacy/base aliases, still used app-wide */
@@ -273,6 +274,7 @@
   --color-domain-notes: var(--domain-notes);
   --color-domain-savings: var(--domain-savings);
   --color-domain-crm: var(--domain-crm);
+  --color-domain-journal: var(--domain-journal);
   --color-domain-danger: var(--domain-danger);
 
   --shadow-card: var(--card-shadow);

@@ -1,16 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
-
-async function requireUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
-  return { supabase, user };
-}
+import { requireApprovedSession } from "@/lib/auth";
 
 function revalidateSubtaskPaths() {
   revalidatePath("/tasks");
@@ -18,7 +9,7 @@ function revalidateSubtaskPaths() {
 }
 
 export async function createSubtask(taskId: string, title: string) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const trimmed = title.trim();
   if (!trimmed) throw new Error("Title is required");
 
@@ -36,7 +27,7 @@ export async function createSubtask(taskId: string, title: string) {
 }
 
 export async function toggleSubtask(id: string, isCompleted: boolean) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   const { error } = await supabase
     .from("subtasks")
@@ -52,7 +43,7 @@ export async function toggleSubtask(id: string, isCompleted: boolean) {
 }
 
 export async function deleteSubtask(id: string) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   const { error } = await supabase.from("subtasks").delete().eq("id", id).eq("user_id", user.id);
 

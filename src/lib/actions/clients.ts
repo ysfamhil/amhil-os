@@ -1,18 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireApprovedSession } from "@/lib/auth";
 import { logTimelineEvent } from "@/lib/timeline";
 import type { ClientStatus } from "@/types/database";
-
-async function requireUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
-  return { supabase, user };
-}
 
 export interface ClientInput {
   name: string;
@@ -36,7 +27,7 @@ function revalidateClientPaths(id?: string) {
 }
 
 export async function createClientRecord(input: ClientInput) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const name = input.name.trim();
   if (!name) throw new Error("Name is required");
   if (input.email && !isValidEmail(input.email)) throw new Error("Enter a valid email address");
@@ -61,7 +52,7 @@ export async function createClientRecord(input: ClientInput) {
 }
 
 export async function updateClientRecord(id: string, input: Partial<ClientInput>) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   const patch = { ...input };
   if (typeof patch.name === "string") {
@@ -78,7 +69,7 @@ export async function updateClientRecord(id: string, input: Partial<ClientInput>
 }
 
 export async function deleteClientRecord(id: string) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   const { error } = await supabase.from("clients").delete().eq("id", id).eq("user_id", user.id);
 

@@ -1,21 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireApprovedSession } from "@/lib/auth";
 import { logTimelineEvent } from "@/lib/timeline";
 import { computeStreaks } from "@/lib/queries/habits";
 import type { HabitFrequency } from "@/types/database";
 
 const HABIT_STREAK_MILESTONES = [7, 14, 30, 60, 100, 200, 365, 500, 1000];
-
-async function requireUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
-  return { supabase, user };
-}
 
 export interface HabitInput {
   name: string;
@@ -31,7 +22,7 @@ function revalidateHabitPaths() {
 }
 
 export async function createHabit(input: HabitInput) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const name = input.name.trim();
   if (!name) throw new Error("Name is required");
   if (input.target != null && input.target < 1) throw new Error("Target must be at least 1");
@@ -48,7 +39,7 @@ export async function createHabit(input: HabitInput) {
 }
 
 export async function updateHabit(id: string, input: Partial<HabitInput>) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const patch = { ...input };
   if (typeof patch.name === "string") {
     const name = patch.name.trim();
@@ -64,21 +55,21 @@ export async function updateHabit(id: string, input: Partial<HabitInput>) {
 }
 
 export async function setHabitActive(id: string, isActive: boolean) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const { error } = await supabase.from("habits").update({ is_active: isActive }).eq("id", id).eq("user_id", user.id);
   if (error) throw new Error(error.message);
   revalidateHabitPaths();
 }
 
 export async function deleteHabit(id: string) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const { error } = await supabase.from("habits").delete().eq("id", id).eq("user_id", user.id);
   if (error) throw new Error(error.message);
   revalidateHabitPaths();
 }
 
 export async function setHabitCompletion(habitId: string, date: string, completed: boolean, note?: string | null) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   if (!completed) {
     const { error } = await supabase

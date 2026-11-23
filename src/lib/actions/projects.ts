@@ -1,18 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireApprovedSession } from "@/lib/auth";
 import { logTimelineEvent } from "@/lib/timeline";
 import type { Project, ProjectStatus } from "@/types/database";
-
-async function requireUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
-  return { supabase, user };
-}
 
 export interface ProjectInput {
   name: string;
@@ -35,7 +26,7 @@ function revalidateProjectPaths(id?: string) {
 }
 
 export async function createProject(input: ProjectInput) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const name = input.name.trim();
   if (!name) throw new Error("Name is required");
 
@@ -68,7 +59,7 @@ export async function createProject(input: ProjectInput) {
 }
 
 export async function updateProject(id: string, input: Partial<ProjectInput>) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   let previousStatus: ProjectStatus | null = null;
   if (input.status) {
@@ -132,7 +123,7 @@ export async function archiveProject(id: string) {
 }
 
 export async function deleteProject(id: string) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   const { error } = await supabase.from("projects").delete().eq("id", id).eq("user_id", user.id);
 

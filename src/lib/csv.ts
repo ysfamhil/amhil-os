@@ -60,8 +60,13 @@ export function toCSV(rows: Record<string, unknown>[]): string {
 
   function escapeCell(value: unknown): string {
     if (value == null) return "";
-    const str = typeof value === "object" ? JSON.stringify(value) : String(value);
-    if (/[",\n]/.test(str)) return `"${str.replace(/"/g, '""')}"`;
+    let str = typeof value === "object" ? JSON.stringify(value) : String(value);
+    // Quoting CSV syntax alone does not prevent spreadsheet evaluation.
+    const formulaPrefix = /^[\p{White_Space}\p{Cc}\p{Cf}\p{Default_Ignorable_Code_Point}]*[\t\r\n=+@-]/u;
+    if (typeof value === "string" && formulaPrefix.test(str.normalize("NFKC"))) {
+      str = "'" + str;
+    }
+    if (/[",\t\r\n]/.test(str)) return `"${str.replace(/"/g, '""')}"`;
     return str;
   }
 

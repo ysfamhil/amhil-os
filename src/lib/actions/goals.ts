@@ -1,18 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireApprovedSession } from "@/lib/auth";
 import { logTimelineEvent } from "@/lib/timeline";
 import type { GoalStatus } from "@/types/database";
-
-async function requireUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
-  return { supabase, user };
-}
 
 export interface GoalInput {
   title: string;
@@ -32,7 +23,7 @@ function revalidateGoalPaths(id?: string) {
 
 /** Persists a manual drag-reorder from the dashboard's Goals widget. */
 export async function reorderGoals(orderedIds: string[]) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   await Promise.all(
     orderedIds.map((id, index) =>
@@ -44,7 +35,7 @@ export async function reorderGoals(orderedIds: string[]) {
 }
 
 export async function createGoal(input: GoalInput) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const title = input.title.trim();
   if (!title) throw new Error("Title is required");
 
@@ -74,7 +65,7 @@ export async function createGoal(input: GoalInput) {
 }
 
 export async function updateGoal(id: string, input: Partial<GoalInput>) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   let previousStatus: GoalStatus | null = null;
   if (input.status) {
@@ -122,7 +113,7 @@ export async function updateGoal(id: string, input: Partial<GoalInput>) {
 }
 
 export async function deleteGoal(id: string) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   const { error } = await supabase.from("goals").delete().eq("id", id).eq("user_id", user.id);
 

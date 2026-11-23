@@ -26,7 +26,8 @@ Every record is scoped to its owner via RLS at the database level. Derived value
    npx supabase link --project-ref <your-project-ref>
    npx supabase db push --linked
    ```
-4. Start the dev server:
+4. For a fresh database, [provision the first administrator](docs/first-admin.md).
+5. Start the dev server:
    ```bash
    npm run dev
    ```
@@ -56,5 +57,7 @@ This app deploys cleanly to Vercel (or any Next.js host). Set the environment va
 Database changes ship as SQL migrations in `supabase/migrations/`, applied with `supabase db push --linked` against your linked project — there is no build-time database dependency.
 
 ## Backup strategy
+
+See [workspace backups](docs/workspace-backups.md) for the JSON format, restore compatibility, and reset procedure.
 
 Supabase provides automatic infrastructure-level backups (and Point-in-Time Recovery on paid plans). For a portable copy of your own data independent of any one provider, use Settings → Data & Backup in the app to export a full JSON backup (all tables, relationships preserved by id) or per-entity CSVs.

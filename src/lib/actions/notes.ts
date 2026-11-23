@@ -1,20 +1,12 @@
 "use server";
 
+import { sanitizeNoteHtml } from "@/lib/note-html";
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireApprovedSession } from "@/lib/auth";
 import { logTimelineEvent } from "@/lib/timeline";
 import { getNotes, type NoteFilters, type NoteWithRelations } from "@/lib/queries/notes";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
-
-async function requireUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
-  return { supabase, user };
-}
 
 export interface NoteInput {
   title: string;
@@ -63,7 +55,7 @@ async function verifyRelationOwnership(supabase: SupabaseClient<Database>, userI
 }
 
 export async function createNote(input: NoteInput) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const title = input.title.trim();
   if (!title) throw new Error("Title is required");
 
@@ -73,7 +65,7 @@ export async function createNote(input: NoteInput) {
     .from("notes")
     .insert({
       title,
-      content: input.content ?? null,
+      content: input.content == null ? null : sanitizeNoteHtml(input.content),
       tags: input.tags ?? [],
       project_id: input.project_id || null,
       client_id: input.client_id || null,
@@ -100,7 +92,7 @@ export async function createNote(input: NoteInput) {
 }
 
 export async function updateNote(id: string, input: Partial<NoteInput>) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   await verifyRelationOwnership(supabase, user.id, input);
 
@@ -116,13 +108,15 @@ export async function updateNote(id: string, input: Partial<NoteInput>) {
   if ("learning_topic_id" in input) patch.learning_topic_id = input.learning_topic_id || null;
   if ("goal_id" in input) patch.goal_id = input.goal_id || null;
 
+  if (typeof patch.content === "string") patch.content = sanitizeNoteHtml(patch.content);
+
   const { error } = await supabase.from("notes").update(patch).eq("id", id).eq("user_id", user.id);
   if (error) throw new Error(error.message);
   revalidateNotePaths();
 }
 
 export async function deleteNote(id: string) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const { error } = await supabase.from("notes").delete().eq("id", id).eq("user_id", user.id);
   if (error) throw new Error(error.message);
   revalidateNotePaths();
@@ -131,6 +125,6 @@ export async function deleteNote(id: string) {
 /** Used by the small notes widget embedded on task/topic/goal/project/client
  * detail views — scoped to exactly one relation at a time. */
 export async function getNotesForRelation(filters: NoteFilters): Promise<NoteWithRelations[]> {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   return getNotes(supabase, user.id, filters);
 }

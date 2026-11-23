@@ -1,17 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireApprovedSession } from "@/lib/auth";
 import { logTimelineEvent } from "@/lib/timeline";
-
-async function requireUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
-  return { supabase, user };
-}
 
 export interface TimeEntryInput {
   project_id?: string | null;
@@ -30,7 +21,7 @@ function revalidateTimePaths() {
 }
 
 export async function createTimeEntry(input: TimeEntryInput) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   if (input.duration_minutes <= 0) throw new Error("Duration must be positive");
 
   const { data, error } = await supabase
@@ -69,7 +60,7 @@ export async function createTimeEntry(input: TimeEntryInput) {
 }
 
 export async function updateTimeEntry(id: string, input: Partial<TimeEntryInput>) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   if (input.duration_minutes != null && input.duration_minutes <= 0) {
     throw new Error("Duration must be positive");
   }
@@ -84,7 +75,7 @@ export async function updateTimeEntry(id: string, input: Partial<TimeEntryInput>
 }
 
 export async function deleteTimeEntry(id: string) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const { error } = await supabase.from("time_entries").delete().eq("id", id).eq("user_id", user.id);
   if (error) throw new Error(error.message);
   revalidateTimePaths();

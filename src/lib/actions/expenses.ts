@@ -1,17 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireApprovedSession } from "@/lib/auth";
 import { logTimelineEvent } from "@/lib/timeline";
-
-async function requireUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
-  return { supabase, user };
-}
 
 export interface ExpenseInput {
   amount: number;
@@ -29,7 +20,7 @@ function revalidateExpensePaths(projectId?: string | null) {
 }
 
 export async function createExpense(input: ExpenseInput) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   if (!input.amount || input.amount < 0) throw new Error("Amount must be zero or greater");
 
   const { data, error } = await supabase
@@ -57,7 +48,7 @@ export async function createExpense(input: ExpenseInput) {
 }
 
 export async function updateExpense(id: string, input: Partial<ExpenseInput>) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   if (input.amount != null && input.amount < 0) throw new Error("Amount must be zero or greater");
 
   const patch = { ...input };
@@ -76,7 +67,7 @@ export async function updateExpense(id: string, input: Partial<ExpenseInput>) {
 }
 
 export async function deleteExpense(id: string) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   const { data, error } = await supabase
     .from("expenses")

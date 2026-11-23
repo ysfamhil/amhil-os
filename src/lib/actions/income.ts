@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireApprovedSession } from "@/lib/auth";
 import { logTimelineEvent } from "@/lib/timeline";
 import type { IncomeStatus } from "@/types/database";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -29,15 +29,6 @@ async function logIncomeReceived(
   });
 }
 
-async function requireUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
-  return { supabase, user };
-}
-
 export interface IncomeInput {
   amount: number;
   currency?: string;
@@ -58,7 +49,7 @@ function revalidateIncomePaths(clientId?: string | null, projectId?: string | nu
 }
 
 export async function createIncome(input: IncomeInput) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   if (!input.amount || input.amount < 0) throw new Error("Amount must be zero or greater");
 
   const { data, error } = await supabase
@@ -83,7 +74,7 @@ export async function createIncome(input: IncomeInput) {
 }
 
 export async function updateIncome(id: string, input: Partial<IncomeInput>) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   if (input.amount != null && input.amount < 0) throw new Error("Amount must be zero or greater");
 
   let previousStatus: IncomeStatus | null = null;
@@ -123,7 +114,7 @@ export async function updateIncome(id: string, input: Partial<IncomeInput>) {
 }
 
 export async function deleteIncome(id: string) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   const { data, error } = await supabase
     .from("income")

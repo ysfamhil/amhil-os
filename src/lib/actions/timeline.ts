@@ -1,14 +1,10 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { requireApprovedSession } from "@/lib/auth";
 import { getTimelineEvents, type TimelineCursor, type TimelineFilters } from "@/lib/queries/timeline";
 
 export async function loadMoreTimelineEvents(filters: TimelineFilters, cursor: TimelineCursor) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
+  const { supabase, user } = await requireApprovedSession();
 
   return getTimelineEvents(supabase, user.id, filters, cursor);
 }

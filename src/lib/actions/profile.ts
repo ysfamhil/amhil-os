@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireApprovedSession } from "@/lib/auth";
 
 export interface ProfileInput {
   full_name?: string | null;
@@ -9,11 +9,7 @@ export interface ProfileInput {
 }
 
 export async function updateProfile(input: ProfileInput) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
+  const { supabase, user } = await requireApprovedSession();
 
   const patch: ProfileInput = {};
   if ("full_name" in input) patch.full_name = input.full_name?.trim() || null;

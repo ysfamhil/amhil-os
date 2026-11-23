@@ -3,6 +3,8 @@
 // can be regenerated with:
 //   npx supabase gen types typescript --linked > src/types/database.ts
 
+import type { RestorePreview, WorkspaceBackup, WorkspaceCounts } from "@/lib/workspace-backup";
+
 export type TaskStatus = "Backlog" | "Todo" | "In Progress" | "Waiting" | "Done" | "Cancelled";
 export type TaskPriority = "Low" | "Medium" | "High" | "Urgent";
 export type ProjectStatus = "Idea" | "Planned" | "Active" | "On Hold" | "Completed" | "Archived";
@@ -413,7 +415,15 @@ export interface Database {
       notifications: TableDef<Notification, NotificationInsert>;
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      export_workspace_backup: { Args: Record<string, never>; Returns: WorkspaceBackup };
+      export_workspace_backup_text: { Args: Record<string, never>; Returns: { body: string; has_warnings: boolean } };
+      preview_workspace_restore: { Args: { payload: Record<string, unknown> }; Returns: RestorePreview };
+      preview_workspace_restore_text: { Args: { document: string }; Returns: RestorePreview };
+      restore_workspace_backup: { Args: { payload: Record<string, unknown> }; Returns: WorkspaceCounts };
+      restore_workspace_backup_text: { Args: { document: string }; Returns: WorkspaceCounts };
+      reset_workspace_data: { Args: Record<string, never>; Returns: WorkspaceCounts };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

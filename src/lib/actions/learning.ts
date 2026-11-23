@@ -1,18 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireApprovedSession } from "@/lib/auth";
 import { logTimelineEvent } from "@/lib/timeline";
 import type { LearningTopicStatus } from "@/types/database";
-
-async function requireUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
-  return { supabase, user };
-}
 
 function revalidateLearningPaths(areaId?: string, topicId?: string) {
   revalidatePath("/learning");
@@ -29,7 +20,7 @@ export interface AreaInput {
 }
 
 export async function createArea(input: AreaInput) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const name = input.name.trim();
   if (!name) throw new Error("Name is required");
 
@@ -45,7 +36,7 @@ export async function createArea(input: AreaInput) {
 }
 
 export async function updateArea(id: string, input: Partial<AreaInput>) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const patch = { ...input };
   if (typeof patch.name === "string") {
     const name = patch.name.trim();
@@ -59,7 +50,7 @@ export async function updateArea(id: string, input: Partial<AreaInput>) {
 }
 
 export async function deleteArea(id: string) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const { error } = await supabase.from("learning_areas").delete().eq("id", id).eq("user_id", user.id);
   if (error) throw new Error(error.message);
   revalidateLearningPaths();
@@ -84,7 +75,7 @@ function validateConfidence(confidence: number | null | undefined) {
 }
 
 export async function createTopic(input: TopicInput) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const name = input.name.trim();
   if (!name) throw new Error("Name is required");
   validateConfidence(input.confidence);
@@ -108,7 +99,7 @@ export async function createTopic(input: TopicInput) {
 }
 
 export async function updateTopic(id: string, areaId: string, input: Partial<TopicInput>) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   validateConfidence(input.confidence);
 
   let previousStatus: LearningTopicStatus | null = null;
@@ -165,7 +156,7 @@ export async function updateTopic(id: string, areaId: string, input: Partial<Top
 }
 
 export async function deleteTopic(id: string, areaId: string) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const { error } = await supabase.from("learning_topics").delete().eq("id", id).eq("user_id", user.id);
   if (error) throw new Error(error.message);
   revalidateLearningPaths(areaId);
@@ -184,7 +175,7 @@ export interface SessionInput {
 }
 
 export async function createSession(input: SessionInput, areaId: string) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   if (input.duration_minutes <= 0) throw new Error("Duration must be positive");
   validateConfidence(input.confidence_before);
   validateConfidence(input.confidence_after);
@@ -220,7 +211,7 @@ export async function createSession(input: SessionInput, areaId: string) {
 }
 
 export async function updateSession(id: string, areaId: string, topicId: string, input: Partial<SessionInput>) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   if (input.duration_minutes != null && input.duration_minutes <= 0) {
     throw new Error("Duration must be positive");
   }
@@ -233,7 +224,7 @@ export async function updateSession(id: string, areaId: string, topicId: string,
 }
 
 export async function deleteSession(id: string, areaId: string, topicId: string) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const { error } = await supabase.from("learning_sessions").delete().eq("id", id).eq("user_id", user.id);
   if (error) throw new Error(error.message);
   revalidateLearningPaths(areaId, topicId);

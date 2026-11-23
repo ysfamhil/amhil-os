@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Download, Loader2 } from "lucide-react";
 import { Card, CardHeader } from "@/components/ui/card";
-import { exportEntityCSV, exportFullJSON } from "@/lib/actions/export";
+import { exportEntityCSV } from "@/lib/actions/export";
 import { CSV_ENTITIES, type CSVEntity } from "@/lib/export-entities";
 
 function downloadText(filename: string, content: string, mime: string) {
@@ -26,7 +26,8 @@ const ENTITY_LABELS: Record<CSVEntity, string> = {
   habits: "Habits",
   time: "Time entries",
   clients: "Clients",
-  leads: "Leads",
+  leads: "Legacy leads",
+  crm: "CRM leads",
   income: "Income",
   expenses: "Expenses",
   notes: "Notes",
@@ -36,21 +37,38 @@ const ENTITY_LABELS: Record<CSVEntity, string> = {
 export function DataExport() {
   const [pending, setPending] = useState<string | null>(null);
 
+  const [feedback, setFeedback] = useState<{ error: boolean; text: string } | null>(null);
+
   async function handleCSV(entity: CSVEntity) {
+    setFeedback(null);
     setPending(entity);
     try {
       const { filename, csv } = await exportEntityCSV(entity);
       downloadText(filename, csv, "text/csv");
+    } catch (err) {
+      setFeedback({ error: true, text: err instanceof Error ? err.message : "Could not export the CSV." });
     } finally {
       setPending(null);
     }
   }
 
   async function handleFullJSON() {
+    setFeedback(null);
     setPending("full");
     try {
-      const { filename, json } = await exportFullJSON();
-      downloadText(filename, json, "application/json");
+      const response = await fetch("/settings/data/backup", { redirect: "error", cache: "no-store" });
+      if (!response.ok) {
+        const result = await response.json() as { error?: string };
+        setFeedback({ error: true, text: result.error ?? "Could not export the workspace." });
+        return;
+      }
+      const json = await response.text();
+      downloadText("amhil-os-export.json", json, "application/json");
+      if (response.headers.get("X-Workspace-Backup-Warnings") === "1") {
+        setFeedback({ error: false, text: "Some historical links were unavailable. The backup lists those changes." });
+      }
+    } catch {
+      setFeedback({ error: true, text: "Could not export the workspace." });
     } finally {
       setPending(null);
     }
@@ -85,6 +103,11 @@ export function DataExport() {
           Export All Data (JSON)
         </button>
       </div>
+      {feedback && (
+        <p role={feedback.error ? "alert" : "status"} className={`mt-3 text-sm ${feedback.error ? "text-danger" : "text-warning"}`}>
+          {feedback.text}
+        </p>
+      )}
     </Card>
   );
 }

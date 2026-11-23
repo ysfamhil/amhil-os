@@ -1,5 +1,6 @@
 "use client";
 
+import { NoteHtml } from "@/components/notes/note-html";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -50,9 +51,9 @@ export function NotesWidget({ data, onAddNote }: { data: DashboardData; onAddNot
                   <span className="shrink-0 font-mono text-[10px] text-t7">{formatDate(note.created_at)}</span>
                 </div>
                 {note.content && (
-                  <div
+                  <NoteHtml
                     className="mt-0.5 line-clamp-2 text-[11.5px] text-t6 [&_ol]:list-decimal [&_ol]:pl-4 [&_ul]:list-disc [&_ul]:pl-4"
-                    dangerouslySetInnerHTML={{ __html: note.content }}
+                    content={note.content}
                   />
                 )}
                 {note.tags.length > 0 && (

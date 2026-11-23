@@ -19,8 +19,8 @@ export function BackupInfo() {
           <ShieldCheck size={16} className="mt-0.5 shrink-0 text-accent" />
           <span>
             <strong className="text-foreground">Application level (this page):</strong> the JSON export above is a
-            complete, portable copy of everything you own — every task, project, session, and record, with
-            relationships preserved by id. The CSV exports are for opening individual tables in a spreadsheet.
+            versioned copy of your workspace records and relationships. Keep it private because it can include journal,
+            client, and financial data. Restore it into an empty workspace. CSV exports are for spreadsheets.
           </span>
         </p>
         <p>

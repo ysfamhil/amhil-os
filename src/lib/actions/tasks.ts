@@ -1,21 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireApprovedSession } from "@/lib/auth";
 import { logTimelineEvent } from "@/lib/timeline";
 import type { Task, TaskPriority, TaskStatus } from "@/types/database";
 
-async function requireUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
-  return { supabase, user };
-}
-
 export async function getTask(id: string): Promise<Task | null> {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const { data, error } = await supabase.from("tasks").select("*").eq("id", id).eq("user_id", user.id).maybeSingle();
   if (error) throw new Error(error.message);
   return data;
@@ -23,7 +14,7 @@ export async function getTask(id: string): Promise<Task | null> {
 
 /** Persists a manual drag-reorder from the dashboard's Tasks widget. */
 export async function reorderTasks(orderedIds: string[]) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   await Promise.all(
     orderedIds.map((id, index) =>
@@ -54,7 +45,7 @@ function revalidateTaskPaths(projectId?: string | null) {
 }
 
 export async function createTask(input: TaskInput) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const title = input.title.trim();
   if (!title) throw new Error("Title is required");
 
@@ -85,7 +76,7 @@ export async function createTask(input: TaskInput) {
 }
 
 export async function updateTask(id: string, input: Partial<TaskInput>) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   let previousStatus: TaskStatus | null = null;
   if (input.status) {
@@ -139,7 +130,7 @@ export async function setTaskStatus(id: string, status: TaskStatus) {
 }
 
 export async function deleteTask(id: string) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   const { data, error } = await supabase
     .from("tasks")

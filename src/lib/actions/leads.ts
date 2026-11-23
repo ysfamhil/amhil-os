@@ -1,18 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireApprovedSession } from "@/lib/auth";
 import { logTimelineEvent } from "@/lib/timeline";
 import type { LeadStatus } from "@/types/database";
-
-async function requireUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
-  return { supabase, user };
-}
 
 export interface LeadInput {
   name: string;
@@ -31,7 +22,7 @@ function revalidateLeadPaths() {
 }
 
 export async function createLead(input: LeadInput) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const name = input.name.trim();
   if (!name) throw new Error("Name is required");
   if (input.estimated_value != null && input.estimated_value < 0) {
@@ -57,7 +48,7 @@ export async function createLead(input: LeadInput) {
 }
 
 export async function updateLead(id: string, input: Partial<LeadInput>) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   let previousStatus: LeadStatus | null = null;
   if (input.status) {
@@ -105,7 +96,7 @@ export async function updateLead(id: string, input: Partial<LeadInput>) {
 export async function setLeadStatus(id: string, status: LeadStatus) {
   const patch: Partial<LeadInput> & { contacted_at?: string } = { status };
   if (status === "Contacted") {
-    const { supabase, user } = await requireUser();
+    const { supabase, user } = await requireApprovedSession();
     const { data: existing } = await supabase
       .from("leads")
       .select("contacted_at")
@@ -120,7 +111,7 @@ export async function setLeadStatus(id: string, status: LeadStatus) {
 }
 
 export async function deleteLead(id: string) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   const { error } = await supabase.from("leads").delete().eq("id", id).eq("user_id", user.id);
 
@@ -136,7 +127,7 @@ export async function deleteLead(id: string) {
  * — a client can always tidy this up afterward.
  */
 export async function convertLeadToClient(leadId: string) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   const { data: lead, error: leadError } = await supabase
     .from("leads")

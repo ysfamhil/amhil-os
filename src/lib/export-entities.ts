@@ -14,6 +14,7 @@ export const CSV_ENTITIES = [
   "time",
   "clients",
   "leads",
+  "crm",
   "income",
   "expenses",
   "notes",

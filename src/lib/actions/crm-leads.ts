@@ -1,18 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireApprovedSession } from "@/lib/auth";
 import { todayISODate } from "@/lib/dates";
 import type { CrmLeadStatus } from "@/types/database";
-
-async function requireUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
-  return { supabase, user };
-}
 
 const SAFE_URL_SCHEMES = new Set(["http:", "https:"]);
 
@@ -44,7 +35,7 @@ export interface CrmLeadInput {
 }
 
 export async function createCrmLead(input: CrmLeadInput) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const name = input.name.trim();
   if (!name) throw new Error("Name is required");
 
@@ -79,7 +70,7 @@ export interface CrmLeadImportRow {
 }
 
 export async function importCrmLeads(rows: CrmLeadImportRow[]): Promise<{ imported: number; skipped: number }> {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   const { data: existing, error: existingError } = await supabase
     .from("crm_leads")
@@ -144,7 +135,7 @@ export async function importCrmLeads(rows: CrmLeadImportRow[]): Promise<{ import
 }
 
 export async function updateCrmLead(id: string, input: Partial<CrmLeadInput>) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   const patch = { ...input };
   if (typeof patch.name === "string") {
@@ -162,14 +153,14 @@ export async function updateCrmLead(id: string, input: Partial<CrmLeadInput>) {
 }
 
 export async function setCrmLeadStatus(id: string, status: CrmLeadStatus) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const { error } = await supabase.from("crm_leads").update({ status }).eq("id", id).eq("user_id", user.id);
   if (error) throw new Error(error.message);
   revalidatePath("/crm");
 }
 
 export async function markCrmLeadFollowedUp(id: string) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   const { data: lead, error: readError } = await supabase
     .from("crm_leads")
@@ -190,14 +181,14 @@ export async function markCrmLeadFollowedUp(id: string) {
 
 export async function deleteCrmLeads(ids: string[]) {
   if (ids.length === 0) return;
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const { error } = await supabase.from("crm_leads").delete().in("id", ids).eq("user_id", user.id);
   if (error) throw new Error(error.message);
   revalidatePath("/crm");
 }
 
 export async function deleteCrmLead(id: string) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const { error } = await supabase.from("crm_leads").delete().eq("id", id).eq("user_id", user.id);
   if (error) throw new Error(error.message);
   revalidatePath("/crm");

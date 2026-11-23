@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { requireApprovedSession } from "@/lib/auth";
 import { escapeForOrFilter } from "@/lib/postgrest";
 
 export interface SearchResultItem {
@@ -27,14 +27,9 @@ const RESULTS_PER_CATEGORY = 5;
  * natural next step if the data ever grew large enough for it to matter.
  */
 export async function searchAll(rawQuery: string): Promise<SearchResultGroup[]> {
+  const { supabase, user } = await requireApprovedSession();
   const query = rawQuery.trim();
   if (query.length < 2) return [];
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
 
   const like = `%${query}%`;
   const orLike = escapeForOrFilter(`%${query}%`);

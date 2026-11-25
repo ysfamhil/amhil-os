@@ -43,7 +43,10 @@ export async function updateSession(request: NextRequest) {
   if (!user && !isPublicPath) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
-    loginUrl.searchParams.set("next", request.nextUrl.pathname);
+    loginUrl.search = "";
+    // Keep the query string so a deep link such as /journal?date=2026-01-01 survives the
+    // sign-in round trip. safeNextPath validates the value again before it is used.
+    loginUrl.searchParams.set("next", request.nextUrl.pathname + request.nextUrl.search);
     return NextResponse.redirect(loginUrl);
   }
 

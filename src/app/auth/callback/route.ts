@@ -11,7 +11,10 @@ export async function GET(request: Request) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
+      // `next` is already validated by safeNextPath; resolving it against our own
+      // origin and re-checking the result keeps a bug there from becoming an open redirect.
+      const target = new URL(next, origin);
+      if (target.origin === origin) return NextResponse.redirect(target);
     }
   }
 

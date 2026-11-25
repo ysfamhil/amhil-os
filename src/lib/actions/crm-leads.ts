@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireApprovedSession } from "@/lib/auth";
 import { todayISODate } from "@/lib/dates";
+import { CRM_LEAD_FIELDS, assertUuid, assertUuidList, pickWritable } from "@/lib/write-fields";
 import type { CrmLeadStatus } from "@/types/database";
 
 const SAFE_URL_SCHEMES = new Set(["http:", "https:"]);
@@ -136,16 +137,20 @@ export async function importCrmLeads(rows: CrmLeadImportRow[]): Promise<{ import
 
 export async function updateCrmLead(id: string, input: Partial<CrmLeadInput>) {
   const { supabase, user } = await requireApprovedSession();
+  assertUuid(id, "Lead");
+  // follow_up_count, last_followed_up and status_changed_at are server-managed (markCrmLeadFollowedUp
+  // and a database trigger); they can never be written through this action.
+  const fields = pickWritable(CRM_LEAD_FIELDS, input);
 
-  const patch = { ...input };
+  const patch = { ...fields };
   if (typeof patch.name === "string") {
     const name = patch.name.trim();
     if (!name) throw new Error("Name is required");
     patch.name = name;
   }
-  if ("website_url" in input) patch.website_url = sanitizeWebsiteUrl(input.website_url);
-  if ("contact" in input) patch.contact = input.contact || null;
-  if ("notes" in input) patch.notes = input.notes || null;
+  if ("website_url" in fields) patch.website_url = sanitizeWebsiteUrl(fields.website_url);
+  if ("contact" in fields) patch.contact = fields.contact || null;
+  if ("notes" in fields) patch.notes = fields.notes || null;
 
   const { error } = await supabase.from("crm_leads").update(patch).eq("id", id).eq("user_id", user.id);
   if (error) throw new Error(error.message);
@@ -154,6 +159,7 @@ export async function updateCrmLead(id: string, input: Partial<CrmLeadInput>) {
 
 export async function setCrmLeadStatus(id: string, status: CrmLeadStatus) {
   const { supabase, user } = await requireApprovedSession();
+  assertUuid(id, "Lead");
   const { error } = await supabase.from("crm_leads").update({ status }).eq("id", id).eq("user_id", user.id);
   if (error) throw new Error(error.message);
   revalidatePath("/crm");
@@ -161,6 +167,7 @@ export async function setCrmLeadStatus(id: string, status: CrmLeadStatus) {
 
 export async function markCrmLeadFollowedUp(id: string) {
   const { supabase, user } = await requireApprovedSession();
+  assertUuid(id, "Lead");
 
   const { data: lead, error: readError } = await supabase
     .from("crm_leads")
@@ -180,8 +187,9 @@ export async function markCrmLeadFollowedUp(id: string) {
 }
 
 export async function deleteCrmLeads(ids: string[]) {
-  if (ids.length === 0) return;
   const { supabase, user } = await requireApprovedSession();
+  assertUuidList(ids, "Lead");
+  if (ids.length === 0) return;
   const { error } = await supabase.from("crm_leads").delete().in("id", ids).eq("user_id", user.id);
   if (error) throw new Error(error.message);
   revalidatePath("/crm");

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireApprovedSession } from "@/lib/auth";
 import { logTimelineEvent } from "@/lib/timeline";
+import { LEAD_FIELDS, assertUuid, pickWritable } from "@/lib/write-fields";
 import type { LeadStatus } from "@/types/database";
 
 export interface LeadInput {
@@ -23,15 +24,17 @@ function revalidateLeadPaths() {
 
 export async function createLead(input: LeadInput) {
   const { supabase, user } = await requireApprovedSession();
-  const name = input.name.trim();
+  // converted_at / converted_client_id are server-managed (convertLeadToClient) and never accepted here.
+  const fields = pickWritable(LEAD_FIELDS, input);
+  const name = typeof fields.name === "string" ? fields.name.trim() : "";
   if (!name) throw new Error("Name is required");
-  if (input.estimated_value != null && input.estimated_value < 0) {
+  if (fields.estimated_value != null && fields.estimated_value < 0) {
     throw new Error("Estimated value can't be negative");
   }
 
   const { data, error } = await supabase
     .from("leads")
-    .insert({ ...input, name, user_id: user.id })
+    .insert({ ...fields, name, user_id: user.id })
     .select("id")
     .single();
 
@@ -49,9 +52,11 @@ export async function createLead(input: LeadInput) {
 
 export async function updateLead(id: string, input: Partial<LeadInput>) {
   const { supabase, user } = await requireApprovedSession();
+  assertUuid(id, "Lead");
+  const fields = pickWritable(LEAD_FIELDS, input);
 
   let previousStatus: LeadStatus | null = null;
-  if (input.status) {
+  if (fields.status) {
     const { data: existing } = await supabase
       .from("leads")
       .select("status")
@@ -61,7 +66,7 @@ export async function updateLead(id: string, input: Partial<LeadInput>) {
     previousStatus = existing?.status ?? null;
   }
 
-  const patch = { ...input };
+  const patch = { ...fields };
   if (typeof patch.name === "string") {
     const name = patch.name.trim();
     if (!name) throw new Error("Name is required");
@@ -81,10 +86,10 @@ export async function updateLead(id: string, input: Partial<LeadInput>) {
 
   if (error) throw new Error(error.message);
 
-  if (input.status && input.status !== previousStatus && (input.status === "Won" || input.status === "Lost")) {
+  if (fields.status && fields.status !== previousStatus && (fields.status === "Won" || fields.status === "Lost")) {
     await logTimelineEvent(supabase, user.id, {
-      eventType: input.status === "Won" ? "lead_won" : "lead_lost",
-      title: `Lead ${input.status.toLowerCase()}: "${data.name}"`,
+      eventType: fields.status === "Won" ? "lead_won" : "lead_lost",
+      title: `Lead ${fields.status.toLowerCase()}: "${data.name}"`,
       relatedEntityType: "lead",
       relatedEntityId: id,
     });

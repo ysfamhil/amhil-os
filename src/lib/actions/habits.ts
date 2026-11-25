@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { requireApprovedSession } from "@/lib/auth";
 import { logTimelineEvent } from "@/lib/timeline";
 import { computeStreaks } from "@/lib/queries/habits";
+import { isValidISODate } from "@/lib/journal";
+import { HABIT_FIELDS, RELATIONS, assertOwnedRecord, assertOwnedRelations, assertUuid, pickWritable } from "@/lib/write-fields";
 import type { HabitFrequency } from "@/types/database";
 
 const HABIT_STREAK_MILESTONES = [7, 14, 30, 60, 100, 200, 365, 500, 1000];
@@ -23,14 +25,16 @@ function revalidateHabitPaths() {
 
 export async function createHabit(input: HabitInput) {
   const { supabase, user } = await requireApprovedSession();
-  const name = input.name.trim();
+  const fields = pickWritable(HABIT_FIELDS, input);
+  const name = typeof fields.name === "string" ? fields.name.trim() : "";
   if (!name) throw new Error("Name is required");
-  if (input.target != null && input.target < 1) throw new Error("Target must be at least 1");
+  if (fields.target != null && fields.target < 1) throw new Error("Target must be at least 1");
+  await assertOwnedRelations(supabase, user.id, RELATIONS.habits, fields);
 
   const { error } = await supabase.from("habits").insert({
-    ...input,
+    ...fields,
     name,
-    goal_id: input.goal_id || null,
+    goal_id: fields.goal_id || null,
     user_id: user.id,
   });
 
@@ -40,13 +44,16 @@ export async function createHabit(input: HabitInput) {
 
 export async function updateHabit(id: string, input: Partial<HabitInput>) {
   const { supabase, user } = await requireApprovedSession();
-  const patch = { ...input };
+  assertUuid(id, "Habit");
+  const fields = pickWritable(HABIT_FIELDS, input);
+  await assertOwnedRelations(supabase, user.id, RELATIONS.habits, fields);
+  const patch = { ...fields };
   if (typeof patch.name === "string") {
     const name = patch.name.trim();
     if (!name) throw new Error("Name is required");
     patch.name = name;
   }
-  if ("goal_id" in input) patch.goal_id = input.goal_id || null;
+  if ("goal_id" in fields) patch.goal_id = fields.goal_id || null;
   if (patch.target != null && patch.target < 1) throw new Error("Target must be at least 1");
 
   const { error } = await supabase.from("habits").update(patch).eq("id", id).eq("user_id", user.id);
@@ -70,6 +77,8 @@ export async function deleteHabit(id: string) {
 
 export async function setHabitCompletion(habitId: string, date: string, completed: boolean, note?: string | null) {
   const { supabase, user } = await requireApprovedSession();
+  assertUuid(habitId, "Habit");
+  if (!isValidISODate(date)) throw new Error("Invalid date");
 
   if (!completed) {
     const { error } = await supabase
@@ -82,6 +91,9 @@ export async function setHabitCompletion(habitId: string, date: string, complete
     revalidateHabitPaths();
     return;
   }
+
+  // The completion row is written with the caller's user_id, so the habit it points at must be theirs too.
+  await assertOwnedRecord(supabase, user.id, "habits", habitId);
 
   const { data: existing } = await supabase
     .from("habit_completions")

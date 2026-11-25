@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireApprovedSession } from "@/lib/auth";
 import { logTimelineEvent } from "@/lib/timeline";
+import { PROJECT_FIELDS, RELATIONS, assertOwnedRelations, assertUuid, pickWritable } from "@/lib/write-fields";
 import type { Project, ProjectStatus } from "@/types/database";
 
 export interface ProjectInput {
@@ -27,18 +28,21 @@ function revalidateProjectPaths(id?: string) {
 
 export async function createProject(input: ProjectInput) {
   const { supabase, user } = await requireApprovedSession();
-  const name = input.name.trim();
+  // completed_at is server-managed (set when status becomes Completed) and never accepted from the client.
+  const fields = pickWritable(PROJECT_FIELDS, input);
+  const name = typeof fields.name === "string" ? fields.name.trim() : "";
   if (!name) throw new Error("Name is required");
+  await assertOwnedRelations(supabase, user.id, RELATIONS.projects, fields);
 
   const { data, error } = await supabase
     .from("projects")
     .insert({
-      ...input,
+      ...fields,
       name,
-      start_date: input.start_date || null,
-      target_date: input.target_date || null,
-      goal_id: input.goal_id || null,
-      client_id: input.client_id || null,
+      start_date: fields.start_date || null,
+      target_date: fields.target_date || null,
+      goal_id: fields.goal_id || null,
+      client_id: fields.client_id || null,
       user_id: user.id,
     })
     .select("id")
@@ -60,9 +64,12 @@ export async function createProject(input: ProjectInput) {
 
 export async function updateProject(id: string, input: Partial<ProjectInput>) {
   const { supabase, user } = await requireApprovedSession();
+  assertUuid(id, "Project");
+  const fields = pickWritable(PROJECT_FIELDS, input);
+  await assertOwnedRelations(supabase, user.id, RELATIONS.projects, fields);
 
   let previousStatus: ProjectStatus | null = null;
-  if (input.status) {
+  if (fields.status) {
     const { data: existing } = await supabase
       .from("projects")
       .select("status")
@@ -72,16 +79,16 @@ export async function updateProject(id: string, input: Partial<ProjectInput>) {
     previousStatus = existing?.status ?? null;
   }
 
-  const patch: Partial<Project> = { ...input };
+  const patch: Partial<Project> = { ...fields };
   if (typeof patch.name === "string") {
     const name = patch.name.trim();
     if (!name) throw new Error("Name is required");
     patch.name = name;
   }
-  if ("start_date" in input) patch.start_date = input.start_date || null;
-  if ("target_date" in input) patch.target_date = input.target_date || null;
-  if ("goal_id" in input) patch.goal_id = input.goal_id || null;
-  if ("client_id" in input) patch.client_id = input.client_id || null;
+  if ("start_date" in fields) patch.start_date = fields.start_date || null;
+  if ("target_date" in fields) patch.target_date = fields.target_date || null;
+  if ("goal_id" in fields) patch.goal_id = fields.goal_id || null;
+  if ("client_id" in fields) patch.client_id = fields.client_id || null;
   if (patch.status === "Completed") patch.completed_at = new Date().toISOString();
 
   const { data, error } = await supabase
@@ -94,8 +101,8 @@ export async function updateProject(id: string, input: Partial<ProjectInput>) {
 
   if (error) throw new Error(error.message);
 
-  if (input.status && input.status !== previousStatus) {
-    if (input.status === "Completed") {
+  if (fields.status && fields.status !== previousStatus) {
+    if (fields.status === "Completed") {
       await logTimelineEvent(supabase, user.id, {
         eventType: "project_completed",
         title: `Completed project "${data.name}"`,
@@ -106,8 +113,8 @@ export async function updateProject(id: string, input: Partial<ProjectInput>) {
     } else {
       await logTimelineEvent(supabase, user.id, {
         eventType: "project_status_changed",
-        title: `"${data.name}" moved to ${input.status}`,
-        description: previousStatus ? `Status changed from ${previousStatus} to ${input.status}` : null,
+        title: `"${data.name}" moved to ${fields.status}`,
+        description: previousStatus ? `Status changed from ${previousStatus} to ${fields.status}` : null,
         relatedEntityType: "project",
         relatedEntityId: id,
         projectId: id,

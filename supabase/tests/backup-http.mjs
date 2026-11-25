@@ -99,15 +99,31 @@ try {
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-disposition"), /attachment/);
   assert.match(response.headers.get("cache-control"), /no-store/);
+  assert.match(response.headers.get("content-type"), /^application\/json; charset=utf-8$/i);
+  assert.equal(response.headers.get("x-content-type-options"), "nosniff");
+  assert.equal(response.headers.get("content-encoding"), null, "an identity download must not be re-encoded");
   const exportedBytes = Buffer.from(await response.arrayBuffer());
   assertExactBytes(exportedBytes);
   const payload = exportedBytes.toString("utf8");
   const bytes = Buffer.byteLength(payload);
-  assert.equal(Number(response.headers.get("content-length")), bytes);
+  // Next.js 16.4 no longer forwards a route handler's Content-Length (it frames the body with
+  // Transfer-Encoding: chunked), so the header is not required. Completeness is proven below by
+  // comparing the full body with the database export instead. If a platform does send a length,
+  // it must still be exactly right.
+  const declaredLength = response.headers.get("content-length");
+  if (declaredLength !== null) assert.equal(Number(declaredLength), bytes);
   assert.ok(bytes > 2_900_000 && bytes <= limit);
   assert.ok(bytes + headerBytes(response.headers) + Buffer.byteLength("HTTP/1.1 200 OK\r\n") < vercelDefault);
   const backup = JSON.parse(payload);
+  assert.equal(backup.app, "AMHIL OS");
   assert.equal(backup.counts.tasks, 1001);
+  // The downloaded body must be the complete export: identical to a fresh database export except
+  // for the dynamic exportedAt timestamp (same bytes, same length, nothing truncated or altered).
+  const withoutExportedAt = (text) => text.replace(/"exportedAt": "[^"]+"/, '"exportedAt": ""');
+  const expectedExport = unwrap(await member.rpc("export_workspace_backup_text")).body;
+  assert.equal(withoutExportedAt(payload), withoutExportedAt(expectedExport),
+    "downloaded body must equal the database export except for exportedAt");
+  assert.equal(bytes, Buffer.byteLength(expectedExport), "downloaded length must equal the exported length");
 
   unwrap(await member.from("notes").update({ content: "é".repeat(limit / 2) }).eq("id", note.id));
   const oversizedDownload = await download();

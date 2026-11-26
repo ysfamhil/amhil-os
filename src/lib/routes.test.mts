@@ -50,7 +50,8 @@ test("every section has a redirect from its old address, and the root is not red
   assert.equal(redirects.length, 1);
   const [rule] = redirects;
   const moved = /:section\(([^)]*)\)/.exec(rule.source)![1].split("|");
-  assert.deepEqual([...sections].filter((section) => !moved.includes(section)), []);
+  // "api" never existed at the root, so it has no old address to redirect.
+  assert.deepEqual([...sections].filter((section) => section !== "api" && !moved.includes(section)), []);
   assert.ok(!moved.includes("app"), "a redirect from /app would loop");
   assert.equal(rule.destination, "/app/:section/:path*");
   assert.equal(rule.permanent, false);
@@ -61,7 +62,7 @@ test("the proxy exempts the landing page by exact match and keeps public screens
   assert.match(middleware, /if \(request\.nextUrl\.pathname === "\/"\) return NextResponse\.next/);
   const list = /const PUBLIC_PATHS = \[([^\]]*)\]/.exec(middleware)![1];
   const publicPaths = [...list.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(publicPaths, ["/app/login", "/app/signup", "/app/forgot-password", "/app/auth/callback", "/app/auth/recovery"]);
+  assert.deepEqual(publicPaths, ["/app/login", "/app/signup", "/app/forgot-password", "/app/auth/callback", "/app/auth/recovery", "/app/api/account-email"]);
 });
 
 test("auth e-mails return through the callback under /app", () => {

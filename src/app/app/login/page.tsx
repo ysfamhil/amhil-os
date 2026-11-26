@@ -25,7 +25,9 @@ function LoginForm() {
   const [error, setError] = useState<string | null>(
     searchParams.get("error") === "reset_link_invalid"
       ? "That password reset link is invalid or has expired. Use \"Forgot password?\" above to request a new one."
-      : null
+      : searchParams.get("error") === "sign_in_required"
+        ? "Please sign in with your password to continue."
+        : null
   );
   const [loading, setLoading] = useState(false);
 

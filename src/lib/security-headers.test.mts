@@ -4,19 +4,40 @@ import assert from "node:assert/strict";
 const { default: config } = (await import(new URL("../../next.config.ts", import.meta.url).href)) as typeof import("../../next.config");
 
 const rules = await config.headers!();
-const headers = new Map(rules.flatMap((rule) => rule.headers.map((header) => [header.key, header.value] as const)));
-const csp = new Map(
-  headers
-    .get("Content-Security-Policy")!
-    .split(";")
-    .map((directive) => directive.trim().split(/\s+/))
-    .map(([name, ...values]) => [name, values.join(" ")] as const),
-);
+const toMap = (rule: (typeof rules)[number]) => new Map(rule.headers.map((header) => [header.key, header.value] as const));
+const directives = (value: string) =>
+  new Map(
+    value
+      .split(";")
+      .map((directive) => directive.trim().split(/\s+/))
+      .map(([name, ...values]) => [name, values.join(" ")] as const),
+  );
+// The first rule is the baseline for every route.
+const headers = toMap(rules[0]);
+const csp = directives(headers.get("Content-Security-Policy")!);
 
 test("one catch-all rule applies the headers to every route, with no duplicate header names", () => {
-  assert.equal(rules.length, 1);
   assert.equal(rules[0].source, "/:path*");
-  assert.equal(rules[0].headers.length, new Set(rules[0].headers.map((header) => header.key)).size);
+  for (const rule of rules) assert.equal(rule.headers.length, new Set(rule.headers.map((header) => header.key)).size);
+});
+
+test("the only override is a stricter policy on the page that holds a recovery token", () => {
+  assert.equal(rules.length, 2);
+  assert.equal(rules[1].source, "/app/auth/recovery");
+  const override = toMap(rules[1]);
+  assert.deepEqual([...override.keys()], ["Content-Security-Policy", "Referrer-Policy"]);
+  assert.equal(override.get("Referrer-Policy"), "no-referrer");
+
+  const strict = directives(override.get("Content-Security-Policy")!);
+  // Everything the baseline restricts stays restricted.
+  for (const [name, value] of csp) assert.equal(strict.get(name), value, name);
+  // Nothing may be loaded from, or sent to, another origin.
+  assert.equal(strict.get("default-src"), "'self'");
+  assert.equal(strict.get("connect-src"), "'self'");
+  assert.equal(strict.get("font-src"), "'self'");
+  assert.equal(strict.get("img-src"), "'self' data:");
+  assert.equal(strict.get("script-src"), "'self' 'unsafe-inline'");
+  assert.equal(strict.get("style-src"), "'self' 'unsafe-inline'");
 });
 
 test("framing is blocked by both CSP frame-ancestors and X-Frame-Options", () => {

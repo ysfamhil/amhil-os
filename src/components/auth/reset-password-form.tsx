@@ -8,7 +8,7 @@ import { AuthShell } from "@/components/auth/auth-shell";
 import { Field, TextInput } from "@/components/ui/field";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth-config";
 
-export function ResetPasswordForm() {
+export function ResetPasswordForm({ userId, email }: { userId: string; email?: string | null }) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -30,6 +30,14 @@ export function ResetPasswordForm() {
 
     setLoading(true);
     const supabase = createClient();
+    // Cookies are shared between tabs: never change the password of an account other than the one
+    // this form was opened for.
+    const { data: current } = await supabase.auth.getUser();
+    if (current.user?.id !== userId) {
+      setLoading(false);
+      setError("This browser is now signed in to a different account. Open your reset link again.");
+      return;
+    }
     const { error: updateError } = await supabase.auth.updateUser({ password });
 
     if (updateError) {
@@ -65,6 +73,11 @@ export function ResetPasswordForm() {
   return (
     <AuthShell subtitle="Choose a new password" icon={<KeyRound size={20} />}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {email && (
+          <p className="break-all text-center text-xs text-muted">
+            For <span className="font-medium text-foreground">{email}</span>
+          </p>
+        )}
         <Field label="New password" htmlFor="password">
           <TextInput
             id="password"

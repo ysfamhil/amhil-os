@@ -1,7 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isRestrictedSession } from "@/lib/session-restriction";
 
-const PUBLIC_PATHS = ["/app/login", "/app/signup", "/app/forgot-password", "/app/auth/callback"];
+const PUBLIC_PATHS = ["/app/login", "/app/signup", "/app/forgot-password", "/app/auth/callback", "/app/auth/recovery"];
 // Bounced straight to /app/dashboard if the visitor already has a session — same
 // treatment /login always got, extended to the other two credential-entry
 // screens. Not /reset-password: reaching it *requires* an active (recovery)
@@ -11,6 +12,11 @@ const AUTH_ONLY_PATHS = ["/app/login", "/app/signup", "/app/forgot-password"];
 // enough to see the pending/suspended notice and sign out, or to finish a
 // password reset. Everything else under (app) requires status = "approved".
 const APPROVAL_EXEMPT_PATHS = ["/app/pending", "/app/reset-password"];
+// All that a session from an e-mail link (password recovery) can open, besides the public screens.
+const RESTRICTED_SESSION_PATHS = ["/app/reset-password", "/app/pending"];
+
+/** Whole path segments only: "/app/login" does not cover "/app/loginx". */
+const covers = (paths: string[], pathname: string) => paths.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 
 export async function updateSession(request: NextRequest) {
   // The public landing page, and only that exact path: it needs no session. Everything else that
@@ -42,7 +48,9 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isPublicPath = PUBLIC_PATHS.some((path) => request.nextUrl.pathname.startsWith(path));
+  const isPublicPath = covers(PUBLIC_PATHS, request.nextUrl.pathname);
+  // getUser() above had Supabase validate the token; only now is its claim read.
+  const restricted = user ? isRestrictedSession((await supabase.auth.getSession()).data.session?.access_token) : false;
 
   if (!user && !isPublicPath) {
     const loginUrl = request.nextUrl.clone();
@@ -54,7 +62,15 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (user && AUTH_ONLY_PATHS.some((path) => request.nextUrl.pathname === path)) {
+  if (restricted && !isPublicPath && !covers(RESTRICTED_SESSION_PATHS, request.nextUrl.pathname)) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/app/login";
+    loginUrl.search = "?error=sign_in_required";
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // A restricted session may stay on the sign-in screen: signing in there is how it becomes a full one.
+  if (user && !restricted && AUTH_ONLY_PATHS.some((path) => request.nextUrl.pathname === path)) {
     const homeUrl = request.nextUrl.clone();
     homeUrl.pathname = "/app/dashboard";
     homeUrl.search = "";
@@ -67,7 +83,7 @@ export async function updateSession(request: NextRequest) {
     // by another admin; an admin can't suspend themselves) needs to land on
     // /pending exactly like any other suspended user, not skip the gate.
     const isApproved = profile?.status === "approved";
-    const isApprovalExempt = APPROVAL_EXEMPT_PATHS.some((path) => request.nextUrl.pathname.startsWith(path));
+    const isApprovalExempt = covers(APPROVAL_EXEMPT_PATHS, request.nextUrl.pathname);
 
     if (!isApproved && !isApprovalExempt) {
       const pendingUrl = request.nextUrl.clone();

@@ -15,7 +15,7 @@ import type { UserStatus } from "@/types/database";
 async function requireAdminSession() {
   const session = await getSessionProfile();
   if (!session) throw new Error("Not authenticated");
-  if (!isActiveAdmin(session.profile)) throw new Error("Admin access required");
+  if (session.restricted || !isActiveAdmin(session.profile)) throw new Error("Admin access required");
   return session;
 }
 

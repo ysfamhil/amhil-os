@@ -52,14 +52,39 @@ const securityHeaders = [
 // browsers cache permanent redirects, so a mistake could not be taken back.
 const movedSections = "login|signup|forgot-password|reset-password|pending|auth|dashboard|tasks|notes|journal|finance|goals|habits|time|crm|admin|settings";
 
+// The recovery page holds a one-time token, so it may load from and send to this site only, and it
+// sends no referrer. 'unsafe-inline' is needed for Next's own bootstrap scripts (see above): the
+// point here is to shut out other origins. React's development build also needs eval.
+// (Later entries override the same header from the general list.)
+const recoveryHeaders = [
+  {
+    key: "Content-Security-Policy",
+    value: [
+      contentSecurityPolicy,
+      "default-src 'self'",
+      `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data:",
+      "font-src 'self'",
+      "connect-src 'self'",
+    ].join("; "),
+  },
+  { key: "Referrer-Policy", value: "no-referrer" },
+];
+
 const nextConfig: NextConfig = {
+  // Server action arguments are never written to the console (they can hold a recovery token).
+  logging: { serverFunctions: false },
   // Do not advertise the framework in an X-Powered-By header.
   poweredByHeader: false,
   async redirects() {
     return [{ source: `/:section(${movedSections})/:path*`, destination: "/app/:section/:path*", permanent: false }];
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      { source: "/app/auth/recovery", headers: recoveryHeaders },
+    ];
   },
 };
 

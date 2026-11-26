@@ -63,8 +63,9 @@ try {
     assert.equal(await note.locator("strong").textContent(), "Valid note formatting");
     assert.equal(await note.locator("ul > li").textContent(), "Allowed list item");
     const text = await note.textContent();
-    assert.ok(text?.includes("</div></li><li>bare item</li>"));
-    assert.ok(text?.includes("misnested</i>"));
+    assert.ok(text?.includes("bare item"));
+    assert.ok(text?.includes("misnested"));
+    assert.ok(!text?.includes("</li>") && !text?.includes("</i>"), `${pathname} never shows markup as text`);
     assert.ok(text?.includes("<b>literal</b>"));
     assert.equal(await note.locator("img, script, [onerror]").count(), 0);
     assert.equal(await serverPage.locator("main [data-note-html]").filter({ hasText: "Adjacent note body" }).count(), 1);

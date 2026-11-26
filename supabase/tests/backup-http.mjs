@@ -196,10 +196,11 @@ try {
     assert.ok(rendered.includes("<strong>Legacy allowed formatting</strong>"), `${path} preserves allowed formatting`);
     assert.ok(rendered.includes("<em>Direct allowed formatting</em>"), `${path} preserves directly written formatting`);
     assert.ok(rendered.includes("&lt;b&gt;literal&lt;/b&gt;"), `${path} preserves escaped literal tags`);
+    assert.ok(rendered.includes("<p>Unsafe handler</p>"), `${path} drops the handler and keeps the paragraph`);
     assert.ok(!/<img\b[^>]*legacy-note-marker|<p\b[^>]*onclick="DIRECT_NOTE_MARKER"|<script>DIRECT_NOTE_MARKER/.test(rendered),
       `${path} must keep unsafe markup out of the rendered HTML`);
   }
-  console.log("Notes and Overview rendered legacy and direct database writes with unsafe markup escaped.");
+  console.log("Notes and Overview rendered legacy and direct database writes with unsafe markup removed.");
 } finally {
   unwrap(await trusted.auth.admin.deleteUser(user.id));
 }

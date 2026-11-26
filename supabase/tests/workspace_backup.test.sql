@@ -6,17 +6,13 @@ select no_plan();
 
 select is(
   workspace_backup_private.clean_note(
-    '<div>&lt;strong&gt;literal&lt;/strong&gt; &amp; &quot; &#60; <strong>format</strong><img alt="<b>">'
-    || '<script>alert(1)</script></div>'),
-  '<div>&lt;strong&gt;literal&lt;/strong&gt; &amp; &quot; &#60; <strong>format</strong>&lt;img alt="&lt;b&gt;"&gt;'
-    || '&lt;script&gt;alert(1)&lt;/script&gt;</div>',
-  'sanitizer retains escaped tags and entities, permits real formatting, and escapes unsafe markup'
+    '<p dir="ltr" style="line-height:1.38;margin-top:0pt;">kept</p><span style="font-weight: inherit;">too</span> &lt;b&gt;'
+    || '<img src=x onerror=alert(1)><script>alert(1)</script>'),
+  '<p dir="ltr" style="line-height:1.38;margin-top:0pt;">kept</p><span style="font-weight: inherit;">too</span> &lt;b&gt;'
+    || '<img src=x onerror=alert(1)><script>alert(1)</script>',
+  'restore keeps note content byte for byte; the application sanitizes it when displaying and saving'
 );
-select is(
-  workspace_backup_private.clean_note(workspace_backup_private.clean_note('&lt;b&gt; <b>format</b><img src=x>')),
-  '&lt;b&gt; <b>format</b>&lt;img src=x&gt;',
-  'sanitizer is idempotent'
-);
+select is(workspace_backup_private.clean_note(null), null, 'a missing note body stays missing');
 
 create temporary table workspace_fixtures (
   position integer generated always as identity,
@@ -261,8 +257,9 @@ select is((select count(*) from public.task_tags link join public.tasks t on t.i
   1::bigint, 'both task-tag keys remapped');
 select is((select count(*) from public.notes note join public.tasks task on task.id = note.task_id where task.title = 'Task'),
   1::bigint, 'note task reference remapped');
-select ok((select content like '<strong>Safe</strong>%' and content not like '%<img%' and content not like '%<script%' from public.notes where title = 'Note'),
-  'safe note formatting retained and untrusted markup escaped');
+select is((select content from public.notes where title = 'Note'),
+  '<strong>Safe</strong><img src=x onerror=alert(1)><script>alert(1)</script>',
+  'restored note content is identical to the backed-up content');
 select is((select count(*) from public.timeline_events event join public.learning_topics topic on topic.id = event.related_entity_id
   join public.learning_areas area on area.id = (event.metadata->>'area_id')::uuid and area.id = topic.area_id),
   1::bigint, 'timeline topic and nested area references remapped');
@@ -351,41 +348,44 @@ $sql$, 'numeric(12,2) accepts additional trailing zeroes without precision loss'
 
 select public.reset_workspace_data();
 insert into public.notes (title, content) values (
-  'Boundary note', '<p>&lt;b&gt; <b>real</b> &amp; <img src=x></p>' || repeat('<', 780000)
+  'Boundary note', '<p>&lt;b&gt; <b>real</b> &amp; <img src=x></p>' || repeat('<', 3140000)
 );
 insert into backups values ('boundary', public.export_workspace_backup());
 select public.reset_workspace_data();
 select is((select public.preview_workspace_restore(payload)->'counts'->>'notes'
-  from backups where name = 'boundary'), '1', 'preview accepts a sanitized backup just below the limit');
+  from backups where name = 'boundary'), '1', 'preview accepts a backup just below the limit');
 select is((select public.restore_workspace_backup(payload)->>'notes' from backups where name = 'boundary'),
-  '1', 'restore accepts a sanitized backup just below the limit');
+  '1', 'restore accepts a backup just below the limit');
 insert into backups values ('boundary again', public.export_workspace_backup());
 select ok((select octet_length(payload::text) between 3100000 and 3145728
-  from backups where name = 'boundary again'), 're-export remains just below 3 MiB after sanitation expansion');
-select ok((select content like '<p>&lt;b&gt; <b>real</b> &amp; &lt;img src=x&gt;</p>&lt;%' from public.notes),
-  'restore preserves literal and actual tags correctly at the size boundary');
+  from backups where name = 'boundary again'), 're-export of the restored data is still just below 3 MiB');
+select ok((select content like '<p>&lt;b&gt; <b>real</b> &amp; <img src=x></p><<%' from public.notes),
+  'restore preserves the note unchanged at the size boundary');
 select public.reset_workspace_data();
 select is((select public.restore_workspace_backup(payload)->>'notes' from backups where name = 'boundary again'),
   '1', 'the re-export restores a second time');
 select is((select content from public.notes), (select payload#>>'{data,notes,0,content}'
-  from backups where name = 'boundary again'), 'repeated restore preserves sanitized note exactly');
+  from backups where name = 'boundary again'), 'repeated restore preserves the note exactly');
 
 select public.reset_workspace_data();
-insert into public.notes (title, content) values ('Too large after escaping', repeat('<', 800000));
-select throws_ok('select public.export_workspace_backup()', '22023',
-  'The workspace would exceed the 3 MiB backup limit after restore',
-  'export preflight rejects a raw backup that cannot stay exportable after restore');
-select is((select length(content) from public.notes), 800000, 'failed export did not change the stored note');
+insert into public.notes (title, content) values ('Many angle brackets', repeat('<', 800000));
+select lives_ok('select public.export_workspace_backup()',
+  'a note that restore no longer expands can be exported');
+select is((select length(content) from public.notes), 800000, 'export did not change the stored note');
+select public.reset_workspace_data();
+insert into public.notes (title, content) values ('Over the limit', repeat('<', 3200000));
+select throws_ok('select public.export_workspace_backup()', '22023', null,
+  'export rejects a note over the 3 MiB limit');
 select public.reset_workspace_data();
 insert into backups
-select 'expands too far', jsonb_build_object('app', 'AMHIL OS', 'version', 1, 'data',
+select 'too large', jsonb_build_object('app', 'AMHIL OS', 'version', 1, 'data',
   jsonb_build_object('notes', jsonb_build_array(jsonb_build_object(
-    'id', gen_random_uuid(), 'title', 'Oversize on restore', 'content', repeat('<', 800000)
+    'id', gen_random_uuid(), 'title', 'Oversize on restore', 'content', repeat('<', 3200000)
   ))));
-select throws_ok($sql$ select public.preview_workspace_restore(payload) from backups where name = 'expands too far' $sql$,
-  '22023', 'The workspace would exceed the 3 MiB backup limit after restore', 'preview rejects expansion beyond 3 MiB');
-select throws_ok($sql$ select public.restore_workspace_backup(payload) from backups where name = 'expands too far' $sql$,
-  '22023', 'The workspace would exceed the 3 MiB backup limit after restore', 'restore rejects expansion beyond 3 MiB');
+select throws_ok($sql$ select public.preview_workspace_restore(payload) from backups where name = 'too large' $sql$,
+  '22023', null, 'preview rejects a backup over 3 MiB');
+select throws_ok($sql$ select public.restore_workspace_backup(payload) from backups where name = 'too large' $sql$,
+  '22023', null, 'restore rejects a backup over 3 MiB');
 select is((select sum(value::int) from jsonb_each_text(public.export_workspace_backup()->'counts')),
   0::bigint, 'failed size validation leaves all 24 tables empty');
 

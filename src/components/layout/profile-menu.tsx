@@ -30,7 +30,7 @@ export function ProfileMenu({ fullName, email, avatarUrl }: { fullName: string |
   async function handleSignOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push("/login");
+    router.push("/app/login");
     router.refresh();
   }
 
@@ -57,7 +57,7 @@ export function ProfileMenu({ fullName, email, avatarUrl }: { fullName: string |
             {email && <p className="truncate text-xs text-muted">{email}</p>}
           </div>
           <Link
-            href="/settings"
+            href="/app/settings"
             onClick={() => setOpen(false)}
             className="mt-1 flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm hover:bg-surface2"
           >
@@ -65,7 +65,7 @@ export function ProfileMenu({ fullName, email, avatarUrl }: { fullName: string |
             My Profile
           </Link>
           <Link
-            href="/settings"
+            href="/app/settings"
             onClick={() => setOpen(false)}
             className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm hover:bg-surface2"
           >

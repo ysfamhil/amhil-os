@@ -40,7 +40,7 @@ export function JournalStrip({ summary }: { summary: JournalSummary }) {
           {recentOther.map((entry) => (
             <li key={entry.entry_date} className="min-w-0">
               <Link
-                href={`/journal?date=${entry.entry_date}`}
+                href={`/app/journal?date=${entry.entry_date}`}
                 className="flex min-w-0 items-baseline gap-1.5 text-[12px] text-t4 hover:text-foreground"
               >
                 <span className="shrink-0 font-mono text-[10.5px] text-t7">{formatShortDate(entry.entry_date)}</span>
@@ -52,7 +52,7 @@ export function JournalStrip({ summary }: { summary: JournalSummary }) {
       )}
 
       <Link
-        href={`/journal?date=${today}`}
+        href={`/app/journal?date=${today}`}
         className="ml-auto rounded-lg px-3 py-[6px] text-[12px] font-bold text-white hover:opacity-90"
         style={{ backgroundColor: "var(--domain-journal)" }}
       >

@@ -18,7 +18,7 @@ class RestoreOutcomeUnknown extends Error {}
 async function uploadBackup(file: File, mode: "preview" | "restore") {
   let response: Response;
   try {
-    response = await fetch(`/settings/data/restore?mode=${mode}`, {
+    response = await fetch(`/app/settings/data/restore?mode=${mode}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: file,

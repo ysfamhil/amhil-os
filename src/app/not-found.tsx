@@ -12,7 +12,7 @@ export default function RootNotFound() {
           description="That page doesn't exist."
           action={
             <Link
-              href="/dashboard"
+              href="/app/dashboard"
               className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-accent-foreground hover:opacity-90"
             >
               Back to dashboard

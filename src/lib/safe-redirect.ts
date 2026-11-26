@@ -1,7 +1,7 @@
 /**
  * The "next" redirect target after login is attacker-controllable (it comes
  * straight from a URL query param), so it must be constrained to an in-app
- * path before use - otherwise a crafted login link like `/login?next=//evil.com`
+ * path before use - otherwise a crafted login link like `/app/login?next=//evil.com`
  * could send a user off-site right after authenticating.
  *
  * Browsers do not treat the string literally: the URL parser silently strips
@@ -44,7 +44,7 @@ function hasDisallowedCharacter(value: string): boolean {
 
 const PROBE_ORIGIN = "http://next-path.invalid";
 
-export function safeNextPath(next: string | null | undefined, fallback = "/dashboard"): string {
+export function safeNextPath(next: string | null | undefined, fallback = "/app/dashboard"): string {
   if (typeof next !== "string" || next.length === 0 || next.length > MAX_LENGTH) return fallback;
   if (!next.startsWith("/") || next.startsWith("//")) return fallback;
   if (hasDisallowedCharacter(next)) return fallback;

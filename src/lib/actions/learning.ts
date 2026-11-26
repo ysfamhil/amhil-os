@@ -10,10 +10,10 @@ import {
 import type { LearningTopicStatus } from "@/types/database";
 
 function revalidateLearningPaths(areaId?: string, topicId?: string) {
-  revalidatePath("/learning");
-  revalidatePath("/dashboard");
-  if (areaId) revalidatePath(`/learning/${areaId}`);
-  if (areaId && topicId) revalidatePath(`/learning/${areaId}/topics/${topicId}`);
+  revalidatePath("/app/learning");
+  revalidatePath("/app/dashboard");
+  if (areaId) revalidatePath(`/app/learning/${areaId}`);
+  if (areaId && topicId) revalidatePath(`/app/learning/${areaId}/topics/${topicId}`);
 }
 
 // --- Areas ---------------------------------------------------------------

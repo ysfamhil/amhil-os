@@ -17,8 +17,8 @@ export interface TimeEntryInput {
 }
 
 function revalidateTimePaths() {
-  revalidatePath("/time");
-  revalidatePath("/dashboard");
+  revalidatePath("/app/time");
+  revalidatePath("/app/dashboard");
 }
 
 export async function createTimeEntry(input: TimeEntryInput) {

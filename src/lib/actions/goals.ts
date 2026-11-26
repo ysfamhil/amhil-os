@@ -17,9 +17,9 @@ export interface GoalInput {
 }
 
 function revalidateGoalPaths(id?: string) {
-  revalidatePath("/goals");
-  revalidatePath("/dashboard");
-  if (id) revalidatePath(`/goals/${id}`);
+  revalidatePath("/app/goals");
+  revalidatePath("/app/dashboard");
+  if (id) revalidatePath(`/app/goals/${id}`);
 }
 
 /** Persists a manual drag-reorder from the dashboard's Goals widget. */
@@ -33,7 +33,7 @@ export async function reorderGoals(orderedIds: string[]) {
     )
   );
 
-  revalidatePath("/dashboard");
+  revalidatePath("/app/dashboard");
 }
 
 export async function createGoal(input: GoalInput) {

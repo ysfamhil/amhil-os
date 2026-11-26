@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 import { requireApprovedSession } from "@/lib/auth";
 
 function revalidateSubtaskPaths() {
-  revalidatePath("/tasks");
-  revalidatePath("/dashboard");
+  revalidatePath("/app/tasks");
+  revalidatePath("/app/dashboard");
 }
 
 export async function createSubtask(taskId: string, title: string) {

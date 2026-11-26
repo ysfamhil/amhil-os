@@ -20,7 +20,7 @@ export function NotesWidget({ data, onAddNote }: { data: DashboardData; onAddNot
       title="Notes"
       action={
         <div className="flex items-center gap-1">
-          <Link href="/notes" className="rounded-lg px-2 py-1 text-[11px] font-semibold text-t6 hover:bg-surface2 hover:text-t3">
+          <Link href="/app/notes" className="rounded-lg px-2 py-1 text-[11px] font-semibold text-t6 hover:bg-surface2 hover:text-t3">
             View all
           </Link>
           <WidgetAddButton onClick={onAddNote} label="Note" domain="notes" />
@@ -43,7 +43,7 @@ export function NotesWidget({ data, onAddNote }: { data: DashboardData; onAddNot
             <li key={note.id}>
               <button
                 type="button"
-                onClick={() => router.push(`/notes?q=${encodeURIComponent(note.title)}`)}
+                onClick={() => router.push(`/app/notes?q=${encodeURIComponent(note.title)}`)}
                 className="min-w-0 w-full text-left"
               >
                 <div className="flex items-center justify-between gap-2">

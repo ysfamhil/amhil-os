@@ -47,7 +47,7 @@ export async function requireApprovedSession() {
 /** For pages that require an admin. Redirects non-admins straight to /dashboard. */
 export async function requireAdmin() {
   const session = await getSessionProfile();
-  if (!session) redirect("/login");
-  if (!isActiveAdmin(session.profile)) redirect("/dashboard");
+  if (!session) redirect("/app/login");
+  if (!isActiveAdmin(session.profile)) redirect("/app/dashboard");
   return session;
 }

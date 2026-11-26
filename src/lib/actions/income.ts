@@ -43,10 +43,10 @@ export interface IncomeInput {
 }
 
 function revalidateIncomePaths(clientId?: string | null, projectId?: string | null) {
-  revalidatePath("/finance");
-  revalidatePath("/dashboard");
-  if (clientId) revalidatePath(`/clients/${clientId}`);
-  if (projectId) revalidatePath(`/projects/${projectId}`);
+  revalidatePath("/app/finance");
+  revalidatePath("/app/dashboard");
+  if (clientId) revalidatePath(`/app/clients/${clientId}`);
+  if (projectId) revalidatePath(`/app/projects/${projectId}`);
 }
 
 export async function createIncome(input: IncomeInput) {

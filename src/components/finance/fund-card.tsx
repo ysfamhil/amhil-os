@@ -11,7 +11,7 @@ export function FundCard({ fund }: { fund: EmergencyFundListItem }) {
   const progress = fund.targetAmount > 0 ? Math.min(100, (fund.balance / fund.targetAmount) * 100) : 0;
 
   return (
-    <Link href={`/finance/funds/${fund.id}`}>
+    <Link href={`/app/finance/funds/${fund.id}`}>
       <Card className="flex h-full flex-col gap-3 transition-colors hover:border-accent/50">
         <h3 className="font-medium">{fund.name}</h3>
 

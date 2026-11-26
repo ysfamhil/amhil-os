@@ -80,7 +80,7 @@ export function GoalDetailClient({ goal }: { goal: GoalDetail }) {
               ))}
             </ul>
           )}
-          <Link href="/tasks" className="mt-3 inline-block text-xs font-medium text-accent hover:underline">
+          <Link href="/app/tasks" className="mt-3 inline-block text-xs font-medium text-accent hover:underline">
             Go to tasks →
           </Link>
         </Card>
@@ -98,7 +98,7 @@ export function GoalDetailClient({ goal }: { goal: GoalDetail }) {
               ))}
             </ul>
           )}
-          <Link href="/habits" className="mt-3 inline-block text-xs font-medium text-accent hover:underline">
+          <Link href="/app/habits" className="mt-3 inline-block text-xs font-medium text-accent hover:underline">
             Go to habits →
           </Link>
         </Card>
@@ -117,7 +117,7 @@ export function GoalDetailClient({ goal }: { goal: GoalDetail }) {
         description={`Delete "${goal.title}"? Linked tasks and habits stay intact and just become unlinked.`}
         onConfirm={async () => {
           await deleteGoal(goal.id);
-          router.push("/goals");
+          router.push("/app/goals");
           router.refresh();
         }}
       />

@@ -22,16 +22,16 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Tasks", href: "/tasks", icon: ListTodo, domainVar: "--domain-tasks" },
-  { label: "Habits", href: "/habits", icon: Repeat, domainVar: "--domain-habits" },
-  { label: "Goals", href: "/goals", icon: Target, domainVar: "--domain-goals" },
-  { label: "Timesheet", href: "/time", icon: Clock, domainVar: "--domain-time" },
-  { label: "Notes", href: "/notes", icon: StickyNote, domainVar: "--domain-notes" },
-  { label: "Journal", href: "/journal", icon: BookOpen, domainVar: "--domain-journal" },
-  { label: "Finance", href: "/finance", icon: Wallet, domainVar: "--domain-finance" },
-  { label: "CRM", href: "/crm", icon: Handshake, domainVar: "--domain-crm" },
+  { label: "Overview", href: "/app/dashboard", icon: LayoutDashboard },
+  { label: "Tasks", href: "/app/tasks", icon: ListTodo, domainVar: "--domain-tasks" },
+  { label: "Habits", href: "/app/habits", icon: Repeat, domainVar: "--domain-habits" },
+  { label: "Goals", href: "/app/goals", icon: Target, domainVar: "--domain-goals" },
+  { label: "Timesheet", href: "/app/time", icon: Clock, domainVar: "--domain-time" },
+  { label: "Notes", href: "/app/notes", icon: StickyNote, domainVar: "--domain-notes" },
+  { label: "Journal", href: "/app/journal", icon: BookOpen, domainVar: "--domain-journal" },
+  { label: "Finance", href: "/app/finance", icon: Wallet, domainVar: "--domain-finance" },
+  { label: "CRM", href: "/app/crm", icon: Handshake, domainVar: "--domain-crm" },
 ];
 
 /** Only ever rendered for role = "admin" — see AppHeader. */
-export const ADMIN_NAV_ITEM: NavItem = { label: "Admin", href: "/admin", icon: ShieldCheck };
+export const ADMIN_NAV_ITEM: NavItem = { label: "Admin", href: "/app/admin", icon: ShieldCheck };

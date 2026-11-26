@@ -24,7 +24,7 @@ export async function reorderTasks(orderedIds: string[]) {
     )
   );
 
-  revalidatePath("/dashboard");
+  revalidatePath("/app/dashboard");
 }
 
 export interface TaskInput {
@@ -41,9 +41,9 @@ export interface TaskInput {
 }
 
 function revalidateTaskPaths(projectId?: string | null) {
-  revalidatePath("/tasks");
-  revalidatePath("/dashboard");
-  if (projectId) revalidatePath(`/projects/${projectId}`);
+  revalidatePath("/app/tasks");
+  revalidatePath("/app/dashboard");
+  if (projectId) revalidatePath(`/app/projects/${projectId}`);
 }
 
 export async function createTask(input: TaskInput) {

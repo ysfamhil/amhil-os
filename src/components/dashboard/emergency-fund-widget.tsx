@@ -17,7 +17,7 @@ export function EmergencyFundWidget({ data }: { data: DashboardData }) {
     <WidgetShell
       title="Emergency Fund"
       action={
-        <Link href="/finance?tab=funds" className="rounded-lg px-2 py-1 text-[11px] font-semibold text-t6 hover:bg-surface2 hover:text-t3">
+        <Link href="/app/finance?tab=funds" className="rounded-lg px-2 py-1 text-[11px] font-semibold text-t6 hover:bg-surface2 hover:text-t3">
           View funds
         </Link>
       }
@@ -61,7 +61,7 @@ export function EmergencyFundWidget({ data }: { data: DashboardData }) {
       </div>
 
       <Link
-        href="/finance?tab=funds"
+        href="/app/finance?tab=funds"
         className="text-[12px] font-bold"
         style={{ color: "var(--domain-savings)" }}
       >

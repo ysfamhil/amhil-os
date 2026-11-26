@@ -22,9 +22,9 @@ function isValidEmail(email: string) {
 }
 
 function revalidateClientPaths(id?: string) {
-  revalidatePath("/clients");
-  revalidatePath("/dashboard");
-  if (id) revalidatePath(`/clients/${id}`);
+  revalidatePath("/app/clients");
+  revalidatePath("/app/dashboard");
+  if (id) revalidatePath(`/app/clients/${id}`);
 }
 
 export async function createClientRecord(input: ClientInput) {

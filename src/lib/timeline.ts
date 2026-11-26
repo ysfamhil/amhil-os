@@ -119,29 +119,29 @@ export function resolveTimelineEventHref(event: Pick<TimelineEvent, "related_ent
 
   switch (type) {
     case "project":
-      return id ? `/projects/${id}` : "/projects";
+      return id ? `/app/projects/${id}` : "/app/projects";
     case "goal":
-      return id ? `/goals/${id}` : "/goals";
+      return id ? `/app/goals/${id}` : "/app/goals";
     case "client":
-      return id ? `/clients/${id}` : "/clients";
+      return id ? `/app/clients/${id}` : "/app/clients";
     case "learning_topic": {
       const areaId = typeof metadata?.area_id === "string" ? metadata.area_id : null;
-      return areaId && id ? `/learning/${areaId}/topics/${id}` : "/learning";
+      return areaId && id ? `/app/learning/${areaId}/topics/${id}` : "/app/learning";
     }
     case "task":
-      return "/tasks";
+      return "/app/tasks";
     case "habit":
-      return "/habits";
+      return "/app/habits";
     case "lead":
-      return "/leads";
+      return "/app/leads";
     case "income":
-      return "/finance?tab=income";
+      return "/app/finance?tab=income";
     case "expense":
-      return "/finance?tab=expenses";
+      return "/app/finance?tab=expenses";
     case "time_entry":
-      return "/time";
+      return "/app/time";
     case "note":
-      return "/notes";
+      return "/app/notes";
     default:
       return null;
   }

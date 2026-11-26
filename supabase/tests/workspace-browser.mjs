@@ -55,7 +55,7 @@ try {
   // With app scripts disabled, Chrome parses precisely the HTML emitted
   // by Next.js before client hydration can repair an invalid document.
   const serverPage = await pageWithSession(false);
-  for (const pathname of ["/notes", "/dashboard"]) {
+  for (const pathname of ["/app/notes", "/app/dashboard"]) {
     const response = await serverPage.goto(new URL(pathname, app).href);
     assert.equal(response?.status(), 200);
     const note = serverPage.locator("[data-note-html]").filter({ hasText: "Note tail marker" });
@@ -70,7 +70,7 @@ try {
     assert.equal(await note.locator("img, script, [onerror]").count(), 0);
     assert.equal(await serverPage.locator("main [data-note-html]").filter({ hasText: "Adjacent note body" }).count(), 1);
     assert.equal(await note.evaluate((element) => Boolean(element.closest("main"))), true);
-    if (pathname === "/dashboard") {
+    if (pathname === "/app/dashboard") {
       assert.equal(await note.evaluate((element) => Boolean(element.closest("li button"))), true);
     }
   }
@@ -78,7 +78,7 @@ try {
 
   unwrap(await member.rpc("reset_workspace_data"));
   const ui = await pageWithSession(true);
-  const response = await ui.goto(new URL("/settings/data", app).href);
+  const response = await ui.goto(new URL("/app/settings/data", app).href);
   assert.equal(response?.status(), 200);
   const backup = {
     app: "AMHIL OS", version: 1,

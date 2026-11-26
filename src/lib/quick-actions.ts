@@ -7,11 +7,11 @@ export interface QuickAction {
 }
 
 export const QUICK_ACTIONS: QuickAction[] = [
-  { label: "New Task", href: "/tasks?new=1", icon: ListPlus },
-  { label: "Log Time", href: "/time?new=1", icon: Clock },
-  { label: "Complete Habit", href: "/habits", icon: Repeat },
-  { label: "New Goal", href: "/goals?new=1", icon: Target },
-  { label: "Add Income", href: "/finance?tab=income&new=1", icon: Wallet },
-  { label: "Add Expense", href: "/finance?tab=expenses&new=1", icon: Receipt },
-  { label: "Add Note", href: "/notes?new=1", icon: StickyNote },
+  { label: "New Task", href: "/app/tasks?new=1", icon: ListPlus },
+  { label: "Log Time", href: "/app/time?new=1", icon: Clock },
+  { label: "Complete Habit", href: "/app/habits", icon: Repeat },
+  { label: "New Goal", href: "/app/goals?new=1", icon: Target },
+  { label: "Add Income", href: "/app/finance?tab=income&new=1", icon: Wallet },
+  { label: "Add Expense", href: "/app/finance?tab=expenses&new=1", icon: Receipt },
+  { label: "Add Note", href: "/app/notes?new=1", icon: StickyNote },
 ];

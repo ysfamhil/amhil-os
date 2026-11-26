@@ -21,9 +21,9 @@ export interface ProjectInput {
 }
 
 function revalidateProjectPaths(id?: string) {
-  revalidatePath("/projects");
-  revalidatePath("/dashboard");
-  if (id) revalidatePath(`/projects/${id}`);
+  revalidatePath("/app/projects");
+  revalidatePath("/app/dashboard");
+  if (id) revalidatePath(`/app/projects/${id}`);
 }
 
 export async function createProject(input: ProjectInput) {

@@ -1,18 +1,22 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login", "/signup", "/forgot-password", "/auth/callback"];
-// Bounced straight to /dashboard if the visitor already has a session — same
+const PUBLIC_PATHS = ["/app/login", "/app/signup", "/app/forgot-password", "/app/auth/callback"];
+// Bounced straight to /app/dashboard if the visitor already has a session — same
 // treatment /login always got, extended to the other two credential-entry
 // screens. Not /reset-password: reaching it *requires* an active (recovery)
 // session, so being logged in is the expected state there, not a reason to bounce.
-const AUTH_ONLY_PATHS = ["/login", "/signup", "/forgot-password"];
+const AUTH_ONLY_PATHS = ["/app/login", "/app/signup", "/app/forgot-password"];
 // Reachable once signed in even before an admin approves the account — just
 // enough to see the pending/suspended notice and sign out, or to finish a
 // password reset. Everything else under (app) requires status = "approved".
-const APPROVAL_EXEMPT_PATHS = ["/pending", "/reset-password"];
+const APPROVAL_EXEMPT_PATHS = ["/app/pending", "/app/reset-password"];
 
 export async function updateSession(request: NextRequest) {
+  // The public landing page, and only that exact path: it needs no session. Everything else that
+  // is not listed in PUBLIC_PATHS still requires one.
+  if (request.nextUrl.pathname === "/") return NextResponse.next({ request });
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -42,9 +46,9 @@ export async function updateSession(request: NextRequest) {
 
   if (!user && !isPublicPath) {
     const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/login";
+    loginUrl.pathname = "/app/login";
     loginUrl.search = "";
-    // Keep the query string so a deep link such as /journal?date=2026-01-01 survives the
+    // Keep the query string so a deep link such as /app/journal?date=2026-01-01 survives the
     // sign-in round trip. safeNextPath validates the value again before it is used.
     loginUrl.searchParams.set("next", request.nextUrl.pathname + request.nextUrl.search);
     return NextResponse.redirect(loginUrl);
@@ -52,7 +56,7 @@ export async function updateSession(request: NextRequest) {
 
   if (user && AUTH_ONLY_PATHS.some((path) => request.nextUrl.pathname === path)) {
     const homeUrl = request.nextUrl.clone();
-    homeUrl.pathname = "/dashboard";
+    homeUrl.pathname = "/app/dashboard";
     homeUrl.search = "";
     return NextResponse.redirect(homeUrl);
   }
@@ -67,21 +71,21 @@ export async function updateSession(request: NextRequest) {
 
     if (!isApproved && !isApprovalExempt) {
       const pendingUrl = request.nextUrl.clone();
-      pendingUrl.pathname = "/pending";
+      pendingUrl.pathname = "/app/pending";
       pendingUrl.search = "";
       return NextResponse.redirect(pendingUrl);
     }
 
-    if (isApproved && request.nextUrl.pathname.startsWith("/pending")) {
+    if (isApproved && request.nextUrl.pathname.startsWith("/app/pending")) {
       const homeUrl = request.nextUrl.clone();
-      homeUrl.pathname = "/dashboard";
+      homeUrl.pathname = "/app/dashboard";
       homeUrl.search = "";
       return NextResponse.redirect(homeUrl);
     }
 
-    if (request.nextUrl.pathname.startsWith("/admin") && profile?.role !== "admin") {
+    if (request.nextUrl.pathname.startsWith("/app/admin") && profile?.role !== "admin") {
       const homeUrl = request.nextUrl.clone();
-      homeUrl.pathname = "/dashboard";
+      homeUrl.pathname = "/app/dashboard";
       homeUrl.search = "";
       return NextResponse.redirect(homeUrl);
     }

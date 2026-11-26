@@ -14,7 +14,7 @@ const STATUS_TONE: Record<GoalStatus, "neutral" | "accent" | "success" | "danger
 
 export function GoalCard({ goal }: { goal: GoalWithProgress }) {
   return (
-    <Link href={`/goals/${goal.id}`}>
+    <Link href={`/app/goals/${goal.id}`}>
       <Card className="flex h-full flex-col gap-3 transition-colors hover:border-accent/50">
         <div className="flex items-start justify-between gap-2">
           <h3 className="font-medium">{goal.title}</h3>

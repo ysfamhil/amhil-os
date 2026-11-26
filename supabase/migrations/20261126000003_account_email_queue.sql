@@ -3,16 +3,24 @@
 --
 -- Triggers only add a row to a private queue, so a change made in the app, in the dashboard or in
 -- SQL is covered alike, and an e-mail problem can never fail a sign-up or an approval. A job then
--- hands queued rows to the application (/app/api/account-email), which sends them through Resend.
+-- posts queued rows to the application (/app/api/account-email), which sends them through Resend.
 --
 -- Nothing is sent until two Vault secrets exist, 'account_email_endpoint' (the route's URL) and
 -- 'account_email_secret' (shared with the application). They are created by hand, never committed.
+--
+-- Security: the HTTP client is the "http" extension, installed inside the private schema, so that
+-- anon and authenticated cannot make requests with it. pg_net is deliberately NOT used: it lets
+-- every database role queue arbitrary requests, and those grants cannot be revoked by this role.
+-- Roles that can read the whole database (postgres and Supabase's own read-all roles, which can
+-- already read the Vault) can still reach the schema; that membership cannot be narrowed here.
+-- The shared secret is never transmitted; each request carries only an HMAC signature of itself.
 
-create extension if not exists pg_net;
 create extension if not exists pg_cron;
 
 create schema account_email_private;
 revoke all on schema account_email_private from public, anon, authenticated;
+-- Fails, rather than being skipped, if "http" is already installed somewhere less protected.
+create extension http with schema account_email_private;
 
 create table account_email_private.outbox (
   id uuid primary key default gen_random_uuid(),
@@ -29,7 +37,6 @@ create table account_email_private.outbox (
   attempts integer not null default 0,
   next_attempt_at timestamptz not null default now(),
   last_attempt_at timestamptz,
-  request_id bigint,
   sent_at timestamptz,
   failed_at timestamptz,
   last_error text
@@ -126,7 +133,8 @@ create trigger account_email_on_status_change
   after update of status on public.profiles
   for each row execute function account_email_private.on_status_change();
 
--- Runs every minute: record the outcome of earlier requests, give up on stale ones, send what is due.
+-- Runs every minute: give up on stale rows, then post what is due. Success means the application
+-- answered with the row's id: a redirect to some other page that says "200" does not count.
 -- Every attempt for a row carries its id, which the application uses as Resend's idempotency key.
 create function account_email_private.dispatch()
 returns void
@@ -137,35 +145,18 @@ as $$
 declare
   v_url text;
   v_secret text;
+  v_body text;
+  v_time text;
+  v_status integer;
+  v_content text;
+  v_error text;
   r record;
 begin
-  update account_email_private.outbox o
-  set sent_at = now(), request_id = null, last_error = null
-  from net._http_response h
-  where o.sent_at is null and o.failed_at is null
-    and h.id = o.request_id and h.created >= o.last_attempt_at
-    and h.status_code between 200 and 299;
-
-  -- Failed, or no answer recorded after two minutes: try again after 1, 5, 30 and 120 minutes, five
-  -- attempts in all.
-  update account_email_private.outbox o
-  set request_id = null,
-      last_error = coalesce(
-        (select coalesce('HTTP ' || h.status_code, h.error_msg) from net._http_response h where h.id = o.request_id),
-        'no response'),
-      failed_at = case when o.attempts >= 5 then now() end,
-      next_attempt_at = now() + (array['1 minute', '5 minutes', '30 minutes', '2 hours'])[least(greatest(o.attempts, 1), 4)]::interval
-  where o.sent_at is null and o.failed_at is null and o.request_id is not null
-    and (exists (select 1 from net._http_response h
-                 where h.id = o.request_id and h.created >= o.last_attempt_at)
-         or o.last_attempt_at < now() - interval '2 minutes');
-
   -- Resend remembers an idempotency key for 24 hours; later retries could send twice, and week-old
   -- news is not worth sending.
   update account_email_private.outbox
   set failed_at = now(), last_error = coalesce(last_error, 'expired')
-  where sent_at is null and failed_at is null and request_id is null
-    and created_at < now() - interval '24 hours';
+  where sent_at is null and failed_at is null and created_at < now() - interval '24 hours';
 
   -- Housekeeping: no addresses kept for longer than needed, no ever-growing job log.
   delete from account_email_private.outbox
@@ -176,30 +167,85 @@ begin
 
   select decrypted_secret into v_url from vault.decrypted_secrets where name = 'account_email_endpoint';
   select decrypted_secret into v_secret from vault.decrypted_secrets where name = 'account_email_secret';
-  if v_url is null or v_secret is null then
+  -- Addresses are only sent encrypted; plain http is accepted for a host on this machine or network
+  -- (no dot in its name, or 127.x), as used by tests.
+  if v_url is null or v_secret is null
+     or v_url !~ '^(https://|http://([a-z0-9-]+|127[.][0-9.]+)(:[0-9]+)?/)' then
     return;
   end if;
 
+  perform account_email_private.http_set_curlopt('CURLOPT_TIMEOUT_MS', '10000');
+
   for r in
-    select id, kind, email, full_name from account_email_private.outbox
-    where sent_at is null and failed_at is null and request_id is null and next_attempt_at <= now()
+    select id, kind, email, full_name, attempts from account_email_private.outbox
+    where sent_at is null and failed_at is null and next_attempt_at <= now()
     order by seq
     limit 10
     for update skip locked
   loop
+    begin
+      v_body := jsonb_build_object('id', r.id, 'kind', r.kind, 'email', r.email, 'name', r.full_name)::text;
+      v_time := floor(extract(epoch from clock_timestamp()))::bigint::text;
+      select status, content into v_status, v_content
+      from account_email_private.http((
+        'POST',
+        v_url,
+        array[
+          account_email_private.http_header('x-account-email-time', v_time),
+          account_email_private.http_header('x-account-email-signature', encode(
+            extensions.hmac(convert_to(v_time || '.' || v_body, 'UTF8'), convert_to(v_secret, 'UTF8'), 'sha256'),
+            'hex'))
+        ],
+        'application/json',
+        v_body
+      )::account_email_private.http_request);
+
+      v_error := case
+        when v_status = 200 and position(r.id::text in coalesce(v_content, '')) > 0 then null
+        when v_status between 200 and 299 then 'unexpected response'
+        else 'HTTP ' || v_status
+      end;
+    exception when others then
+      v_error := left(sqlerrm, 200);
+    end;
+
+    -- Five attempts in all, 1, 5, 30 and 120 minutes apart.
     update account_email_private.outbox
-    set attempts = attempts + 1,
+    set attempts = r.attempts + 1,
         last_attempt_at = now(),
-        request_id = net.http_post(
-          url := v_url,
-          body := jsonb_build_object('id', r.id, 'kind', r.kind, 'email', r.email, 'name', r.full_name),
-          headers := jsonb_build_object('Content-Type', 'application/json', 'x-account-email-secret', v_secret),
-          timeout_milliseconds := 10000)
+        sent_at = case when v_error is null then now() end,
+        last_error = v_error,
+        failed_at = case when v_error is not null and r.attempts + 1 >= 5 then now() end,
+        next_attempt_at = now() + (array['1 minute', '5 minutes', '30 minutes', '2 hours'])[least(r.attempts + 1, 4)]::interval
     where id = r.id;
   end loop;
 end;
 $$;
 
-revoke execute on all functions in schema account_email_private from public, anon, authenticated;
+-- Our functions only: the extension's belong to the platform, and the schema itself keeps them away.
+revoke execute on function
+  account_email_private.enqueue(text, uuid),
+  account_email_private.on_user_confirmed(),
+  account_email_private.on_status_change(),
+  account_email_private.dispatch()
+from public, anon, authenticated;
+
+-- Refuse to finish if the protection this design relies on is not in place.
+do $$
+begin
+  if has_schema_privilege('anon', 'account_email_private', 'usage')
+     or has_schema_privilege('authenticated', 'account_email_private', 'usage') then
+    raise exception 'API roles must not be able to use account_email_private';
+  end if;
+  if exists (
+    select 1 from pg_depend d
+    join pg_extension e on e.oid = d.refobjid and e.extname = 'http'
+    join pg_proc p on p.oid = d.objid and d.classid = 'pg_proc'::regclass
+    where p.pronamespace <> 'account_email_private'::regnamespace
+  ) then
+    raise exception 'http functions exist outside account_email_private';
+  end if;
+end;
+$$;
 
 select cron.schedule('account-email-dispatch', '* * * * *', 'select account_email_private.dispatch()');

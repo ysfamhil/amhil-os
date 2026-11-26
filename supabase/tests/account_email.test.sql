@@ -1,10 +1,11 @@
 begin;
 
--- Account e-mails: what gets queued, who may see it, and how sending and retrying behave.
--- Everything is rolled back, so the requests queued here are never made.
+-- Account e-mails: what gets queued, who may see or send it, and how sending and retrying behave.
+-- Everything is rolled back. The only endpoint used is a closed port on this machine, so the
+-- successful send is covered by the end-to-end test instead.
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
-select plan(33);
+select plan(51);
 
 create function pg_temp.queued(user_id text) returns text language sql as $$
   select coalesce(string_agg(kind, ',' order by seq), '') from account_email_private.outbox
@@ -39,9 +40,6 @@ set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"30000000-0000-4000-8000-000000000001","role":"authenticated","amr":[{"method":"password","timestamp":1}]}', true),
        set_config('request.jwt.claim.sub', '30000000-0000-4000-8000-000000000001', true);
 select lives_ok($$select pg_temp.set_status('30000000-0000-4000-8000-000000000002', 'approved')$$, 'administrator approves');
-select throws_ok($$select * from account_email_private.outbox$$, '42501', null, 'the queue is not readable through the API role');
-select throws_ok($$select account_email_private.dispatch()$$, '42501', null, 'nor can the API role run the sender');
-select throws_ok($$select account_email_private.enqueue('account_approved', '30000000-0000-4000-8000-000000000002')$$, '42501', null, 'nor queue a message');
 reset role;
 select is(pg_temp.queued('30000000-0000-4000-8000-000000000002'), 'account_approved', 'pending -> approved');
 select pg_temp.set_status('30000000-0000-4000-8000-000000000002', 'approved');
@@ -59,6 +57,52 @@ update auth.users set email_confirmed_at = null where id = '30000000-0000-4000-8
 select pg_temp.set_status('30000000-0000-4000-8000-000000000003', 'approved');
 select is(pg_temp.queued('30000000-0000-4000-8000-000000000003'), 'account_declined,account_approved', 'nothing is sent to an unconfirmed address');
 
+-- Lockdown: nothing an API caller can be may make a request, read the queue or read the secret.
+select ok(not bool_or(has_schema_privilege(r, 'account_email_private', 'usage')),
+  'anon, authenticated, authenticator, service_role and the auth service cannot use the private schema')
+from unnest(array['anon', 'authenticated', 'authenticator', 'service_role', 'supabase_auth_admin']) r;
+select is((select count(*)::int from pg_roles r
+           where not r.rolsuper and r.rolname !~ '^pg_' and r.rolname <> 'postgres'
+             and has_schema_privilege(r.oid, 'account_email_private', 'usage')
+             and not pg_has_role(r.oid, 'pg_read_all_data', 'member')
+             and not pg_has_role(r.oid, 'pg_write_all_data', 'member')), 0,
+  'otherwise only the owner and roles that already read the whole database can');
+select is((select count(*)::int from pg_extension where extname = 'pg_net'), 0, 'pg_net is not installed');
+select is((select count(*)::int from pg_depend d
+           join pg_extension e on e.oid = d.refobjid and e.extname = 'http'
+           join pg_proc p on p.oid = d.objid and d.classid = 'pg_proc'::regclass
+           where p.pronamespace <> 'account_email_private'::regnamespace), 0, 'every http function is inside the private schema');
+select is((select count(*)::int from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+           where n.nspname in ('public', 'graphql_public') and p.prosrc ~* 'account_email_private'), 0,
+  'no exposed function reaches into the private schema');
+
+create function pg_temp.forbidden() returns setof text language plpgsql as $$
+declare
+  caller text := current_user;
+  attempt record;
+begin
+  for attempt in select * from (values
+    ('make a GET request', 'select account_email_private.http_get(''http://127.0.0.1:9/'')'),
+    ('make a POST request', 'select account_email_private.http_post(''http://127.0.0.1:9/'', ''{}'', ''application/json'')'),
+    ('make a raw request', 'select account_email_private.http(null::account_email_private.http_request)'),
+    ('change the client settings', 'select account_email_private.http_set_curlopt(''CURLOPT_TIMEOUT_MS'', ''1'')'),
+    ('run the sender', 'select account_email_private.dispatch()'),
+    ('queue a message', 'select account_email_private.enqueue(''account_approved'', null)'),
+    ('read the queue', 'select * from account_email_private.outbox'),
+    ('read the secret', 'select * from vault.decrypted_secrets'),
+    ('schedule a job', 'select cron.schedule(''x'', ''* * * * *'', ''select 1'')')
+  ) as a(what, statement)
+  loop
+    return next throws_ok(attempt.statement, '42501', null, caller || ' cannot ' || attempt.what);
+  end loop;
+end $$;
+
+set local role anon;
+select pg_temp.forbidden();
+set local role authenticated;
+select pg_temp.forbidden();
+reset role;
+
 -- A broken queue must never stop an account change.
 alter table account_email_private.outbox rename to outbox_away;
 select lives_ok($$select pg_temp.set_status('30000000-0000-4000-8000-000000000002', 'suspended')$$, 'status change survives a queue failure');
@@ -72,46 +116,32 @@ select pg_temp.set_status('30000000-0000-4000-8000-000000000002', 'approved');
 select account_email_private.dispatch();
 select is((select attempts from account_email_private.outbox), 0, 'nothing is sent before the secrets exist');
 
-select vault.create_secret('http://127.0.0.1:9/app/api/account-email', 'account_email_endpoint');
 -- made up for this run only; no secret is written into the repository
 select vault.create_secret(gen_random_uuid()::text || gen_random_uuid()::text, 'account_email_secret');
+select vault.create_secret('http://mail.example.com/app/api/account-email', 'account_email_endpoint');
 select account_email_private.dispatch();
-select is((select attempts from account_email_private.outbox), 1, 'sent once configured');
-select is((select count(*)::int from net.http_request_queue q join account_email_private.outbox o on o.request_id = q.id
-           where q.method = 'POST' and q.headers ->> 'x-account-email-secret' = (select decrypted_secret from vault.decrypted_secrets where name = 'account_email_secret')
-             and (convert_from(q.body, 'utf8')::jsonb) = jsonb_build_object('id', o.id, 'kind', o.kind, 'email', o.email, 'name', o.full_name)),
-  1, 'the request carries the secret, the row id, kind and address');
-select account_email_private.dispatch();
-select is((select attempts from account_email_private.outbox), 1, 'not sent again while in flight');
+select is((select attempts from account_email_private.outbox), 0, 'never sent unencrypted to a public host');
 
-insert into net._http_response (id, status_code, timed_out) select request_id, 502, false from account_email_private.outbox;
+select vault.update_secret((select id from vault.secrets where name = 'account_email_endpoint'), 'http://127.0.0.1:9/app/api/account-email');
 select account_email_private.dispatch();
-select is((select concat_ws('|', last_error, request_id is null, sent_at is null, failed_at is null, next_attempt_at > now()) from account_email_private.outbox),
-  'HTTP 502|t|t|t|t', 'a failure is recorded and retried later');
+select is((select concat_ws('|', attempts, sent_at is null, failed_at is null, next_attempt_at > now()) from account_email_private.outbox),
+  '1|t|t|t', 'a failed send is recorded and retried later');
+select matches((select last_error from account_email_private.outbox), '(?i)connect', 'with the reason');
+select ok(not exists (select 1 from account_email_private.outbox o, vault.decrypted_secrets v
+                      where v.name = 'account_email_secret' and position(v.decrypted_secret in coalesce(o.last_error, '')) > 0),
+  'which never contains the secret');
+select account_email_private.dispatch();
 select is((select attempts from account_email_private.outbox), 1, 'but not at once');
-
 update account_email_private.outbox set next_attempt_at = now();
-delete from net._http_response;
 select account_email_private.dispatch();
 select is((select attempts from account_email_private.outbox), 2, 'retried when due');
-update account_email_private.outbox set last_attempt_at = now() - interval '3 minutes';
-select account_email_private.dispatch();
-select is((select last_error || '|' || (request_id is null) from account_email_private.outbox), 'no response|true', 'a lost request is retried');
 
-update account_email_private.outbox set next_attempt_at = now();
-select account_email_private.dispatch();
-insert into net._http_response (id, status_code, timed_out) select request_id, 204, false from account_email_private.outbox;
-select account_email_private.dispatch();
-select ok((select sent_at is not null and last_error is null from account_email_private.outbox), 'success marks the row sent');
-select account_email_private.dispatch();
-select is((select attempts from account_email_private.outbox), 3, 'and it is never sent again');
-
-update account_email_private.outbox set sent_at = null, attempts = 4, next_attempt_at = now();
-delete from net._http_response;
-select account_email_private.dispatch();
-insert into net._http_response (id, status_code, timed_out) select request_id, 500, false from account_email_private.outbox;
+update account_email_private.outbox set attempts = 4, next_attempt_at = now();
 select account_email_private.dispatch();
 select ok((select failed_at is not null and attempts = 5 from account_email_private.outbox), 'gives up after five attempts');
+update account_email_private.outbox set next_attempt_at = now();
+select account_email_private.dispatch();
+select is((select attempts from account_email_private.outbox), 5, 'and stays given up');
 
 delete from account_email_private.outbox;
 select pg_temp.set_status('30000000-0000-4000-8000-000000000002', 'suspended');

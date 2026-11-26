@@ -58,10 +58,13 @@ test("the look is the reset e-mail's", () => {
   for (const kind of ACCOUNT_EMAIL_KINDS) assert.deepEqual(skeleton(render(kind).html), reference, kind);
 });
 
-test("the route checks the shared secret before reading the request, and logs nothing", () => {
+test("the route accepts only a fresh signature of the exact body, and logs nothing", () => {
   const route = read("../app/app/api/account-email/route.ts").replace(/\/\*[\s\S]*?\*\/|^\s*\/\/.*$/gm, "");
-  assert.ok(route.indexOf("timingSafeEqual(") < route.indexOf("request.text()"));
-  assert.ok(!/console\.|cookies|createClient|SERVICE_ROLE|NEXT_PUBLIC/.test(route));
+  assert.ok(route.indexOf("!signedBy(secret, request, body)") < route.indexOf("JSON.parse("), "verify before parsing");
+  assert.match(route, /createHmac\("sha256", secret\)\.update\(`\$\{time\}\.\$\{body\}`\)/);
+  assert.match(route, /timingSafeEqual\(expected, /);
+  assert.match(route, /Math\.abs\(Date\.now\(\) \/ 1000 - Number\(time\)\) > MAX_AGE_SECONDS\) return false/);
+  assert.ok(!/console\.|cookies|createClient|SERVICE_ROLE|NEXT_PUBLIC|x-account-email-secret/.test(route));
   assert.match(route, /secret\.length < 32 \|\| !apiKey \|\| !contact\) return reply\(503\)/);
   // the key only ever goes to Resend or to a fake on this machine
   assert.ok(route.includes('/^http:\\/\\/127\\.0\\.0\\.1:\\d+$/') && route.includes('"https://api.resend.com"'));
@@ -69,4 +72,14 @@ test("the route checks the shared secret before reading the request, and logs no
   const migration = read("../../supabase/migrations/20261126000003_account_email_queue.sql");
   const allowed = /kind text not null check \(kind in \(([^)]*)\)/.exec(migration)![1];
   assert.deepEqual([...allowed.matchAll(/'([a-z_]+)'/g)].map((m) => m[1]), [...ACCOUNT_EMAIL_KINDS]);
+});
+
+test("the database sends with the http extension in a private schema, never pg_net, and never the secret", () => {
+  const migration = read("../../supabase/migrations/20261126000003_account_email_queue.sql").replace(/^\s*--.*$/gm, "");
+  assert.match(migration, /create extension http with schema account_email_private;/);
+  assert.ok(!/pg_net|net\.http_|create extension if not exists http/.test(migration));
+  assert.match(migration, /extensions\.hmac\(convert_to\(v_time \|\| '\.' \|\| v_body, 'UTF8'\), convert_to\(v_secret, 'UTF8'\), 'sha256'\)/);
+  // the secret appears only as the signing key
+  assert.equal(migration.match(/v_secret/g)!.length, 4);
+  assert.match(migration, /position\(r\.id::text in coalesce\(v_content, ''\)\) > 0 then null/);
 });

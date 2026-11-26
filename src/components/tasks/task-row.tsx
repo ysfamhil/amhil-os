@@ -124,21 +124,25 @@ export function TaskRow({
         </span>
       </button>
 
-      <div className="hidden shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 sm:flex">
+      {/* Hidden until hover only where there is a mouse; always shown on touch screens and phones. */}
+      <div className="flex shrink-0 items-center gap-0.5 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100 sm:[@media(hover:hover)]:opacity-0">
         <button
           type="button"
           onClick={onEdit}
           aria-label="Edit task"
-          className="flex h-7 w-7 items-center justify-center rounded-[8px] text-t6 hover:bg-surface3 hover:text-foreground"
+          className="hidden h-7 w-7 sm:flex items-center justify-center rounded-[8px] text-t6 hover:bg-surface3 hover:text-foreground"
         >
           <Pencil size={13} />
         </button>
         <Menu
           align="right"
-          trigger={({ toggle }) => (
+          floating
+          trigger={({ open, toggle }) => (
             <button
               type="button"
               onClick={toggle}
+              aria-haspopup="menu"
+              aria-expanded={open}
               aria-label="More actions"
               className="flex h-7 w-7 items-center justify-center rounded-[8px] text-t6 hover:bg-surface3 hover:text-foreground"
             >

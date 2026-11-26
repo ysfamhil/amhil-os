@@ -61,7 +61,7 @@ test("the proxy exempts the landing page by exact match and keeps public screens
   assert.match(middleware, /if \(request\.nextUrl\.pathname === "\/"\) return NextResponse\.next/);
   const list = /const PUBLIC_PATHS = \[([^\]]*)\]/.exec(middleware)![1];
   const publicPaths = [...list.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(publicPaths, ["/app/login", "/app/signup", "/app/forgot-password", "/app/auth/callback"]);
+  assert.deepEqual(publicPaths, ["/app/login", "/app/signup", "/app/forgot-password", "/app/auth/callback", "/app/auth/recovery"]);
 });
 
 test("auth e-mails return through the callback under /app", () => {

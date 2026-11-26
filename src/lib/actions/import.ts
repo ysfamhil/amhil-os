@@ -6,7 +6,7 @@ import { backupOperationError, commitWorkspaceRestore } from "@/lib/restore-comm
 export async function restoreBackup(jsonText: string, mode: "preview" | "restore"): Promise<Response> {
   const session = await getSessionProfile();
   if (!session) return Response.json({ error: "Sign in to access backups." }, { status: 401 });
-  if (session.profile?.status !== "approved") {
+  if (session.restricted || session.profile?.status !== "approved") {
     return Response.json({ error: "An approved account is required." }, { status: 403 });
   }
   if (Buffer.byteLength(jsonText) > MAX_BACKUP_BYTES) {

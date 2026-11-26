@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { isRestrictedSession } from "@/lib/session-restriction";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 import type { Database, Profile } from "@/types/database";
 
@@ -26,6 +27,8 @@ export async function getSessionProfile(): Promise<{
   userId: string;
   email: string | null;
   profile: Profile | null;
+  /** True for e-mail-link sessions (password recovery): see isRestrictedSession. */
+  restricted: boolean;
 } | null> {
   const supabase = await createClient();
   const {
@@ -34,12 +37,16 @@ export async function getSessionProfile(): Promise<{
   if (!user) return null;
 
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
-  return { supabase, user, userId: user.id, email: user.email ?? null, profile: profile as Profile | null };
+  // getUser() above had Supabase validate this token; only now is its claim read.
+  const { data: tokens } = await supabase.auth.getSession();
+  const restricted = isRestrictedSession(tokens.session?.access_token);
+  return { supabase, user, userId: user.id, email: user.email ?? null, profile: profile as Profile | null, restricted };
 }
 
 export async function requireApprovedSession() {
   const session = await getSessionProfile();
   if (!session) throw new Error("Not authenticated");
+  if (session.restricted) throw new Error("Sign in with your password to continue");
   if (session.profile?.status !== "approved") throw new Error("Account approval required");
   return session;
 }
@@ -48,6 +55,7 @@ export async function requireApprovedSession() {
 export async function requireAdmin() {
   const session = await getSessionProfile();
   if (!session) redirect("/app/login");
+  if (session.restricted) redirect("/app/login?error=sign_in_required");
   if (!isActiveAdmin(session.profile)) redirect("/app/dashboard");
   return session;
 }

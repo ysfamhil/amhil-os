@@ -5,7 +5,7 @@ const privateHeaders = { "Cache-Control": "private, no-store" };
 
 export async function GET() {
   const session = await getSessionProfile();
-  if (session?.profile?.status !== "approved") {
+  if (session?.profile?.status !== "approved" || session.restricted) {
     return Response.json({ error: "An approved account is required." }, { status: 403, headers: privateHeaders });
   }
 

@@ -18,6 +18,6 @@ export async function updateProfile(input: ProfileInput) {
   const { error } = await supabase.from("profiles").update(patch).eq("id", user.id);
   if (error) throw new Error(error.message);
 
-  revalidatePath("/settings");
-  revalidatePath("/dashboard");
+  revalidatePath("/app/settings");
+  revalidatePath("/app/dashboard");
 }

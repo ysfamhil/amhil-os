@@ -53,7 +53,7 @@ export function ResetPasswordForm() {
           Your password has been reset. Sign in with your new password to continue.
         </p>
         <Link
-          href="/login"
+          href="/app/login"
           className="mt-5 block rounded-lg bg-accent px-3 py-2 text-center text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90"
         >
           Back to login

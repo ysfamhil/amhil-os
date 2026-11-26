@@ -5,8 +5,8 @@ import { requireApprovedSession } from "@/lib/auth";
 import { assertOwnedRecord, assertUuid } from "@/lib/write-fields";
 
 function revalidateEmergencyFundPaths() {
-  revalidatePath("/dashboard");
-  revalidatePath("/finance");
+  revalidatePath("/app/dashboard");
+  revalidatePath("/app/finance");
 }
 
 export async function createEmergencyFund(name: string, targetAmount: number) {

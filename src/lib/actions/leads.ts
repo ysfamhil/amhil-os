@@ -18,8 +18,8 @@ export interface LeadInput {
 }
 
 function revalidateLeadPaths() {
-  revalidatePath("/leads");
-  revalidatePath("/dashboard");
+  revalidatePath("/app/leads");
+  revalidatePath("/app/dashboard");
 }
 
 export async function createLead(input: LeadInput) {
@@ -193,7 +193,7 @@ export async function convertLeadToClient(leadId: string) {
   });
 
   revalidateLeadPaths();
-  revalidatePath("/clients");
+  revalidatePath("/app/clients");
 
   return { clientId: client.id, alreadyConverted: false };
 }

@@ -20,8 +20,8 @@ export interface JournalEntryInput {
 const MAX_FIELD_LENGTH = 200_000;
 
 function revalidateJournalPaths() {
-  revalidatePath("/journal");
-  revalidatePath("/dashboard");
+  revalidatePath("/app/journal");
+  revalidatePath("/app/dashboard");
 }
 
 function clean(value: string | null | undefined, label: string): string | null {

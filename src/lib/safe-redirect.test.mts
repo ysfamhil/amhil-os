@@ -27,9 +27,9 @@ test("legitimate internal paths, queries and fragments pass through unchanged", 
 });
 
 test("missing or empty input falls back; the fallback is configurable", () => {
-  assert.equal(safeNextPath(null), "/dashboard");
-  assert.equal(safeNextPath(undefined), "/dashboard");
-  assert.equal(safeNextPath(""), "/dashboard");
+  assert.equal(safeNextPath(null), "/app/dashboard");
+  assert.equal(safeNextPath(undefined), "/app/dashboard");
+  assert.equal(safeNextPath(""), "/app/dashboard");
   assert.equal(safeNextPath("https://evil.example", "/home"), "/home");
 });
 

@@ -32,7 +32,7 @@ export function GoalsWidget({ data, onAddGoal }: { data: DashboardData; onAddGoa
       meta={`${data.goals.active} active`}
       action={
         <div className="flex items-center gap-1">
-          <Link href="/goals" className="rounded-lg px-2 py-1 text-[11px] font-semibold text-t6 hover:bg-surface2 hover:text-t3">
+          <Link href="/app/goals" className="rounded-lg px-2 py-1 text-[11px] font-semibold text-t6 hover:bg-surface2 hover:text-t3">
             View all
           </Link>
           <WidgetAddButton onClick={onAddGoal} label="Goal" domain="goals" />
@@ -58,7 +58,7 @@ export function GoalsWidget({ data, onAddGoal }: { data: DashboardData; onAddGoa
               className={clsx("group flex items-start gap-1", draggingId === goal.id && "opacity-40")}
             >
               <DragHandle onDragStart={() => handleDragStart(goal.id)} onDragEnd={handleDragEnd} />
-              <button type="button" onClick={() => router.push(`/goals/${goal.id}`)} className="min-w-0 flex-1 text-left">
+              <button type="button" onClick={() => router.push(`/app/goals/${goal.id}`)} className="min-w-0 flex-1 text-left">
                 <div className="mb-1 flex items-center justify-between gap-2">
                   <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold">{goal.title}</span>
                   <span className="shrink-0 font-mono text-[10.5px] text-t3">{goal.progress}%</span>

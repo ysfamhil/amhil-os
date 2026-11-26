@@ -17,7 +17,7 @@ export function TimesheetWidget({ data, onLogTime }: { data: DashboardData; onLo
       title="Timesheet"
       action={
         <div className="flex items-center gap-1">
-          <Link href="/time" className="rounded-lg px-2 py-1 text-[11px] font-semibold text-t6 hover:bg-surface2 hover:text-t3">
+          <Link href="/app/time" className="rounded-lg px-2 py-1 text-[11px] font-semibold text-t6 hover:bg-surface2 hover:text-t3">
             View all
           </Link>
           <WidgetAddButton onClick={onLogTime} label="Log" domain="time" />

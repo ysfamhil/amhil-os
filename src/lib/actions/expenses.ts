@@ -15,9 +15,9 @@ export interface ExpenseInput {
 }
 
 function revalidateExpensePaths(projectId?: string | null) {
-  revalidatePath("/finance");
-  revalidatePath("/dashboard");
-  if (projectId) revalidatePath(`/projects/${projectId}`);
+  revalidatePath("/app/finance");
+  revalidatePath("/app/dashboard");
+  if (projectId) revalidatePath(`/app/projects/${projectId}`);
 }
 
 export async function createExpense(input: ExpenseInput) {

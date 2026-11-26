@@ -55,7 +55,7 @@ export async function createCrmLead(input: CrmLeadInput) {
     .single();
 
   if (error) throw new Error(error.message);
-  revalidatePath("/crm");
+  revalidatePath("/app/crm");
   return data;
 }
 
@@ -131,7 +131,7 @@ export async function importCrmLeads(rows: CrmLeadImportRow[]): Promise<{ import
     if (error) throw new Error(error.message);
   }
 
-  revalidatePath("/crm");
+  revalidatePath("/app/crm");
   return { imported: toInsert.length, skipped };
 }
 
@@ -154,7 +154,7 @@ export async function updateCrmLead(id: string, input: Partial<CrmLeadInput>) {
 
   const { error } = await supabase.from("crm_leads").update(patch).eq("id", id).eq("user_id", user.id);
   if (error) throw new Error(error.message);
-  revalidatePath("/crm");
+  revalidatePath("/app/crm");
 }
 
 export async function setCrmLeadStatus(id: string, status: CrmLeadStatus) {
@@ -162,7 +162,7 @@ export async function setCrmLeadStatus(id: string, status: CrmLeadStatus) {
   assertUuid(id, "Lead");
   const { error } = await supabase.from("crm_leads").update({ status }).eq("id", id).eq("user_id", user.id);
   if (error) throw new Error(error.message);
-  revalidatePath("/crm");
+  revalidatePath("/app/crm");
 }
 
 export async function markCrmLeadFollowedUp(id: string) {
@@ -183,7 +183,7 @@ export async function markCrmLeadFollowedUp(id: string) {
     .eq("id", id)
     .eq("user_id", user.id);
   if (error) throw new Error(error.message);
-  revalidatePath("/crm");
+  revalidatePath("/app/crm");
 }
 
 export async function deleteCrmLeads(ids: string[]) {
@@ -192,12 +192,12 @@ export async function deleteCrmLeads(ids: string[]) {
   if (ids.length === 0) return;
   const { error } = await supabase.from("crm_leads").delete().in("id", ids).eq("user_id", user.id);
   if (error) throw new Error(error.message);
-  revalidatePath("/crm");
+  revalidatePath("/app/crm");
 }
 
 export async function deleteCrmLead(id: string) {
   const { supabase, user } = await requireApprovedSession();
   const { error } = await supabase.from("crm_leads").delete().eq("id", id).eq("user_id", user.id);
   if (error) throw new Error(error.message);
-  revalidatePath("/crm");
+  revalidatePath("/app/crm");
 }

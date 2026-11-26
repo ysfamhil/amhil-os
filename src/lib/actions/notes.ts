@@ -19,8 +19,8 @@ export interface NoteInput {
 }
 
 function revalidateNotePaths() {
-  revalidatePath("/notes");
-  revalidatePath("/dashboard");
+  revalidatePath("/app/notes");
+  revalidatePath("/app/dashboard");
 }
 
 /** Tags are stored as text[]; refuse anything else instead of letting the database coerce it. */

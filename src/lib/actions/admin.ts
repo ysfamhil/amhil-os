@@ -36,7 +36,7 @@ async function setUserStatus(targetUserId: string, status: UserStatus) {
     .eq("id", targetUserId);
 
   if (error) throw new Error(error.message);
-  revalidatePath("/admin");
+  revalidatePath("/app/admin");
 }
 
 export async function approveUser(targetUserId: string) {

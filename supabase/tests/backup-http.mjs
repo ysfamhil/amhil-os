@@ -39,7 +39,7 @@ function headerBytes(headers) {
 }
 
 async function upload(mode, body, origin = app.origin) {
-  const url = new URL(`/settings/data/restore?mode=${mode}`, app);
+  const url = new URL(`/app/settings/data/restore?mode=${mode}`, app);
   const length = Buffer.byteLength(body);
   const headers = new Headers({
     cookie: cookieHeader(), origin, "content-type": "application/json",
@@ -49,7 +49,7 @@ async function upload(mode, body, origin = app.origin) {
   return fetch(url, { method: "POST", redirect: "manual", headers, body });
 }
 
-const download = () => fetch(new URL("/settings/data/backup", app), {
+const download = () => fetch(new URL("/app/settings/data/backup", app), {
   headers: { cookie: cookieHeader(), "accept-encoding": "identity" },
 });
 
@@ -57,7 +57,7 @@ try {
   unwrap(await trusted.from("profiles").update({ status: "approved" }).eq("id", user.id).select("id").single());
   unwrap(await member.auth.signInWithPassword({ email, password }));
 
-  const page = await fetch(new URL("/settings/data", app), { headers: { cookie: cookieHeader() } });
+  const page = await fetch(new URL("/app/settings/data", app), { headers: { cookie: cookieHeader() } });
   assert.equal(page.status, 200);
   const html = await page.text();
   assert.match(html, /Export All Data/);
@@ -189,7 +189,7 @@ try {
     title: "Direct note fixture",
     content: '<em>Direct allowed formatting</em><p onclick="DIRECT_NOTE_MARKER">Unsafe handler</p><script>DIRECT_NOTE_MARKER</script>',
   }));
-  for (const path of ["/notes", "/dashboard"]) {
+  for (const path of ["/app/notes", "/app/dashboard"]) {
     const view = await fetch(new URL(path, app), { headers: { cookie: cookieHeader() } });
     assert.equal(view.status, 200);
     const rendered = await view.text();

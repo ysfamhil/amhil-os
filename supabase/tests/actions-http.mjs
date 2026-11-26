@@ -61,7 +61,7 @@ const victim = await signedInUser("victim");
 
 /** Calls a real server action as the attacker. Returns { ok, status }. Arguments are JSON-encoded like React does for plain data. */
 async function act(name, ...args) {
-  const response = await fetch(new URL("/tasks", app), {
+  const response = await fetch(new URL("/app/tasks", app), {
     method: "POST",
     redirect: "manual",
     headers: {

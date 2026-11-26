@@ -47,9 +47,17 @@ const securityHeaders = [
   { key: "Permissions-Policy", value: permissionsPolicy },
 ];
 
+// The application used to live at the site root. These keep old bookmarks and already-sent
+// password-reset links working (query strings are passed through). Temporary (307) on purpose:
+// browsers cache permanent redirects, so a mistake could not be taken back.
+const movedSections = "login|signup|forgot-password|reset-password|pending|auth|dashboard|tasks|notes|journal|finance|goals|habits|time|crm|admin|settings";
+
 const nextConfig: NextConfig = {
   // Do not advertise the framework in an X-Powered-By header.
   poweredByHeader: false,
+  async redirects() {
+    return [{ source: `/:section(${movedSections})/:path*`, destination: "/app/:section/:path*", permanent: false }];
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

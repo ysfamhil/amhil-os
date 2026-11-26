@@ -19,8 +19,8 @@ export interface HabitInput {
 }
 
 function revalidateHabitPaths() {
-  revalidatePath("/habits");
-  revalidatePath("/dashboard");
+  revalidatePath("/app/habits");
+  revalidatePath("/app/dashboard");
 }
 
 export async function createHabit(input: HabitInput) {

@@ -60,7 +60,7 @@ export function AppHeader({
           {mobileOpen ? <X size={18} /> : <Menu size={18} />}
         </button>
 
-        <Link href="/dashboard" className="flex shrink-0 items-center gap-[9px] pr-2">
+        <Link href="/app/dashboard" className="flex shrink-0 items-center gap-[9px] pr-2">
           <div className="flex h-[24px] w-[24px] items-center justify-center rounded-[7px] bg-accent font-mono text-[12px] font-bold text-accent-foreground">
             A
           </div>

@@ -56,7 +56,7 @@ export function DataExport() {
     setFeedback(null);
     setPending("full");
     try {
-      const response = await fetch("/settings/data/backup", { redirect: "error", cache: "no-store" });
+      const response = await fetch("/app/settings/data/backup", { redirect: "error", cache: "no-store" });
       if (!response.ok) {
         const result = await response.json() as { error?: string };
         setFeedback({ error: true, text: result.error ?? "Could not export the workspace." });

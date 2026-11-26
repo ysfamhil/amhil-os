@@ -67,7 +67,7 @@ export async function searchAll(rawQuery: string): Promise<SearchResultGroup[]> 
   if (tasks.length) {
     groups.push({
       category: "Tasks",
-      results: tasks.map((t) => ({ id: t.id, title: t.title, subtitle: t.priority, meta: t.status, href: "/tasks" })),
+      results: tasks.map((t) => ({ id: t.id, title: t.title, subtitle: t.priority, meta: t.status, href: "/app/tasks" })),
     });
   }
 
@@ -75,7 +75,7 @@ export async function searchAll(rawQuery: string): Promise<SearchResultGroup[]> 
   if (goals.length) {
     groups.push({
       category: "Goals",
-      results: goals.map((g) => ({ id: g.id, title: g.title, meta: g.status, href: `/goals/${g.id}` })),
+      results: goals.map((g) => ({ id: g.id, title: g.title, meta: g.status, href: `/app/goals/${g.id}` })),
     });
   }
 
@@ -88,7 +88,7 @@ export async function searchAll(rawQuery: string): Promise<SearchResultGroup[]> 
         title: h.name,
         subtitle: h.frequency,
         meta: h.is_active ? undefined : "Archived",
-        href: "/habits",
+        href: "/app/habits",
       })),
     });
   }
@@ -101,7 +101,7 @@ export async function searchAll(rawQuery: string): Promise<SearchResultGroup[]> 
         id: n.id,
         title: n.title,
         subtitle: n.content ? n.content.slice(0, 60) : undefined,
-        href: "/notes",
+        href: "/app/notes",
       })),
     });
   }

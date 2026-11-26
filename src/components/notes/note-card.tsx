@@ -1,5 +1,6 @@
 "use client";
 
+import { NoteHtml } from "@/components/notes/note-html";
 import { Pencil, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -39,9 +40,9 @@ export function NoteCard({
       </div>
 
       {note.content && (
-        <div
+        <NoteHtml
           className="line-clamp-3 text-sm text-muted [&_ol]:list-decimal [&_ol]:pl-4 [&_ul]:list-disc [&_ul]:pl-4"
-          dangerouslySetInnerHTML={{ __html: note.content }}
+          content={note.content}
         />
       )}
 

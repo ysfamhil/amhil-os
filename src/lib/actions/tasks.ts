@@ -1,21 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireApprovedSession } from "@/lib/auth";
 import { logTimelineEvent } from "@/lib/timeline";
+import { RELATIONS, TASK_FIELDS, assertOwnedRelations, assertUuid, assertUuidList, pickWritable } from "@/lib/write-fields";
 import type { Task, TaskPriority, TaskStatus } from "@/types/database";
 
-async function requireUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
-  return { supabase, user };
-}
-
 export async function getTask(id: string): Promise<Task | null> {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const { data, error } = await supabase.from("tasks").select("*").eq("id", id).eq("user_id", user.id).maybeSingle();
   if (error) throw new Error(error.message);
   return data;
@@ -23,7 +15,8 @@ export async function getTask(id: string): Promise<Task | null> {
 
 /** Persists a manual drag-reorder from the dashboard's Tasks widget. */
 export async function reorderTasks(orderedIds: string[]) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
+  assertUuidList(orderedIds, "Task");
 
   await Promise.all(
     orderedIds.map((id, index) =>
@@ -54,18 +47,22 @@ function revalidateTaskPaths(projectId?: string | null) {
 }
 
 export async function createTask(input: TaskInput) {
-  const { supabase, user } = await requireUser();
-  const title = input.title.trim();
+  const { supabase, user } = await requireApprovedSession();
+  // Only allowlisted columns reach the database; user_id and every server-managed column
+  // (id, timestamps, completed_at, position) can never come from the client.
+  const fields = pickWritable(TASK_FIELDS, input);
+  const title = typeof fields.title === "string" ? fields.title.trim() : "";
   if (!title) throw new Error("Title is required");
+  await assertOwnedRelations(supabase, user.id, RELATIONS.tasks, fields);
 
   const { data, error } = await supabase
     .from("tasks")
     .insert({
-      ...input,
+      ...fields,
       title,
-      due_date: input.due_date || null,
-      project_id: input.project_id || null,
-      goal_id: input.goal_id || null,
+      due_date: fields.due_date || null,
+      project_id: fields.project_id || null,
+      goal_id: fields.goal_id || null,
       user_id: user.id,
     })
     .select("id")
@@ -78,17 +75,20 @@ export async function createTask(input: TaskInput) {
     title: `Created "${title}"`,
     relatedEntityType: "task",
     relatedEntityId: data.id,
-    projectId: input.project_id ?? null,
+    projectId: fields.project_id || null,
   });
 
-  revalidateTaskPaths(input.project_id);
+  revalidateTaskPaths(fields.project_id);
 }
 
 export async function updateTask(id: string, input: Partial<TaskInput>) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
+  assertUuid(id, "Task");
+  const fields = pickWritable(TASK_FIELDS, input);
+  await assertOwnedRelations(supabase, user.id, RELATIONS.tasks, fields);
 
   let previousStatus: TaskStatus | null = null;
-  if (input.status) {
+  if (fields.status) {
     const { data: existing } = await supabase
       .from("tasks")
       .select("status")
@@ -98,15 +98,15 @@ export async function updateTask(id: string, input: Partial<TaskInput>) {
     previousStatus = existing?.status ?? null;
   }
 
-  const patch: Partial<Task> = { ...input };
+  const patch: Partial<Task> = { ...fields };
   if (typeof patch.title === "string") {
     const title = patch.title.trim();
     if (!title) throw new Error("Title is required");
     patch.title = title;
   }
-  if ("due_date" in input) patch.due_date = input.due_date || null;
-  if ("project_id" in input) patch.project_id = input.project_id || null;
-  if ("goal_id" in input) patch.goal_id = input.goal_id || null;
+  if ("due_date" in fields) patch.due_date = fields.due_date || null;
+  if ("project_id" in fields) patch.project_id = fields.project_id || null;
+  if ("goal_id" in fields) patch.goal_id = fields.goal_id || null;
   if (patch.status) {
     patch.completed_at = patch.status === "Done" ? new Date().toISOString() : null;
   }
@@ -121,7 +121,7 @@ export async function updateTask(id: string, input: Partial<TaskInput>) {
 
   if (error) throw new Error(error.message);
 
-  if (input.status === "Done" && previousStatus !== "Done") {
+  if (fields.status === "Done" && previousStatus !== "Done") {
     await logTimelineEvent(supabase, user.id, {
       eventType: "task_completed",
       title: `Completed "${data.title}"`,
@@ -131,7 +131,7 @@ export async function updateTask(id: string, input: Partial<TaskInput>) {
     });
   }
 
-  revalidateTaskPaths(data?.project_id ?? input.project_id);
+  revalidateTaskPaths(data?.project_id ?? fields.project_id);
 }
 
 export async function setTaskStatus(id: string, status: TaskStatus) {
@@ -139,7 +139,7 @@ export async function setTaskStatus(id: string, status: TaskStatus) {
 }
 
 export async function deleteTask(id: string) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   const { data, error } = await supabase
     .from("tasks")

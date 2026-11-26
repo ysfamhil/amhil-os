@@ -1,16 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
-
-async function requireUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
-  return { supabase, user };
-}
+import { requireApprovedSession } from "@/lib/auth";
+import { assertOwnedRecord, assertUuid } from "@/lib/write-fields";
 
 function revalidateEmergencyFundPaths() {
   revalidatePath("/dashboard");
@@ -18,7 +10,7 @@ function revalidateEmergencyFundPaths() {
 }
 
 export async function createEmergencyFund(name: string, targetAmount: number) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const trimmedName = name.trim();
   if (!trimmedName) throw new Error("Name is required");
   if (!targetAmount || targetAmount <= 0) throw new Error("Target must be greater than zero");
@@ -35,7 +27,8 @@ export async function createEmergencyFund(name: string, targetAmount: number) {
 }
 
 export async function updateEmergencyFund(fundId: string, input: { name: string; targetAmount: number }) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
+  assertUuid(fundId, "Fund");
   const name = input.name.trim();
   if (!name) throw new Error("Name is required");
   if (!input.targetAmount || input.targetAmount <= 0) throw new Error("Target must be greater than zero");
@@ -51,8 +44,10 @@ export async function updateEmergencyFund(fundId: string, input: { name: string;
 }
 
 async function addTransaction(fundId: string, amount: number, note: string | null) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   if (!amount) throw new Error("Amount is required");
+  // The transaction is written with the caller's user_id, so the fund it belongs to must be theirs too.
+  await assertOwnedRecord(supabase, user.id, "emergency_fund", fundId);
 
   const { error } = await supabase.from("emergency_fund_transactions").insert({
     fund_id: fundId,
@@ -76,7 +71,7 @@ export async function addEmergencyFundWithdrawal(fundId: string, amount: number,
 }
 
 export async function deleteEmergencyFundTransaction(id: string) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const { error } = await supabase.from("emergency_fund_transactions").delete().eq("id", id).eq("user_id", user.id);
   if (error) throw new Error(error.message);
   revalidateEmergencyFundPaths();

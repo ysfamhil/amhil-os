@@ -1,20 +1,11 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { requireApprovedSession } from "@/lib/auth";
 import { runAssistantTurn } from "@/lib/ai/agent";
 import { getAIProvider } from "@/lib/ai";
 import { AIUnavailableError, type AIConversationItem } from "@/lib/ai/provider";
 import { todayISODate } from "@/lib/dates";
 import type { ProposedAction } from "@/lib/ai/tools";
-
-async function requireUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
-  return { supabase, user };
-}
 
 const ASSISTANT_SYSTEM_PROMPT = `You are the AI assistant built into AMHIL OS, a personal operating system for tracking tasks, projects, learning, habits, time, clients, leads, and finances.
 
@@ -40,7 +31,7 @@ export interface AssistantResponse {
 }
 
 export async function askAssistant(messages: ChatMessage[]): Promise<AssistantResponse> {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   const conversation: AIConversationItem[] = messages.map((m) => ({ role: m.role, content: m.content }));
 
@@ -59,6 +50,7 @@ export interface NarrativeResult {
 }
 
 async function generateNarrative(system: string, data: unknown): Promise<NarrativeResult> {
+  await requireApprovedSession();
   const provider = getAIProvider();
   if (!provider) {
     return { ok: false, text: "AI insights are temporarily unavailable — add an API key to enable summaries." };

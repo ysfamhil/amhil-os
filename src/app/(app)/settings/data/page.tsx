@@ -22,7 +22,9 @@ export default async function DataSettingsPage() {
         <p className="text-sm text-muted">You should always be able to take your data somewhere else.</p>
       </div>
 
-      <DataExport />
+      <section id="workspace-backup" aria-label="Workspace backup">
+        <DataExport />
+      </section>
       <DataImport />
       <BackupInfo />
       <DangerZone />

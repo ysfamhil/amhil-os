@@ -1,17 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireApprovedSession } from "@/lib/auth";
 import { logTimelineEvent } from "@/lib/timeline";
-
-async function requireUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
-  return { supabase, user };
-}
+import { RELATIONS, TIME_ENTRY_FIELDS, assertOwnedRelations, assertUuid, pickWritable } from "@/lib/write-fields";
 
 export interface TimeEntryInput {
   project_id?: string | null;
@@ -30,15 +22,19 @@ function revalidateTimePaths() {
 }
 
 export async function createTimeEntry(input: TimeEntryInput) {
-  const { supabase, user } = await requireUser();
-  if (input.duration_minutes <= 0) throw new Error("Duration must be positive");
+  const { supabase, user } = await requireApprovedSession();
+  const fields = pickWritable(TIME_ENTRY_FIELDS, input);
+  if (typeof fields.duration_minutes !== "number" || fields.duration_minutes <= 0) throw new Error("Duration must be positive");
+  const durationMinutes = fields.duration_minutes;
+  await assertOwnedRelations(supabase, user.id, RELATIONS.time_entries, fields);
 
   const { data, error } = await supabase
     .from("time_entries")
     .insert({
-      ...input,
-      project_id: input.project_id || null,
-      task_id: input.task_id || null,
+      ...fields,
+      duration_minutes: durationMinutes,
+      project_id: fields.project_id || null,
+      task_id: fields.task_id || null,
       user_id: user.id,
     })
     .select("id")
@@ -47,12 +43,12 @@ export async function createTimeEntry(input: TimeEntryInput) {
   if (error) throw new Error(error.message);
 
   let projectLabel = "";
-  if (input.project_id) {
-    const { data: project } = await supabase.from("projects").select("name").eq("id", input.project_id).eq("user_id", user.id).single();
+  if (fields.project_id) {
+    const { data: project } = await supabase.from("projects").select("name").eq("id", fields.project_id).eq("user_id", user.id).single();
     if (project) projectLabel = ` — ${project.name}`;
   }
-  const hours = Math.floor(input.duration_minutes / 60);
-  const minutes = input.duration_minutes % 60;
+  const hours = Math.floor(durationMinutes / 60);
+  const minutes = durationMinutes % 60;
   const durationLabel = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
 
   await logTimelineEvent(supabase, user.id, {
@@ -60,23 +56,26 @@ export async function createTimeEntry(input: TimeEntryInput) {
     title: `Logged ${durationLabel}${projectLabel}`,
     relatedEntityType: "time_entry",
     relatedEntityId: data.id,
-    projectId: input.project_id ?? null,
-    occurredAt: input.date ? new Date(input.date).toISOString() : undefined,
-    metadata: { duration_minutes: input.duration_minutes },
+    projectId: fields.project_id || null,
+    occurredAt: fields.date ? new Date(fields.date).toISOString() : undefined,
+    metadata: { duration_minutes: durationMinutes },
   });
 
   revalidateTimePaths();
 }
 
 export async function updateTimeEntry(id: string, input: Partial<TimeEntryInput>) {
-  const { supabase, user } = await requireUser();
-  if (input.duration_minutes != null && input.duration_minutes <= 0) {
+  const { supabase, user } = await requireApprovedSession();
+  assertUuid(id, "Time entry");
+  const fields = pickWritable(TIME_ENTRY_FIELDS, input);
+  if (fields.duration_minutes != null && fields.duration_minutes <= 0) {
     throw new Error("Duration must be positive");
   }
+  await assertOwnedRelations(supabase, user.id, RELATIONS.time_entries, fields);
 
-  const patch = { ...input };
-  if ("project_id" in input) patch.project_id = input.project_id || null;
-  if ("task_id" in input) patch.task_id = input.task_id || null;
+  const patch = { ...fields };
+  if ("project_id" in fields) patch.project_id = fields.project_id || null;
+  if ("task_id" in fields) patch.task_id = fields.task_id || null;
 
   const { error } = await supabase.from("time_entries").update(patch).eq("id", id).eq("user_id", user.id);
   if (error) throw new Error(error.message);
@@ -84,7 +83,7 @@ export async function updateTimeEntry(id: string, input: Partial<TimeEntryInput>
 }
 
 export async function deleteTimeEntry(id: string) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   const { error } = await supabase.from("time_entries").delete().eq("id", id).eq("user_id", user.id);
   if (error) throw new Error(error.message);
   revalidateTimePaths();

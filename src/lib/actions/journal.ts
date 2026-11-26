@@ -1,18 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireApprovedSession } from "@/lib/auth";
 import { isJournalMood, isValidISODate } from "@/lib/journal";
 import type { JournalMood } from "@/types/database";
-
-async function requireUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
-  return { supabase, user };
-}
 
 export interface JournalEntryInput {
   entry_date: string;
@@ -46,7 +37,7 @@ function clean(value: string | null | undefined, label: string): string | null {
  * it instead of leaving a blank row that would count as a journaled day.
  */
 export async function saveJournalEntry(input: JournalEntryInput): Promise<{ saved: boolean }> {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   if (!isValidISODate(input.entry_date)) throw new Error("Invalid date");
   if (input.mood !== null && !isJournalMood(input.mood)) throw new Error("Invalid mood");
@@ -88,7 +79,7 @@ export async function saveJournalEntry(input: JournalEntryInput): Promise<{ save
 }
 
 export async function deleteJournalEntry(entryDate: string) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
   if (!isValidISODate(entryDate)) throw new Error("Invalid date");
 
   const { error } = await supabase

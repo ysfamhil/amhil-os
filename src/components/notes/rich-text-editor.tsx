@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Bold, Italic, List, ListOrdered, Underline } from "lucide-react";
 import clsx from "clsx";
+import { sanitizeNoteHtml } from "@/lib/note-html";
 
 const TOOLBAR_ACTIONS = [
   { command: "bold", label: "Bold", icon: Bold },
@@ -31,7 +32,7 @@ export function RichTextEditor({
       // resolution (e.g. insertUnorderedList can grab the wrong "current
       // block" and reorder content). Always seed a real block element so
       // every line is a proper <div>, matching what typing+Enter produces.
-      editorRef.current.innerHTML = value || "<div><br></div>";
+      editorRef.current.innerHTML = sanitizeNoteHtml(value) || "<div><br></div>";
       isFirstRender.current = false;
     }
   }, [value]);

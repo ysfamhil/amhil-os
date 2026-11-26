@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
 import type { Database, Profile } from "@/types/database";
 
 /**
@@ -22,6 +22,7 @@ export function isActiveAdmin(profile: Pick<Profile, "role" | "status"> | null |
  */
 export async function getSessionProfile(): Promise<{
   supabase: SupabaseClient<Database>;
+  user: User;
   userId: string;
   email: string | null;
   profile: Profile | null;
@@ -33,7 +34,14 @@ export async function getSessionProfile(): Promise<{
   if (!user) return null;
 
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
-  return { supabase, userId: user.id, email: user.email ?? null, profile: profile as Profile | null };
+  return { supabase, user, userId: user.id, email: user.email ?? null, profile: profile as Profile | null };
+}
+
+export async function requireApprovedSession() {
+  const session = await getSessionProfile();
+  if (!session) throw new Error("Not authenticated");
+  if (session.profile?.status !== "approved") throw new Error("Account approval required");
+  return session;
 }
 
 /** For pages that require an admin. Redirects non-admins straight to /dashboard. */

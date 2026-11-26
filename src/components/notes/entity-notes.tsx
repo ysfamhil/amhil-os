@@ -1,5 +1,6 @@
 "use client";
 
+import { NoteHtml } from "@/components/notes/note-html";
 import { useEffect, useState } from "react";
 import { Pencil, Plus, StickyNote, Trash2 } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -100,9 +101,9 @@ export function EntityNotes({
                 </div>
               </div>
               {note.content && (
-                <div
+                <NoteHtml
                   className="mt-1 line-clamp-2 text-sm text-muted [&_ol]:list-decimal [&_ol]:pl-4 [&_ul]:list-disc [&_ul]:pl-4"
-                  dangerouslySetInnerHTML={{ __html: note.content }}
+                  content={note.content}
                 />
               )}
             </li>

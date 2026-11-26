@@ -1,17 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireApprovedSession } from "@/lib/auth";
 import { logTimelineEvent } from "@/lib/timeline";
-
-async function requireUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
-  return { supabase, user };
-}
+import { EXPENSE_FIELDS, RELATIONS, assertOwnedRelations, assertUuid, pickWritable } from "@/lib/write-fields";
 
 export interface ExpenseInput {
   amount: number;
@@ -29,14 +21,17 @@ function revalidateExpensePaths(projectId?: string | null) {
 }
 
 export async function createExpense(input: ExpenseInput) {
-  const { supabase, user } = await requireUser();
-  if (!input.amount || input.amount < 0) throw new Error("Amount must be zero or greater");
+  const { supabase, user } = await requireApprovedSession();
+  const fields = pickWritable(EXPENSE_FIELDS, input);
+  if (!fields.amount || fields.amount < 0) throw new Error("Amount must be zero or greater");
+  await assertOwnedRelations(supabase, user.id, RELATIONS.expenses, fields);
 
   const { data, error } = await supabase
     .from("expenses")
     .insert({
-      ...input,
-      project_id: input.project_id || null,
+      ...fields,
+      amount: fields.amount,
+      project_id: fields.project_id || null,
       user_id: user.id,
     })
     .select("id")
@@ -46,22 +41,25 @@ export async function createExpense(input: ExpenseInput) {
 
   await logTimelineEvent(supabase, user.id, {
     eventType: "expense_added",
-    title: `Added expense: ${input.amount.toLocaleString()} ${input.currency ?? "MAD"} — ${input.category ?? "Uncategorized"}`,
+    title: `Added expense: ${fields.amount.toLocaleString()} ${fields.currency ?? "MAD"} — ${fields.category ?? "Uncategorized"}`,
     relatedEntityType: "expense",
     relatedEntityId: data.id,
-    projectId: input.project_id ?? null,
-    metadata: { amount: input.amount, currency: input.currency ?? "MAD" },
+    projectId: fields.project_id || null,
+    metadata: { amount: fields.amount, currency: fields.currency ?? "MAD" },
   });
 
-  revalidateExpensePaths(input.project_id);
+  revalidateExpensePaths(fields.project_id);
 }
 
 export async function updateExpense(id: string, input: Partial<ExpenseInput>) {
-  const { supabase, user } = await requireUser();
-  if (input.amount != null && input.amount < 0) throw new Error("Amount must be zero or greater");
+  const { supabase, user } = await requireApprovedSession();
+  assertUuid(id, "Expense");
+  const fields = pickWritable(EXPENSE_FIELDS, input);
+  if (fields.amount != null && fields.amount < 0) throw new Error("Amount must be zero or greater");
+  await assertOwnedRelations(supabase, user.id, RELATIONS.expenses, fields);
 
-  const patch = { ...input };
-  if ("project_id" in input) patch.project_id = input.project_id || null;
+  const patch = { ...fields };
+  if ("project_id" in fields) patch.project_id = fields.project_id || null;
 
   const { data, error } = await supabase
     .from("expenses")
@@ -76,7 +74,7 @@ export async function updateExpense(id: string, input: Partial<ExpenseInput>) {
 }
 
 export async function deleteExpense(id: string) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireApprovedSession();
 
   const { data, error } = await supabase
     .from("expenses")

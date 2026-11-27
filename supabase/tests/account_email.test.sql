@@ -5,7 +5,7 @@ begin;
 -- successful send is covered by the end-to-end test instead.
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
-select plan(51);
+select plan(52);
 
 create function pg_temp.queued(user_id text) returns text language sql as $$
   select coalesce(string_agg(kind, ',' order by seq), '') from account_email_private.outbox
@@ -138,7 +138,9 @@ select is((select attempts from account_email_private.outbox), 2, 'retried when 
 
 update account_email_private.outbox set attempts = 4, next_attempt_at = now();
 select account_email_private.dispatch();
-select ok((select failed_at is not null and attempts = 5 from account_email_private.outbox), 'gives up after five attempts');
+select ok((select failed_at is not null and attempts = 5 from account_email_private.outbox where kind <> 'admin_delivery_failed'), 'gives up after five attempts');
+select is((select count(*)::int from account_email_private.outbox where kind = 'admin_delivery_failed'), 1, 'and queues an alert for the administrator');
+delete from account_email_private.outbox where kind = 'admin_delivery_failed';
 update account_email_private.outbox set next_attempt_at = now();
 select account_email_private.dispatch();
 select is((select attempts from account_email_private.outbox), 5, 'and stays given up');
@@ -147,7 +149,7 @@ delete from account_email_private.outbox;
 select pg_temp.set_status('30000000-0000-4000-8000-000000000002', 'suspended');
 update account_email_private.outbox set created_at = now() - interval '25 hours';
 select account_email_private.dispatch();
-select is((select last_error || '|' || attempts from account_email_private.outbox), 'expired|0', 'stale messages are dropped, not sent late');
+select is((select last_error || '|' || attempts from account_email_private.outbox where kind <> 'admin_delivery_failed'), 'expired|0', 'stale messages are dropped, not sent late');
 
 -- Deleting the account removes its queued messages.
 delete from auth.users where id = '30000000-0000-4000-8000-000000000002';

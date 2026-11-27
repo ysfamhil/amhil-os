@@ -19,6 +19,7 @@ test("each message has its own subject, one button and a plain-text version", ()
     account_declined: "mailto:contact@example.test",
     account_suspended: "mailto:contact@example.test",
     account_restored: `${SITE_URL}/app/login`,
+    admin_delivery_failed: `${SITE_URL}/app/admin`,
   };
   assert.deepEqual(Object.keys(buttons), [...ACCOUNT_EMAIL_KINDS]);
   const subjects = new Set<string>();
@@ -34,7 +35,7 @@ test("each message has its own subject, one button and a plain-text version", ()
 });
 
 test("user messages carry nothing typed by anyone", () => {
-  for (const kind of ACCOUNT_EMAIL_KINDS.filter((k) => k !== "admin_new_registration")) {
+  for (const kind of ACCOUNT_EMAIL_KINDS.filter((k) => !k.startsWith("admin_"))) {
     const { html, text } = render(kind, "Injected Name");
     for (const part of [html, text]) assert.ok(!part.includes("Injected") && !part.includes("sam@example.test"), kind);
   }
@@ -69,8 +70,8 @@ test("the route accepts only a fresh signature of the exact body, and logs nothi
   // the key only ever goes to Resend or to a fake on this machine
   assert.ok(route.includes('/^http:\\/\\/127\\.0\\.0\\.1:\\d+$/') && route.includes('"https://api.resend.com"'));
   // the kinds the database can queue are the kinds the app can send
-  const migration = read("../../supabase/migrations/20261126000003_account_email_queue.sql");
-  const allowed = /kind text not null check \(kind in \(([^)]*)\)/.exec(migration)![1];
+  const migration = read("../../supabase/migrations/20261127000001_email_change_guard_and_failure_alerts.sql");
+  const allowed = /add constraint outbox_kind_check check \(kind in \(([^)]*)\)/.exec(migration)![1];
   assert.deepEqual([...allowed.matchAll(/'([a-z_]+)'/g)].map((m) => m[1]), [...ACCOUNT_EMAIL_KINDS]);
 });
 

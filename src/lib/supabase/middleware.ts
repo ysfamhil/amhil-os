@@ -3,7 +3,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isRestrictedSession } from "@/lib/session-restriction";
 
 // "/app/api/account-email" takes no cookies: the database job calls it with a shared secret.
-const PUBLIC_PATHS = ["/app/login", "/app/signup", "/app/forgot-password", "/app/auth/callback", "/app/auth/recovery", "/app/api/account-email"];
+// "/app/api/email-events" takes none either: Resend signs what it posts there.
+const PUBLIC_PATHS = ["/app/login", "/app/signup", "/app/forgot-password", "/app/auth/callback", "/app/auth/recovery", "/app/api/account-email", "/app/api/email-events"];
 // Bounced straight to /app/dashboard if the visitor already has a session — same
 // treatment /login always got, extended to the other two credential-entry
 // screens. Not /reset-password: reaching it *requires* an active (recovery)

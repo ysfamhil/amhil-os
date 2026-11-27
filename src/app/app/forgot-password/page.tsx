@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { AuthShell } from "@/components/auth/auth-shell";
+import { Captcha, useCaptcha } from "@/components/auth/captcha";
 import { Field, TextInput } from "@/components/ui/field";
 
 export default function ForgotPasswordPage() {
@@ -12,6 +13,7 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const captcha = useCaptcha();
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -21,7 +23,9 @@ export default function ForgotPasswordPage() {
     const supabase = createClient();
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/app/auth/callback?next=/app/reset-password`,
+      captchaToken: captcha.token,
     });
+    captcha.reset();
     setLoading(false);
 
     // Supabase never reports "no account with that email" for this call —
@@ -69,9 +73,11 @@ export default function ForgotPasswordPage() {
 
         {error && <p className="text-sm text-danger">{error}</p>}
 
+        <Captcha {...captcha.widget} />
+
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || captcha.waiting}
           className="mt-2 rounded-lg bg-accent px-3 py-2 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           {loading ? "Sending…" : "Send reset link"}

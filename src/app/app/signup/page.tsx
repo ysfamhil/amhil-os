@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { Field, TextInput } from "@/components/ui/field";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth-config";
+import { Captcha, useCaptcha } from "@/components/auth/captcha";
 
 export default function SignupPage() {
   const [fullName, setFullName] = useState("");
@@ -15,6 +16,7 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const captcha = useCaptcha();
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -39,10 +41,12 @@ export default function SignupPage() {
       password,
       options: {
         data: { full_name: fullName.trim() || null },
+        captchaToken: captcha.token,
         // Without this the confirmation link would use the Site URL, which is the landing page.
         emailRedirectTo: `${window.location.origin}/app/auth/callback`,
       },
     });
+    captcha.reset();
     setLoading(false);
     if (signUpError) {
       setError(signUpError.message);
@@ -122,9 +126,11 @@ export default function SignupPage() {
 
         {error && <p className="text-sm text-danger">{error}</p>}
 
+        <Captcha {...captcha.widget} />
+
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || captcha.waiting}
           className="mt-2 rounded-lg bg-accent px-3 py-2 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           {loading ? "Creating account…" : "Create account"}

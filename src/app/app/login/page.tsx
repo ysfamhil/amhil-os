@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { safeNextPath } from "@/lib/safe-redirect";
 import { PUBLIC_SIGNUP_ENABLED } from "@/lib/auth-config";
+import { Captcha, useCaptcha } from "@/components/auth/captcha";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { Field, TextInput } from "@/components/ui/field";
 
@@ -30,6 +31,7 @@ function LoginForm() {
         : null
   );
   const [loading, setLoading] = useState(false);
+  const captcha = useCaptcha();
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -37,7 +39,8 @@ function LoginForm() {
     setLoading(true);
 
     const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password, options: { captchaToken: captcha.token } });
+    captcha.reset();
     setLoading(false);
     if (signInError) {
       setError(signInError.message);
@@ -80,9 +83,11 @@ function LoginForm() {
 
         {error && <p className="text-sm text-danger">{error}</p>}
 
+        <Captcha {...captcha.widget} />
+
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || captcha.waiting}
           className="mt-2 rounded-lg bg-accent px-3 py-2 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           {loading ? "Signing in…" : "Sign in"}

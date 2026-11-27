@@ -71,11 +71,22 @@ test("auth e-mails return through the callback under /app", () => {
   assert.ok(read("app/app/signup/page.tsx").includes("emailRedirectTo: `${window.location.origin}/app/auth/callback`"));
 });
 
-test("the login screen offers sign-up, and new accounts still wait for approval", async () => {
-  const { PUBLIC_SIGNUP_ENABLED } = (await import(new URL("./auth-config.ts", import.meta.url).href)) as typeof import("./auth-config");
-  assert.equal(PUBLIC_SIGNUP_ENABLED, true);
-  assert.match(readFileSync(join(src, "app/app/signup/page.tsx"), "utf8"), /admin will still need to approve/);
-  const login = readFileSync(join(src, "app/app/login/page.tsx"), "utf8");
+test("sign-up is offered only when CAPTCHA is configured, and the protected forms send its token", async () => {
+  const read = (f: string) => readFileSync(join(src, f), "utf8");
+  const config = (await import(new URL("./auth-config.ts", import.meta.url).href)) as typeof import("./auth-config");
+  assert.equal(config.CAPTCHA_SITE_KEY, "", "tests run without a key");
+  assert.equal(config.PUBLIC_SIGNUP_ENABLED, false, "closed unless a key is configured");
+  assert.match(read("lib/auth-config.ts"), /PUBLIC_SIGNUP_ENABLED: boolean = CAPTCHA_SITE_KEY !== "";/);
+
+  const login = read("app/app/login/page.tsx");
   assert.match(login, /\{PUBLIC_SIGNUP_ENABLED && \([\s\S]*href="\/app\/signup"/);
   assert.equal(login.match(/href="\/app\/signup"/g)!.length, 1);
+  const signup = read("app/app/signup/page.tsx");
+  assert.match(signup, /admin will still need to approve/);
+  for (const page of [login, signup, read("app/app/forgot-password/page.tsx")]) {
+    assert.match(page, /captchaToken: captcha\.token/);
+    assert.match(page, /<Captcha \{\.\.\.captcha\.widget\} \/>/);
+    assert.match(page, /disabled=\{loading \|\| captcha\.waiting\}/);
+    assert.match(page, /captcha\.reset\(\);/);
+  }
 });

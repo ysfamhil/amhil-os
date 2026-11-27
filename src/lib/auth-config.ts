@@ -3,5 +3,5 @@
 export const MIN_PASSWORD_LENGTH = 6;
 
 /** Whether the login screen offers "Sign up". Mirrors the Supabase "Allow new users to sign up"
- * setting, which is currently off; Supabase enforces it either way. Set to true when it is turned on. */
-export const PUBLIC_SIGNUP_ENABLED: boolean = false;
+ * setting; Supabase enforces it either way. New accounts still wait for an administrator. */
+export const PUBLIC_SIGNUP_ENABLED: boolean = true;

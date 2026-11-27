@@ -71,7 +71,7 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify({
         from: process.env.ACCOUNT_EMAIL_FROM || "AMHIL OS <no-reply@mail.byamhil.com>",
-        to: [kind === "admin_new_registration" ? contact : email],
+        to: [(kind as string).startsWith("admin_") ? contact : email],
         reply_to: contact,
         ...message,
       }),

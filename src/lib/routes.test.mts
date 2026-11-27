@@ -62,7 +62,7 @@ test("the proxy exempts the landing page by exact match and keeps public screens
   assert.match(middleware, /if \(request\.nextUrl\.pathname === "\/"\) return NextResponse\.next/);
   const list = /const PUBLIC_PATHS = \[([^\]]*)\]/.exec(middleware)![1];
   const publicPaths = [...list.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(publicPaths, ["/app/login", "/app/signup", "/app/forgot-password", "/app/auth/callback", "/app/auth/recovery", "/app/api/account-email"]);
+  assert.deepEqual(publicPaths, ["/app/login", "/app/signup", "/app/forgot-password", "/app/auth/callback", "/app/auth/recovery", "/app/api/account-email", "/app/api/email-events"]);
 });
 
 test("auth e-mails return through the callback under /app", () => {
@@ -71,9 +71,10 @@ test("auth e-mails return through the callback under /app", () => {
   assert.ok(read("app/app/signup/page.tsx").includes("emailRedirectTo: `${window.location.origin}/app/auth/callback`"));
 });
 
-test("the login screen offers no sign-up while public sign-ups are off", async () => {
+test("the login screen offers sign-up, and new accounts still wait for approval", async () => {
   const { PUBLIC_SIGNUP_ENABLED } = (await import(new URL("./auth-config.ts", import.meta.url).href)) as typeof import("./auth-config");
-  assert.equal(PUBLIC_SIGNUP_ENABLED, false);
+  assert.equal(PUBLIC_SIGNUP_ENABLED, true);
+  assert.match(readFileSync(join(src, "app/app/signup/page.tsx"), "utf8"), /admin will still need to approve/);
   const login = readFileSync(join(src, "app/app/login/page.tsx"), "utf8");
   assert.match(login, /\{PUBLIC_SIGNUP_ENABLED && \([\s\S]*href="\/app\/signup"/);
   assert.equal(login.match(/href="\/app\/signup"/g)!.length, 1);

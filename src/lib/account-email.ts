@@ -8,6 +8,7 @@ export const ACCOUNT_EMAIL_KINDS = [
   "account_declined",
   "account_suspended",
   "account_restored",
+  "admin_delivery_failed",
 ] as const;
 export type AccountEmailKind = (typeof ACCOUNT_EMAIL_KINDS)[number];
 
@@ -35,10 +36,19 @@ const escapeHtml = (value: string) =>
 /** A name is typed by a stranger: one short line, no control characters. */
 const oneLine = (value: string) => value.replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]+/g, " ").trim().slice(0, 80);
 
+const FAILED_MESSAGES: Record<string, string> = {
+  admin_new_registration: "new registration",
+  account_approved: "account approved",
+  account_declined: "registration not approved",
+  account_suspended: "access suspended",
+  account_restored: "access restored",
+};
+
 function content(kind: AccountEmailKind, account: { email: string; name: string | null }, contact: string): Content {
   const signIn = { button: "Sign in", href: `${SITE_URL}/app/login` };
   const write = { button: `Contact ${contact}`, href: `mailto:${contact}` };
   const about = "You received this because of your AMHIL OS account.";
+  const admin = { button: "Open Admin", href: `${SITE_URL}/app/admin` };
 
   switch (kind) {
     case "admin_new_registration": {
@@ -81,6 +91,18 @@ function content(kind: AccountEmailKind, account: { email: string; name: string 
         ...write,
         note: about,
       };
+    case "admin_delivery_failed": {
+      // For this alert the name column says which message could not be sent.
+      const message = FAILED_MESSAGES[account.name ?? ""] ?? "account";
+      return {
+        subject: "AMHIL OS could not send an account email",
+        preheader: "An account email was given up on.",
+        heading: "Email not sent",
+        lines: [`The ${message} email to ${account.email} could not be sent after repeated attempts.`, "It will not be retried."],
+        ...admin,
+        note: "Check the address, and the sending service if this keeps happening.",
+      };
+    }
     case "account_restored":
       return {
         subject: "Your AMHIL OS access has been restored",
@@ -98,7 +120,24 @@ export function renderAccountEmail(
   account: { email: string; name: string | null },
   contact: string,
 ): AccountEmail {
-  const c = content(kind, account, contact);
+  return layout(content(kind, account, contact));
+}
+
+/** Alert to the administrator about a message Resend reports as bounced, refused or marked as spam. */
+export function renderDeliveryAlert(problem: { what: string; recipient: string; subject: string }): AccountEmail {
+  return layout({
+    subject: "AMHIL OS email problem: " + problem.what,
+    preheader: "An email could not be delivered.",
+    heading: "Email not delivered",
+    // The recipient and subject come from outside: keep each to one short line.
+    lines: [`${oneLine(problem.recipient)}: ${problem.what}.`, `Message: ${oneLine(problem.subject) || "(no subject)"}`],
+    button: "Open Admin",
+    href: `${SITE_URL}/app/admin`,
+    note: "Details are in the Resend dashboard under Emails.",
+  });
+}
+
+function layout(c: Content): AccountEmail {
   const logo = `${SITE_URL}/apple-icon.png`;
   const html = `<!doctype html>
 <html lang="en">

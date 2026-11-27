@@ -9,10 +9,10 @@ export function BackupInfo() {
         <p className="flex items-start gap-2">
           <ShieldCheck size={16} className="mt-0.5 shrink-0 text-accent" />
           <span>
-            <strong className="text-foreground">Supabase (infrastructure level):</strong> your database already gets
-            automatic daily backups from Supabase, and Point-in-Time Recovery if you&apos;re on a paid plan — restorable
-            from the Supabase dashboard under Database → Backups. That protects against infrastructure failure, not
-            against exporting your data to somewhere else entirely.
+            <strong className="text-foreground">Supabase (infrastructure level):</strong> don&apos;t assume there is a
+            backup to restore. Automatic daily backups are a paid-plan feature and are not guaranteed on the Free plan;
+            Point-in-Time Recovery is a paid add-on. Check Database → Backups in the Supabase dashboard to see what your
+            project actually has.
           </span>
         </p>
         <p className="flex items-start gap-2">
